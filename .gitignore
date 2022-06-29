@@ -1,0 +1,10 @@
+*/bin/
+*/obj/
+/benchmark/BenchmarkDotNet.Artifacts/
+/pfc/Hello.exe
+/pfc/Program.exe
+/pfc/PushForth.dll
+/pfc/add-one-and-one.dll
+/pfc/add-one-and-one.exe
+/README.html
+/src/keypair.snk
