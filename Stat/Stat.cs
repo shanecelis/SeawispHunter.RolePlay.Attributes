@@ -23,90 +23,6 @@ public interface IStat<T> : INotifyPropertyChanged {
   event PropertyChangedEventHandler PropertyChanged;
 }
 
-public interface IModifier<T> : INotifyPropertyChanged {
-  string name { get; }
-  T Modify(T given);
-  event PropertyChangedEventHandler PropertyChanged;
-}
-
-
-public abstract class Modifier<T> : IModifier<T> where T : struct {
-  public string name { get; init; }
-  public string description { get; init; }
-  public virtual T? substitute { get; init; }
-  public virtual T? plus { get; init; }
-  public virtual T? multiply { get; init; }
-  public abstract T Modify(T given);
-
-  public event PropertyChangedEventHandler PropertyChanged;
-  public override string ToString() {
-    var builder = new StringBuilder();
-    builder.Append('"');
-    builder.Append(name);
-    builder.Append('"');
-    builder.Append(' ');
-    if (substitute.HasValue) {
-      builder.Append('=');
-      builder.Append(substitute.Value);
-      builder.Append(' ');
-    }
-    if (plus.HasValue){
-      builder.Append('+');
-      builder.Append(plus.Value);
-      builder.Append(' ');
-    }
-    if (multiply.HasValue){
-      builder.Append('*');
-      builder.Append(multiply.Value);
-      builder.Append(' ');
-    }
-    builder.Length--;
-    return builder.ToString();
-  }
-
-  protected void OnChange(string name) {
-    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-  }
-}
-
-public class ModifierFloat : Modifier<float> {
-  public override float Modify(float given) {
-    if (substitute.HasValue)
-      given = substitute.Value;
-    if (plus.HasValue)
-      given += plus.Value;
-    if (multiply.HasValue)
-      given *= multiply.Value;
-    return given;
-  }
-}
-
-public class MutableModifierFloat : ModifierFloat {
-  private float? _plus;
-  public override float? plus {
-    get => _plus ?? base.plus;
-    init => _plus = value;
-  }
-  public void SetPlus(float value) {
-    if (_plus.HasValue && _plus.Value == value)
-      return;
-    _plus = value;
-    OnChange(nameof(plus));
-  }
-}
-
-public class ModifierInt : Modifier<int> {
-  public override int Modify(int given) {
-    if (substitute.HasValue)
-      given = substitute.Value;
-    if (plus.HasValue)
-      given += plus.Value;
-    if (multiply.HasValue)
-      given *= multiply.Value;
-    return given;
-  }
-}
-
 public class Stat<T> : IStat<T> {
   public string name { get; init; }
   public string description { get; init; }
@@ -121,26 +37,30 @@ public class Stat<T> : IStat<T> {
     }
   }
   public event PropertyChangedEventHandler PropertyChanged;
-  protected static PropertyChangedEventArgs eventArgs = new PropertyChangedEventArgs(nameof(modifiers));
+  protected static PropertyChangedEventArgs modifiersEventArgs
+    = new PropertyChangedEventArgs(nameof(modifiers));
+
   protected void OnChange(string name) {
-    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    PropertyChanged?.Invoke(this, name == nameof(modifiers)
+                            ? modifiersEventArgs
+                            : new PropertyChangedEventArgs(name));
   }
 
-  public void ModifierChanged(object sender, PropertyChangedEventArgs e) {
-    PropertyChanged?.Invoke(this, eventArgs);
+  protected void ModifiersChanged(object sender, PropertyChangedEventArgs e) {
+    PropertyChanged?.Invoke(this, modifiersEventArgs);
   }
 
   public void AddModifier(IModifier<T> modifier, bool notifyOnModifierChange) {
     if (notifyOnModifierChange) {
-      modifier.PropertyChanged -= ModifierChanged;
-      modifier.PropertyChanged += ModifierChanged;
+      modifier.PropertyChanged -= ModifiersChanged;
+      modifier.PropertyChanged += ModifiersChanged;
     }
     modifiers.Add(modifier);
     OnChange(nameof(modifiers));
   }
 
   public void RemoveModifier(IModifier<T> modifier) {
-    modifier.PropertyChanged -= ModifierChanged;
+    modifier.PropertyChanged -= ModifiersChanged;
     modifiers.Remove(modifier);
     OnChange(nameof(modifiers));
   }
@@ -164,6 +84,7 @@ public class Stat<T> : IStat<T> {
   }
 }
 
+/* This stat's base value is given by a Func<T> or another stat's value. */
 public class DerivedStat<T> : Stat<T>, IDisposable {
   public readonly Func<T> func;
   public override T baseValue => func();

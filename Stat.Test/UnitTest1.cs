@@ -4,12 +4,12 @@ using SeawispHunter.Game.Stat;
 namespace SeawispHunter.Game.Stat.Test;
 
 public class UnitTest1 {
-  Stat<float> health = new Stat<float> { name = "health", description = "", baseValue = 100f };
+  Stat<float> health = new Stat<float> { name = "health", baseValue = 100f };
   // var currentHealth = new DerivedStat<float> { stat = health, name = "current health" };
   DerivedStat<float> currentHealth;
   MutableModifierFloat boost = new MutableModifierFloat { name = "10% boost", multiply = 1.10f };
   MutableModifierFloat boost20 = new MutableModifierFloat { name = "20% boost", multiply = 1.20f };
-  MutableModifierFloat damage = new MutableModifierFloat { name = "damage", plus = 0f };
+  MutableModifierFloat damage = new MutableModifierFloat { name = "damage", add = 0f };
   private int healthNotifications = 0;
   private int currentHealthNotifications = 0;
   private int damageNotifications = 0;
@@ -50,7 +50,7 @@ public class UnitTest1 {
   public void TestNotification() {
     Assert.Equal(100f, health.baseValue);
     Assert.Equal(110f, health.value);
-    damage.SetPlus(10f);
+    damage.SetAdd(10f);
     Assert.Equal(0, healthNotifications);
     Assert.Equal(1, currentHealthNotifications);
     Assert.Equal(1, damageNotifications);
@@ -72,4 +72,12 @@ public class UnitTest1 {
     Assert.Equal(0, damageNotifications);
     Assert.Equal(0, boostNotifications);
   }
+
+  [Fact]
+  public void TestDifferentAccumulationStyle() {
+    var strength = new Stat<int> { name = "strength", baseValue = 10 };
+    var strengthPercentageGain = new Stat<float>();
+
+  }
+
 }
