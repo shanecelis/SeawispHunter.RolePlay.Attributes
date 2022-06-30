@@ -1,38 +1,34 @@
 using System.Text;
 using System.ComponentModel;
-namespace SeawispHunter.Game.Stat {
+
+namespace SeawispHunter.Game.Stat;
+
+/** This IStat<T> class is meant to capture the many stats in games like health,
+    strength, etc. that can be modified by many different effects.
+
+    ## Acknowledgments
+
+    This class was informed by the following sources:
+
+    - http://howtomakeanrpg.com/a/how-to-make-an-rpg-stats.html
+    - https://jkpenner.wordpress.com/2015/06/09/rpgsystems-stat-system-02-modifiers/
+ */
 public interface IStat<T> : INotifyPropertyChanged {
   string name { get; }
-  string description { get; }
   T baseValue { get; }
   T value { get; }
   IList<IModifier<T>> modifiers { get; }
+  void AddModifier(IModifier<T> modifier, bool notifyOnModifierChange);
+  void RemoveModifier(IModifier<T> modifier);
   event PropertyChangedEventHandler PropertyChanged;
-  // This isn't strictly necessary.
-  void ModifierChanged(object sender, PropertyChangedEventArgs e);
 }
 
 public interface IModifier<T> : INotifyPropertyChanged {
   string name { get; }
-  string description { get; }
   T Modify(T given);
   event PropertyChangedEventHandler PropertyChanged;
 }
 
-public static class StatExtensions {
-  public static void AddModifier<T>(this IStat<T> stat, IModifier<T> modifier, bool notifyOnChange) {
-    if (notifyOnChange) {
-      modifier.PropertyChanged -= stat.ModifierChanged;
-      modifier.PropertyChanged += stat.ModifierChanged;
-    }
-    stat.modifiers.Add(modifier);
-  }
-
-  public static void RemoveModifier<T>(this IStat<T> stat, IModifier<T> modifier) {
-    modifier.PropertyChanged -= stat.ModifierChanged;
-    stat.modifiers.Remove(modifier);
-  }
-}
 
 public abstract class Modifier<T> : IModifier<T> where T : struct {
   public string name { get; init; }
@@ -134,6 +130,21 @@ public class Stat<T> : IStat<T> {
     PropertyChanged?.Invoke(this, eventArgs);
   }
 
+  public void AddModifier(IModifier<T> modifier, bool notifyOnModifierChange) {
+    if (notifyOnModifierChange) {
+      modifier.PropertyChanged -= ModifierChanged;
+      modifier.PropertyChanged += ModifierChanged;
+    }
+    modifiers.Add(modifier);
+    OnChange(nameof(modifiers));
+  }
+
+  public void RemoveModifier(IModifier<T> modifier) {
+    modifier.PropertyChanged -= ModifierChanged;
+    modifiers.Remove(modifier);
+    OnChange(nameof(modifiers));
+  }
+
   public override string ToString() => $"{name} {value}";
   public string ToString(bool showModifiers) {
     if (! showModifiers)
@@ -180,6 +191,4 @@ public class DerivedStat<T> : Stat<T>, IDisposable {
   public void Dispose() {
     onDispose?.Invoke();
   }
-}
-
 }

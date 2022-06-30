@@ -8,6 +8,7 @@ public class UnitTest1 {
   // var currentHealth = new DerivedStat<float> { stat = health, name = "current health" };
   DerivedStat<float> currentHealth;
   MutableModifierFloat boost = new MutableModifierFloat { name = "10% boost", multiply = 1.10f };
+  MutableModifierFloat boost20 = new MutableModifierFloat { name = "20% boost", multiply = 1.20f };
   MutableModifierFloat damage = new MutableModifierFloat { name = "damage", plus = 0f };
   private int healthNotifications = 0;
   private int currentHealthNotifications = 0;
@@ -53,6 +54,22 @@ public class UnitTest1 {
     Assert.Equal(0, healthNotifications);
     Assert.Equal(1, currentHealthNotifications);
     Assert.Equal(1, damageNotifications);
+    Assert.Equal(0, boostNotifications);
+  }
+
+  [Fact]
+  public void TestNotificationOnAdd() {
+    Assert.Equal(0, healthNotifications);
+    Assert.Equal(0, currentHealthNotifications);
+    Assert.Equal(0, damageNotifications);
+    Assert.Equal(0, boostNotifications);
+    Assert.Equal(100f, health.baseValue);
+    Assert.Equal(110f, health.value);
+    health.AddModifier(boost20, false);
+    Assert.Equal(132f, health.value);
+    Assert.Equal(1, healthNotifications);
+    Assert.Equal(1, currentHealthNotifications);
+    Assert.Equal(0, damageNotifications);
     Assert.Equal(0, boostNotifications);
   }
 }
