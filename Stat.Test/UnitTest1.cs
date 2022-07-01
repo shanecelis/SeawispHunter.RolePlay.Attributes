@@ -5,11 +5,10 @@ namespace SeawispHunter.Game.Stat.Test;
 
 public class UnitTest1 {
   Stat<float> health = new Stat<float> { name = "health", baseValue = 100f };
-  // var currentHealth = new DerivedStat<float> { stat = health, name = "current health" };
   DerivedStat<float> currentHealth;
   MutableModifierFloat boost = new MutableModifierFloat { name = "10% boost", multiply = 1.10f };
   MutableModifierFloat boost20 = new MutableModifierFloat { name = "20% boost", multiply = 1.20f };
-  MutableModifierFloat damage = new MutableModifierFloat { name = "damage", add = 0f };
+  MutableModifierFloat damage = new MutableModifierFloat { name = "damage", plus = 0f };
   private int healthNotifications = 0;
   private int currentHealthNotifications = 0;
   private int damageNotifications = 0;
@@ -17,8 +16,8 @@ public class UnitTest1 {
 
   public UnitTest1() {
     currentHealth = new DerivedStat<float>(health) { name = "current health" };
-    health.AddModifier(boost, true);
-    currentHealth.AddModifier(damage, true);
+    health.Add(boost);
+    currentHealth.Add(damage);
     health.PropertyChanged += (_, _) => healthNotifications++;
     currentHealth.PropertyChanged += (_, _) => currentHealthNotifications++;
     damage.PropertyChanged += (_, _) => damageNotifications++;
@@ -27,7 +26,7 @@ public class UnitTest1 {
 
   [Fact]
   public void TestUnmodified() {
-    health.modifiers.Clear(); // XXX: This doesn't clear notifications.
+    health.Clear(); // XXX: This doesn't clear notifications.
     Assert.Equal(100f, health.baseValue);
     Assert.Equal(100f, health.value);
     Assert.Equal(0, healthNotifications);
@@ -65,7 +64,7 @@ public class UnitTest1 {
     Assert.Equal(0, boostNotifications);
     Assert.Equal(100f, health.baseValue);
     Assert.Equal(110f, health.value);
-    health.AddModifier(boost20, false);
+    health.Add(boost20);
     Assert.Equal(132f, health.value);
     Assert.Equal(1, healthNotifications);
     Assert.Equal(1, currentHealthNotifications);
@@ -75,9 +74,25 @@ public class UnitTest1 {
 
   [Fact]
   public void TestDifferentAccumulationStyle() {
-    var strength = new Stat<int> { name = "strength", baseValue = 10 };
-    var strengthPercentageGain = new Stat<float>();
 
+    // I can't do this with an int.
+    // var strength = new Stat<int> { name = "strength", baseValue = 10 };
+    var strength = new Stat<float> { name = "strength", baseValue = 10f };
+    var strengthPercentageGain = new Stat<float> { baseValue = 1f };
+    strengthPercentageGain.Add(new ModifierFloat { plus = 0.10f });
+    strength.Add(new DerivedModifierFloat { multiply = strengthPercentageGain });
+    Assert.Equal(11f, strength.value);
+  }
+
+  [Fact]
+  public void TestDifferentAccumulationStyleMixedTypes() {
+
+    var strength = new Stat<int> { name = "strength", baseValue = 10 };
+    // var strength = new Stat<float> { name = "strength", baseValue = 10f };
+    var strengthPercentageGain = new Stat<float> { baseValue = 1f };
+    strengthPercentageGain.Add(new ModifierFloat { plus = 0.1f });
+    strength.Add(new DerivedModifierFloatInt { multiply = strengthPercentageGain });
+    Assert.Equal(11, strength.value);
   }
 
 }

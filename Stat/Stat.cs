@@ -15,18 +15,43 @@ namespace SeawispHunter.Game.Stat;
  */
 public interface IStat<T> : INotifyPropertyChanged {
   string name { get; }
-  T baseValue { get; }
-  T value { get; }
-  IList<IModifier<T>> modifiers { get; }
-  void AddModifier(IModifier<T> modifier, bool notifyOnModifierChange);
-  void RemoveModifier(IModifier<T> modifier);
-  event PropertyChangedEventHandler PropertyChanged;
+  T baseValue { get;  }
+  T value { get; set; }
+  // T modifiedvalue { get; }
+  IEnumerable<IModifier<T>> modifiers { get; }
+  void Add(IModifier<T> modifier);
+  void Remove(IModifier<T> modifier);
+  void Clear();
+  // event PropertyChangedEventHandler PropertyChanged;
+}
+
+public interface IValue<T> : INotifyPropertyChanged {
+  T value { get; set; }
+  // event PropertyChangedEventHandler PropertyChanged;
+}
+
+public class Value<T> : IValue<T> where T : IEquatable<T> {
+
+  private T _value;
+  public T value {
+    get => _value;
+    set {
+      // Not valid for structs generally.
+      if (_value != null && _value.Equals(value))
+        return;
+      _value = value;
+      PropertyChanged?.Invoke(this, valueEventArgs);
+    }
+  }
+  public event PropertyChangedEventHandler PropertyChanged;
+  private static PropertyChangedEventArgs valueEventArgs = new PropertyChangedEventArgs(nameof(value));
 }
 
 public class Stat<T> : IStat<T> {
   public string name { get; init; }
   public string description { get; init; }
-  public IList<IModifier<T>> modifiers { get; } = new List<IModifier<T>>();
+  protected IList<IModifier<T>> _modifiers;
+  public IEnumerable<IModifier<T>> modifiers => _modifiers == null ? Enumerable.Empty<IModifier<T>>() : _modifiers;
   public virtual T baseValue { get; init; }
   public T value {
     get {
@@ -35,6 +60,7 @@ public class Stat<T> : IStat<T> {
         v = modifier.Modify(v);
       return v;
     }
+    set => throw new InvalidOperationException("Cannot set `value` in Stat<T> class. Consider setting `baseValue instead.");
   }
   public event PropertyChangedEventHandler PropertyChanged;
   protected static PropertyChangedEventArgs modifiersEventArgs
@@ -50,19 +76,25 @@ public class Stat<T> : IStat<T> {
     PropertyChanged?.Invoke(this, modifiersEventArgs);
   }
 
-  public void AddModifier(IModifier<T> modifier, bool notifyOnModifierChange) {
-    if (notifyOnModifierChange) {
-      modifier.PropertyChanged -= ModifiersChanged;
-      modifier.PropertyChanged += ModifiersChanged;
-    }
-    modifiers.Add(modifier);
+  public void Add(IModifier<T> modifier) {
+    if (_modifiers == null)
+      _modifiers = new List<IModifier<T>>();
+    modifier.PropertyChanged -= ModifiersChanged;
+    modifier.PropertyChanged += ModifiersChanged;
+    _modifiers.Add(modifier);
     OnChange(nameof(modifiers));
   }
 
-  public void RemoveModifier(IModifier<T> modifier) {
+  public void Remove(IModifier<T> modifier) {
+    if (_modifiers == null)
+      return;
     modifier.PropertyChanged -= ModifiersChanged;
-    modifiers.Remove(modifier);
+    _modifiers.Remove(modifier);
     OnChange(nameof(modifiers));
+  }
+
+  public void Clear() {
+    _modifiers?.Clear();
   }
 
   public override string ToString() => $"{name} {value}";
