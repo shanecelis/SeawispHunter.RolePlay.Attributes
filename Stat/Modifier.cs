@@ -9,22 +9,57 @@ public interface IModifier<T> : INotifyPropertyChanged {
   // event PropertyChangedEventHandler PropertyChanged;
 }
 
-// public abstract class Modifier2<T> : IModifier<T>, IValue<T> where T : struct {
-//   public string name { get; init; }
+// public enum Operation {
+//   Add,
+//   Times,
+//   Substitute
 // }
 
+// internal abstract class Modifier2<T> : IModifier<T>, IValue<T> where T : struct {
 
+//   public event PropertyChangedEventHandler PropertyChanged;
+//   public string name { get; init; }
+//   public T value { get; set; }
+//   public abstract T Modify(T given);
 
-// public static class ModifierExtensions {
-//   public static IModifier<Y> Select<X,Y>(IModifier<X> modifier) {
+//   protected void OnChange(string name) {
+//     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 //   }
 // }
 
-public abstract class Modifier<T> : IModifier<T> where T : struct {
+public abstract class Modifier<T> : IModifier<T> where T : struct, IEquatable<T> {
   public string name { get; init; }
-  public virtual T? substitute { get; init; }
-  public virtual T? plus { get; init; }
-  public virtual T? multiply { get; init; }
+
+  private T? _substitute;
+  public virtual T? substitute {
+    get => _substitute;
+    set {
+      if (_substitute != null && _substitute.Equals(value))
+        return;
+      _substitute = value;
+      OnChange(nameof(substitute));
+    }
+  }
+  private T? _plus;
+  public virtual T? plus {
+    get => _plus;
+    set {
+      if (_plus != null && _plus.Equals(value))
+        return;
+      _plus = value;
+      OnChange(nameof(plus));
+    }
+  }
+  private T? _multiply;
+  public virtual T? multiply {
+    get => _multiply;
+    set {
+      if (_multiply != null && _multiply.Equals(value))
+        return;
+      _multiply = value;
+      OnChange(nameof(multiply));
+    }
+  }
   public abstract T Modify(T given);
 
   public event PropertyChangedEventHandler PropertyChanged;
@@ -58,29 +93,53 @@ public abstract class Modifier<T> : IModifier<T> where T : struct {
   }
 }
 
+public class ModifierFloat : Modifier<float> {
+  public override float Modify(float given) {
+    if (substitute.HasValue)
+      given = substitute.Value;
+    if (plus.HasValue)
+      given += plus.Value;
+    if (multiply.HasValue)
+      given *= multiply.Value;
+    return given;
+  }
+}
+
+public class ModifierInt : Modifier<int> {
+  public override int Modify(int given) {
+    if (substitute.HasValue)
+      given = substitute.Value;
+    if (plus.HasValue)
+      given += plus.Value;
+    if (multiply.HasValue)
+      given *= multiply.Value;
+    return given;
+  }
+}
+
 public abstract class DerivedModifier<S,T> : IModifier<T>, IDisposable where T : struct {
   public string name { get; init; }
 
-  private IStat<S>? _substitute;
-  public virtual IStat<S>? substitute {
+  private IValue<S>? _substitute;
+  public virtual IValue<S>? substitute {
     get => _substitute;
     init => _substitute = Listen(value);
   }
-  private IStat<S>? _add;
-  public virtual IStat<S>? plus {
-    get => _add;
-    init => _add = Listen(value);
+  private IValue<S>? _plus;
+  public virtual IValue<S>? plus {
+    get => _plus;
+    init => _plus = Listen(value);
   }
 
-  private IStat<S>? _multiply;
-  public virtual IStat<S>? multiply {
+  private IValue<S>? _multiply;
+  public virtual IValue<S>? multiply {
     get => _multiply;
     init => _multiply = Listen(value);
   }
-  protected IStat<S> Listen(IStat<S> stat) {
-    stat.PropertyChanged -= StatChanged;
-    stat.PropertyChanged += StatChanged;
-    return stat;
+  protected IValue<S> Listen(IValue<S> value) {
+    value.PropertyChanged -= ValueChanged;
+    value.PropertyChanged += ValueChanged;
+    return value;
   }
 
   public abstract T Modify(T given);
@@ -115,16 +174,16 @@ public abstract class DerivedModifier<S,T> : IModifier<T>, IDisposable where T :
     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
   }
 
-  protected void StatChanged(object sender, PropertyChangedEventArgs e) {
-    OnChange("stat");
+  protected void ValueChanged(object sender, PropertyChangedEventArgs e) {
+    OnChange("value");
   }
   public void Dispose() {
     if (substitute != null)
-      substitute.PropertyChanged -= StatChanged;
+      substitute.PropertyChanged -= ValueChanged;
     if (plus != null)
-      plus.PropertyChanged -= StatChanged;
+      plus.PropertyChanged -= ValueChanged;
     if (multiply != null)
-      multiply.PropertyChanged -= StatChanged;
+      multiply.PropertyChanged -= ValueChanged;
   }
 }
 
@@ -177,40 +236,3 @@ public class DerivedModifierIntFloat : DerivedModifier<int, float> {
   }
 }
 
-public class ModifierFloat : Modifier<float> {
-  public override float Modify(float given) {
-    if (substitute.HasValue)
-      given = substitute.Value;
-    if (plus.HasValue)
-      given += plus.Value;
-    if (multiply.HasValue)
-      given *= multiply.Value;
-    return given;
-  }
-}
-
-public class MutableModifierFloat : ModifierFloat {
-  private float? _add;
-  public override float? plus {
-    get => _add ?? base.plus;
-    init => _add = value;
-  }
-  public void SetAdd(float value) {
-    if (_add.HasValue && _add.Value == value)
-      return;
-    _add = value;
-    OnChange(nameof(plus));
-  }
-}
-
-public class ModifierInt : Modifier<int> {
-  public override int Modify(int given) {
-    if (substitute.HasValue)
-      given = substitute.Value;
-    if (plus.HasValue)
-      given += plus.Value;
-    if (multiply.HasValue)
-      given *= multiply.Value;
-    return given;
-  }
-}

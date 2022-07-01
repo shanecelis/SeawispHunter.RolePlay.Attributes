@@ -6,9 +6,9 @@ namespace SeawispHunter.Game.Stat.Test;
 public class UnitTest1 {
   Stat<float> health = new Stat<float> { name = "health", baseValue = 100f };
   DerivedStat<float> currentHealth;
-  MutableModifierFloat boost = new MutableModifierFloat { name = "10% boost", multiply = 1.10f };
-  MutableModifierFloat boost20 = new MutableModifierFloat { name = "20% boost", multiply = 1.20f };
-  MutableModifierFloat damage = new MutableModifierFloat { name = "damage", plus = 0f };
+  ModifierFloat boost = new ModifierFloat { name = "10% boost", multiply = 1.10f };
+  ModifierFloat boost20 = new ModifierFloat { name = "20% boost", multiply = 1.20f };
+  ModifierFloat damage = new ModifierFloat { name = "damage", plus = 0f };
   private int healthNotifications = 0;
   private int currentHealthNotifications = 0;
   private int damageNotifications = 0;
@@ -49,7 +49,7 @@ public class UnitTest1 {
   public void TestNotification() {
     Assert.Equal(100f, health.baseValue);
     Assert.Equal(110f, health.value);
-    damage.SetAdd(10f);
+    damage.plus = 10f;
     Assert.Equal(0, healthNotifications);
     Assert.Equal(1, currentHealthNotifications);
     Assert.Equal(1, damageNotifications);

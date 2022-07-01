@@ -13,9 +13,9 @@ namespace SeawispHunter.Game.Stat;
     - http://howtomakeanrpg.com/a/how-to-make-an-rpg-stats.html
     - https://jkpenner.wordpress.com/2015/06/09/rpgsystems-stat-system-02-modifiers/
  */
-public interface IStat<T> : INotifyPropertyChanged {
+public interface IStat<T> : IValue<T>, INotifyPropertyChanged {
   string name { get; }
-  T baseValue { get;  }
+  T baseValue { get; set; }
   T value { get; set; }
   // T modifiedvalue { get; }
   IEnumerable<IModifier<T>> modifiers { get; }
@@ -25,6 +25,7 @@ public interface IStat<T> : INotifyPropertyChanged {
   // event PropertyChangedEventHandler PropertyChanged;
 }
 
+/* IValue<T> is notifies listeners when changed. */
 public interface IValue<T> : INotifyPropertyChanged {
   T value { get; set; }
   // event PropertyChangedEventHandler PropertyChanged;
@@ -47,12 +48,22 @@ public class Value<T> : IValue<T> where T : IEquatable<T> {
   private static PropertyChangedEventArgs valueEventArgs = new PropertyChangedEventArgs(nameof(value));
 }
 
-public class Stat<T> : IStat<T> {
+public class Stat<T> : IStat<T> where T : IEquatable<T> {
   public string name { get; init; }
   public string description { get; init; }
   protected IList<IModifier<T>> _modifiers;
   public IEnumerable<IModifier<T>> modifiers => _modifiers == null ? Enumerable.Empty<IModifier<T>>() : _modifiers;
-  public virtual T baseValue { get; init; }
+
+  protected T _baseValue;
+  public virtual T baseValue {
+    get => _baseValue;
+    set {
+      if (_baseValue != null && _baseValue.Equals(value))
+        return;
+      _baseValue = value;
+      OnChange(nameof(baseValue));
+    }
+  }
   public T value {
     get {
       T v = baseValue;
@@ -117,7 +128,7 @@ public class Stat<T> : IStat<T> {
 }
 
 /* This stat's base value is given by a Func<T> or another stat's value. */
-public class DerivedStat<T> : Stat<T>, IDisposable {
+public class DerivedStat<T> : Stat<T>, IDisposable where T : IEquatable<T> {
   public readonly Func<T> func;
   public override T baseValue => func();
   private Action onDispose = null;
