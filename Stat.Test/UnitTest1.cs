@@ -5,7 +5,7 @@ namespace SeawispHunter.Game.Stat.Test;
 
 public class UnitTest1 {
   Stat<float> health = new Stat<float> { name = "health", baseValue = 100f };
-  DerivedStat<float> currentHealth;
+  IStat<float> currentHealth;
   ModifierFloat boost = new ModifierFloat { name = "10% boost", multiply = 1.10f };
   ModifierFloat boost20 = new ModifierFloat { name = "20% boost", multiply = 1.20f };
   ModifierFloat damage = new ModifierFloat { name = "damage", plus = 0f };
@@ -15,8 +15,10 @@ public class UnitTest1 {
   private int boostNotifications = 0;
 
   public UnitTest1() {
-    currentHealth = new DerivedStat<float>(health) { name = "current health" };
+    currentHealth = Stat.FromValue(health, "current health");
+    // currentHealth.name = "current health";
     health.Add(boost);
+    // currentHealth.Add(damage.Select(d => -d));
     currentHealth.Add(damage);
     health.PropertyChanged += (_, _) => healthNotifications++;
     currentHealth.PropertyChanged += (_, _) => currentHealthNotifications++;

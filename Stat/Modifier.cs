@@ -3,29 +3,80 @@ using System.ComponentModel;
 
 namespace SeawispHunter.Game.Stat;
 
+/** A IModifier<T> modifies an IStat<T>'s value. */
 public interface IModifier<T> : INotifyPropertyChanged {
   string name { get; }
   T Modify(T given);
   // event PropertyChangedEventHandler PropertyChanged;
 }
 
-// public enum Operation {
-//   Add,
-//   Times,
-//   Substitute
-// }
+public interface IModifierValue<S,T> : IModifier<T>, IValue<S> {
+  /* We want this to be settable. */
+  new S value { get; set; }
+}
 
-// internal abstract class Modifier2<T> : IModifier<T>, IValue<T> where T : struct {
+/** Most modifiers will be of the same type as the stat they're modifying, so
+    let's make that easier to express. */
+public interface IModifierValue<T> : IModifierValue<T,T> { }
 
-//   public event PropertyChangedEventHandler PropertyChanged;
-//   public string name { get; init; }
-//   public T value { get; set; }
-//   public abstract T Modify(T given);
+public static class Modifier {
+  // public static IModifier<float> Plus(float f) => new Modifier<float> { plus = f };
+  // public static IModifier<float> Plus(float f) => new ModifierFloat { plus = f };
+  // public static IModifier<float> Plus(float f) => new ModifierFloat { plus = f };
+  public static IModifierValue<float> Plus(float v, string name = null) => new ModifierValue<float> { value = v, op = (given, v) => given + v, name = name };
+  public static IModifierValue<float> Multiply(float v, string name = null) => new ModifierValue<float> { value = v, op = (given, v) => given * v, name = name };
+  public static IModifierValue<float> Substitute(float v, string name = null) => new ModifierValue<float> { value = v, op = (given, v) => v, name = name };
 
-//   protected void OnChange(string name) {
-//     PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-//   }
-// }
+  public static IModifierValue<int> Plus(int v, string name = null) => new ModifierValue<int> { value = v, op = (given, v) => given + v, name = name };
+  public static IModifierValue<int> Multiply(int v, string name = null) => new ModifierValue<int> { value = v, op = (given, v) => given * v, name = name };
+  public static IModifierValue<int> Substitute(int v, string name = null) => new ModifierValue<int> { value = v, op = (given, v) => v, name = name };
+
+  // public static IModifierValue<float> Plus(float v) => new ModifierValue<float, float> { value = v, op = (given, v) => given + v };
+  // public static IModifierValue<float> Multiply(float v) => new ModifierValue<float, float> { value = v, op = (given, v) => given * v };
+  // public static IModifierValue<float> Substitute(float v) => new ModifierValue<float, float> { value = v, op = (given, v) => v };
+  // public static IModifier<float> Plus(IValue<float> v) => new ModifierValue<float, float> { value = v, op => (given, v) => given + v };
+
+
+  internal class ModifierValue<S,T> : IModifierValue<S,T> {
+    public string name { get; init; }
+    private S _value;
+    public S value {
+      get => _value;
+      set {
+        if (_value != null && _value.Equals(value))
+          return;
+        _value = value;
+        OnChange(nameof(value));
+      }
+    }
+
+    S IValue<S>.value => _value;
+
+    public Func<T,S,T> op { get; init; }
+
+    public event PropertyChangedEventHandler PropertyChanged;
+    protected void OnChange(string name) {
+      PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
+
+    public T Modify(T given) => op(given, value);
+
+    // internal void Chain(object sender, PropertyChangedEventArgs args) => OnChange(nameof(value));
+
+    public ModifierValue<S,T> Select(Func<S,S> func) {
+      var m = new ModifierValue<S,T> { name = this.name,
+                                       op = this.op,
+                                       value = func(this.value) };
+      this.PropertyChanged += (_, _) => m.value = func(this.value);
+      return m;
+    }
+  }
+
+  /** Most modifiers will be of the same type as the stat they're modifying, so
+      let's make that easier to express. */
+  internal class ModifierValue<T> : ModifierValue<T,T>, IModifierValue<T> { }
+}
+
 
 public abstract class Modifier<T> : IModifier<T> where T : struct, IEquatable<T> {
   public string name { get; init; }
@@ -93,6 +144,7 @@ public abstract class Modifier<T> : IModifier<T> where T : struct, IEquatable<T>
   }
 }
 
+/** Until generic math is supported, we need this class. Support is coming in C# 7. */
 public class ModifierFloat : Modifier<float> {
   public override float Modify(float given) {
     if (substitute.HasValue)
@@ -105,6 +157,7 @@ public class ModifierFloat : Modifier<float> {
   }
 }
 
+/** Until generic math is supported, we need this class. Support is coming in C# 7. */
 public class ModifierInt : Modifier<int> {
   public override int Modify(int given) {
     if (substitute.HasValue)
@@ -117,6 +170,7 @@ public class ModifierInt : Modifier<int> {
   }
 }
 
+/** A derived modifier allows for an IValue<S> or IStat<S> to modify some other stat. */
 public abstract class DerivedModifier<S,T> : IModifier<T>, IDisposable where T : struct {
   public string name { get; init; }
 
