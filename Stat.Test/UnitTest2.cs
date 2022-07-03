@@ -78,6 +78,24 @@ public class UnitTest2 {
   }
 
   [Fact]
+  public void TestStatToString() {
+    Assert.Equal("health 110", health.ToString());
+    Assert.Equal("current health 110", currentHealth.ToString());
+  }
+
+  [Fact]
+  public void TestModifierToString() {
+    var m = Modifier.Plus(1);
+    Assert.Equal("+1", m.ToString());
+
+    m = Modifier.Plus(1, "+1 sword");
+    Assert.Equal("\"+1 sword\" +1", m.ToString());
+
+    m = Modifier.Multiply(2, "blah");
+    Assert.Equal("\"blah\" *2", m.ToString());
+  }
+
+  [Fact]
   public void TestDifferentAccumulationStyle() {
 
     // I can't do this with an int.

@@ -21,45 +21,42 @@ public interface IModifierValue<S,T> : IModifier<T>, IMutableValue<S> {
 public interface IModifierValue<T> : IModifierValue<T,T> { }
 
 public static class Modifier {
-  // public static IModifier<float> Plus(float f) => new Modifier<float> { plus = f };
-  // public static IModifier<float> Plus(float f) => new ModifierFloat { plus = f };
-  // public static IModifier<float> Plus(float f) => new ModifierFloat { plus = f };
-  public static IModifierValue<float> Plus(float v, string name = null) => new ModifierValue<float> { value = v, op = (given, v) => given + v, name = name };
-  public static IModifierValue<float> Multiply(float v, string name = null) => new ModifierValue<float> { value = v, op = (given, v) => given * v, name = name };
-  public static IModifierValue<float> Substitute(float v, string name = null) => new ModifierValue<float> { value = v, op = (given, v) => v, name = name };
+  public static IModifierValue<float> Plus(float v, string name = null) => new ModifierValue<float> { value = v, op = (given, v) => given + v, name = name, symbol = '+' };
+  public static IModifierValue<float> Multiply(float v, string name = null) => new ModifierValue<float> { value = v, op = (given, v) => given * v, name = name, symbol = '*' };
+  public static IModifierValue<float> Substitute(float v, string name = null) => new ModifierValue<float> { value = v, op = (given, v) => v, name = name, symbol = '=' };
 
-  public static IModifierValue<float> Plus(IValue<float> v, string name = null) => new ModifierReference<float>(v) { op = (given, v) => given + v, name = name };
-  public static IModifierValue<float> Multiply(IValue<float> v, string name = null) => new ModifierReference<float>(v) { op = (given, v) => given * v, name = name };
-  public static IModifierValue<float> Substitute(IValue<float> v, string name = null) => new ModifierReference<float>(v) { op = (given, v) => v, name = name };
+  public static IModifierValue<float> Plus(IValue<float> v, string name = null) => new ModifierReference<float>(v) { op = (given, v) => given + v, name = name, symbol = '+' };
+  public static IModifierValue<float> Multiply(IValue<float> v, string name = null) => new ModifierReference<float>(v) { op = (given, v) => given * v, name = name, symbol = '*' };
+  public static IModifierValue<float> Substitute(IValue<float> v, string name = null) => new ModifierReference<float>(v) { op = (given, v) => v, name = name, symbol = '=' };
 
-  public static IModifierValue<int> Plus(int v, string name = null) => new ModifierValue<int> { value = v, op = (given, v) => given + v, name = name };
-  public static IModifierValue<int> Multiply(int v, string name = null) => new ModifierValue<int> { value = v, op = (given, v) => given * v, name = name };
-  public static IModifierValue<int> Substitute(int v, string name = null) => new ModifierValue<int> { value = v, op = (given, v) => v, name = name };
+  public static IModifierValue<int> Plus(int v, string name = null) => new ModifierValue<int> { value = v, op = (given, v) => given + v, name = name, symbol = '+' };
+  public static IModifierValue<int> Multiply(int v, string name = null) => new ModifierValue<int> { value = v, op = (given, v) => given * v, name = name, symbol = '*' };
+  public static IModifierValue<int> Substitute(int v, string name = null) => new ModifierValue<int> { value = v, op = (given, v) => v, name = name, symbol = '=' };
 
-  public static IModifierValue<int> Plus(IValue<int> v, string name = null) => new ModifierReference<int>(v) { op = (given, v) => given + v, name = name };
-  public static IModifierValue<int> Multiply(IValue<int> v, string name = null) => new ModifierReference<int>(v) { op = (given, v) => given * v, name = name };
-  public static IModifierValue<int> Substitute(IValue<int> v, string name = null) => new ModifierReference<int>(v) { op = (given, v) => v, name = name };
+  public static IModifierValue<int> Plus(IValue<int> v, string name = null) => new ModifierReference<int>(v) { op = (given, v) => given + v, name = name, symbol = '+' };
+  public static IModifierValue<int> Multiply(IValue<int> v, string name = null) => new ModifierReference<int>(v) { op = (given, v) => given * v, name = name, symbol = '*' };
+  public static IModifierValue<int> Substitute(IValue<int> v, string name = null) => new ModifierReference<int>(v) { op = (given, v) => v, name = name, symbol = '=' };
 
+  // This looks way more complicated, does weird runtime stuff. Prefer above.
   public static IModifierValue<S, T> Plus<S,T>(S v, string name = null) {
-
     switch (Type.GetTypeCode(typeof(S))) {
       case TypeCode.Single:
         switch (Type.GetTypeCode(typeof(T))) {
           case TypeCode.Int32:
-            return (IModifierValue<S,T>) new ModifierValue<float, int> { value = (float) (object) v, op = (given, v) => (int) (given + v), name = name };
+            return (IModifierValue<S,T>) new ModifierValue<float, int> { value = (float) (object) v, op = (given, v) => (int) (given + v), name = name, symbol = '+' };
 
           case TypeCode.Single:
-            return (IModifierValue<S,T>) new ModifierValue<float, float> { value = (float) (object) v, op = (given, v) => given + v, name = name };
+            return (IModifierValue<S,T>) new ModifierValue<float, float> { value = (float) (object) v, op = (given, v) => given + v, name = name, symbol = '+' };
           default:
             throw new NotImplementedException($"No handler for second type {typeof(T)}.");
         }
       case TypeCode.Int32:
         switch (Type.GetTypeCode(typeof(T))) {
           case TypeCode.Int32:
-            return (IModifierValue<S,T>) new ModifierValue<int, int> { value = (int) (object) v, op = (given, v) => given + v, name = name };
+            return (IModifierValue<S,T>) new ModifierValue<int, int> { value = (int) (object) v, op = (given, v) => given + v, name = name, symbol = '+' };
 
           case TypeCode.Single:
-            return (IModifierValue<S,T>) new ModifierValue<int, float> { value = (int) (object) v, op = (given, v) => given + v, name = name };
+            return (IModifierValue<S,T>) new ModifierValue<int, float> { value = (int) (object) v, op = (given, v) => given + v, name = name, symbol = '+' };
           default:
             throw new NotImplementedException($"No handler for second type {typeof(T)}.");
         }
@@ -131,6 +128,8 @@ public static class Modifier {
 
   internal class ModifierValue<S,T> : IModifierValue<S,T> {
     public string name { get; init; }
+    public char symbol { get; init; } = '?';
+
     private S _value;
     public S value {
       get => _value;
@@ -163,6 +162,20 @@ public static class Modifier {
       this.PropertyChanged += (_, _) => m.value = func(this.value);
       return m;
     }
+    public override string ToString() {
+      var builder = new StringBuilder();
+      if (name != null) {
+        builder.Append('"');
+        builder.Append(name);
+        builder.Append('"');
+        builder.Append(' ');
+      }
+      if (symbol != null)
+        builder.Append(symbol);
+
+      builder.Append(_value);
+      return builder.ToString();
+    }
   }
 
   /** Most modifiers will be of the same type as the stat they're modifying, so
@@ -174,6 +187,7 @@ public static class Modifier {
   }
   internal class ModifierReference<S,T> : IModifierValue<S,T>, IDisposable where S : IEquatable<S> {
     public string name { get; init; }
+    public char symbol { get; init; } = '?';
     private readonly IValue<S> reference;
     public S value {
       get => reference.value;
@@ -212,6 +226,22 @@ public static class Modifier {
     // internal void Chain(object sender, PropertyChangedEventArgs args) => OnChange(nameof(value));
     public void Dispose() {
       reference.PropertyChanged -= Chain;
+    }
+
+    public override string ToString() {
+      var builder = new StringBuilder();
+      builder.Append("ref ");
+      if (name != null) {
+        builder.Append('"');
+        builder.Append(name);
+        builder.Append('"');
+        builder.Append(' ');
+      }
+      if (symbol != null)
+        builder.Append(symbol);
+
+      builder.Append(value);
+      return builder.ToString();
     }
 
   }
