@@ -14,14 +14,15 @@ public class SidhionStat<T> : Stat<T> where T : IEquatable<T> {
   public IStat<T> finalBonusesPlus = new Stat<T>();
   public IStat<T> finalBonusesMultiply = new Stat<T>() { baseValue = one };
   public SidhionStat() {
-    rawBonusesPlus.PropertyChanged += Chain;
-    rawBonusesMultiply.PropertyChanged += Chain;
-    finalBonusesPlus.PropertyChanged += Chain;
-    finalBonusesMultiply.PropertyChanged += Chain;
     this.Add(Modifier.Plus<T,T>(rawBonusesPlus));
     this.Add(Modifier.Multiply<T,T>(rawBonusesMultiply));
     this.Add(Modifier.Plus<T,T>(finalBonusesPlus));
     this.Add(Modifier.Multiply<T,T>(finalBonusesMultiply));
+    // We don't have to do this.
+    // rawBonusesPlus.PropertyChanged += ModifiersChanged;
+    // rawBonusesMultiply.PropertyChanged += ModifiersChanged;
+    // finalBonusesPlus.PropertyChanged += ModifiersChanged;
+    // finalBonusesMultiply.PropertyChanged += ModifiersChanged;
   }
 
   private static T one {

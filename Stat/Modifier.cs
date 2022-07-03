@@ -223,7 +223,7 @@ public static class Modifier {
         builder.Append('"');
         builder.Append(' ');
       }
-      if (symbol != null)
+      // if (symbol != null)
         builder.Append(symbol);
 
       builder.Append(_value);
@@ -290,7 +290,7 @@ public static class Modifier {
         builder.Append('"');
         builder.Append(' ');
       }
-      if (symbol != null)
+      // if (symbol != null)
         builder.Append(symbol);
 
       builder.Append(value);

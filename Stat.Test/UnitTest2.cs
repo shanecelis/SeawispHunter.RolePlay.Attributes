@@ -44,8 +44,8 @@ public class UnitTest2 {
     health.Clear(); // XXX: This doesn't clear notifications.
     Assert.Equal(100f, health.baseValue);
     Assert.Equal(100f, health.value);
-    Assert.Equal(0, healthNotifications);
-    Assert.Equal(0, currentHealthNotifications);
+    Assert.Equal(1, healthNotifications);
+    Assert.Equal(1, currentHealthNotifications);
     Assert.Equal(0, damageNotifications);
     Assert.Equal(0, boostNotifications);
   }
@@ -151,11 +151,21 @@ public class UnitTest2 {
 
   [Fact]
   public void TestSidhionStyle() {
+    int notifications = 0;
+    int notifications2 = 0;
     var stat = new SidhionStat<float> { baseValue = 10f };
+    stat.PropertyChanged += (_, _) => notifications++;
+    stat.rawBonusesPlus.PropertyChanged += (_, _) => notifications2++;
+
+    Assert.Equal(0, notifications);
+    Assert.Equal(0, notifications2);
     Assert.Equal(10f, stat.value);
     stat.rawBonusesPlus.Add(Modifier.Plus(1f));
+    Assert.Equal(1, notifications2);
+    Assert.Equal(1, notifications);
     Assert.Equal(11f, stat.value);
     stat.rawBonusesMultiply.Add(Modifier.Plus(1f));
+    Assert.Equal(2, notifications);
     Assert.Equal(22f, stat.value);
   }
 

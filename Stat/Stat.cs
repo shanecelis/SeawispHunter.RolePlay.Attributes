@@ -200,7 +200,10 @@ public class Stat<T> : IStat<T> where T : IEquatable<T> {
   }
 
   public void Clear() {
-    _modifiers?.Clear();
+    if (_modifiers != null) {
+      _modifiers.Clear();
+      OnChange(nameof(modifiers));
+    }
   }
 
   public override string ToString() => $"{name} {value}";
