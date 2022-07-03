@@ -84,8 +84,8 @@ public class UnitTest2 {
     // var strength = new Stat<int> { name = "strength", baseValue = 10 };
     var strength = new Stat<float> { name = "strength", baseValue = 10f };
     var strengthPercentageGain = new Stat<float> { baseValue = 1f };
-    strengthPercentageGain.Add(new ModifierFloat { plus = 0.10f });
-    strength.Add(new DerivedModifierFloat { multiply = strengthPercentageGain });
+    strengthPercentageGain.Add(Modifier.Plus(0.10f));
+    strength.Add(Modifier.Multiply(strengthPercentageGain));
     Assert.Equal(11f, strength.value);
   }
 
@@ -95,9 +95,26 @@ public class UnitTest2 {
     var strength = new Stat<int> { name = "strength", baseValue = 10 };
     // var strength = new Stat<float> { name = "strength", baseValue = 10f };
     var strengthPercentageGain = new Stat<float> { baseValue = 1f };
-    strengthPercentageGain.Add(new ModifierFloat { plus = 0.1f });
-    strength.Add(new DerivedModifierFloatInt { multiply = strengthPercentageGain });
+    strengthPercentageGain.Add(Modifier.Plus(0.1f));
+    strength.Add(Modifier.Multiply<int>(strengthPercentageGain));
     Assert.Equal(11, strength.value);
+  }
+
+  [Fact]
+  /** Taken from Sidhion's article:
+      https://gamedevelopment.tutsplus.com/tutorials/using-the-composite-design-pattern-for-an-rpg-attributes-system--gamedev-243
+  */
+  public void TestSidhionAccumulationStyle() {
+    var stat = new Stat<float> { name = "strength", baseValue = 10f };
+    var rawBonusesPlus = new Stat<float>();
+    var rawBonusesMultiply = new Stat<float>() { baseValue = 1f };
+    var finalBonusesPlus = new Stat<float>();
+    var finalBonusesMultiply = new Stat<float>() { baseValue = 1f };
+    stat.Add(Modifier.Plus(rawBonusesPlus));
+    stat.Add(Modifier.Multiply(rawBonusesMultiply));
+    stat.Add(Modifier.Plus(finalBonusesPlus));
+    stat.Add(Modifier.Multiply(finalBonusesMultiply));
+    Assert.Equal(10f, stat.value);
   }
 
 }

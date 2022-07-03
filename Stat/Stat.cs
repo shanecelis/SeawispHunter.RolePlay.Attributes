@@ -8,9 +8,15 @@ public interface IValue<T> : INotifyPropertyChanged {
   /** NOTE: This might seem weird to not have a setter since it will notify you
       when it changes. However, if you consider a value that is not provided by
       a field but by some other thing like a `Func<T>` then it makes more sense.
-      However, the implementation often will have a setter like `Value<T>`. */
+      However, the implementation often will have a setter like `Value<T>`
+      does. */
   T value { get; }
   // event PropertyChangedEventHandler PropertyChanged;
+}
+
+public interface IMutableValue<T> : IValue<T> {
+  /* We want this to be settable. */
+  new T value { get; set; }
 }
 
 /** This IStat<T> class is meant to capture the many stats in games like health,
@@ -22,6 +28,7 @@ public interface IValue<T> : INotifyPropertyChanged {
 
     - http://howtomakeanrpg.com/a/how-to-make-an-rpg-stats.html
     - https://jkpenner.wordpress.com/2015/06/09/rpgsystems-stat-system-02-modifiers/
+    - https://gamedevelopment.tutsplus.com/tutorials/using-the-composite-design-pattern-for-an-rpg-attributes-system--gamedev-243
  */
 public interface IStat<T> : IValue<T>, INotifyPropertyChanged {
   string name { get; }
@@ -108,7 +115,7 @@ public static class ValueExtensions {
 
 }
 
-public class Value<T> : IValue<T> where T : IEquatable<T> {
+public class Value<T> : IMutableValue<T> where T : IEquatable<T> {
 
   private T _value;
   public virtual T value {
@@ -121,6 +128,7 @@ public class Value<T> : IValue<T> where T : IEquatable<T> {
       OnChange(nameof(value));
     }
   }
+  T IValue<T>.value => _value;
   public event PropertyChangedEventHandler PropertyChanged;
   private static PropertyChangedEventArgs valueEventArgs = new PropertyChangedEventArgs(nameof(value));
 
