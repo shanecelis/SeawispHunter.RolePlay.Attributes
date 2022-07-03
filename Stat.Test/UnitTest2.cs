@@ -30,6 +30,16 @@ public class UnitTest2 {
   }
 
   [Fact]
+  public void TestValue() {
+    var v = new Value<int> { value = 1 };
+    Assert.Equal(1, v.value);
+    var iv = (IValue<int>) v;
+    Assert.Equal(1, iv.value);
+    v.value = 2;
+    Assert.Equal(2, iv.value);
+  }
+
+  [Fact]
   public void TestUnmodified() {
     health.Clear(); // XXX: This doesn't clear notifications.
     Assert.Equal(100f, health.baseValue);
@@ -133,6 +143,20 @@ public class UnitTest2 {
     stat.Add(Modifier.Plus(finalBonusesPlus));
     stat.Add(Modifier.Multiply(finalBonusesMultiply));
     Assert.Equal(10f, stat.value);
+    rawBonusesPlus.Add(Modifier.Plus(1f));
+    Assert.Equal(11f, stat.value);
+    rawBonusesMultiply.Add(Modifier.Plus(1f));
+    Assert.Equal(22f, stat.value);
+  }
+
+  [Fact]
+  public void TestSidhionStyle() {
+    var stat = new SidhionStat<float> { baseValue = 10f };
+    Assert.Equal(10f, stat.value);
+    stat.rawBonusesPlus.Add(Modifier.Plus(1f));
+    Assert.Equal(11f, stat.value);
+    stat.rawBonusesMultiply.Add(Modifier.Plus(1f));
+    Assert.Equal(22f, stat.value);
   }
 
 }

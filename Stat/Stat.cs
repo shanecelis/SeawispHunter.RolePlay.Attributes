@@ -14,6 +14,7 @@ public interface IValue<T> : INotifyPropertyChanged {
   // event PropertyChangedEventHandler PropertyChanged;
 }
 
+/* IMutableValue<T> is an IValue<T> that can be directly changed. */
 public interface IMutableValue<T> : IValue<T> {
   /* We want this to be settable. */
   new T value { get; set; }
@@ -128,7 +129,8 @@ public class Value<T> : IMutableValue<T> where T : IEquatable<T> {
       OnChange(nameof(value));
     }
   }
-  T IValue<T>.value => _value;
+  // Looks like this isn't technically needed. Good.
+  // T IValue<T>.value => _value;
   public event PropertyChangedEventHandler PropertyChanged;
   private static PropertyChangedEventArgs valueEventArgs = new PropertyChangedEventArgs(nameof(value));
 
@@ -167,6 +169,8 @@ public class Stat<T> : IStat<T> where T : IEquatable<T> {
   public event PropertyChangedEventHandler PropertyChanged;
   private static PropertyChangedEventArgs modifiersEventArgs
     = new PropertyChangedEventArgs(nameof(modifiers));
+
+  protected void Chain(object sender, PropertyChangedEventArgs args) => OnChange(nameof(value));
 
   protected void OnChange(string name) {
     PropertyChanged?.Invoke(this, name == nameof(modifiers)
