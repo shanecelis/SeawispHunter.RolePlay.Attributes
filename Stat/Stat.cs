@@ -2,6 +2,12 @@ using System.Text;
 using System.ComponentModel;
 
 namespace SeawispHunter.Game.Stat;
+// SeawispHunter.Player.Attributes
+// SeawispHunter.RolePlaying.Attributes
+// SeawispHunter.Game.Attributes
+// SeawispHunter.Game.Stats
+// SeawispHunter.Game.Traits
+// SeawispHunter.Game.Traits
 
 /* IValue<T> notifies listeners when changed. That's it. */
 public interface IValue<T> : INotifyPropertyChanged {
@@ -30,6 +36,8 @@ public interface IMutableValue<T> : IValue<T> {
     - http://howtomakeanrpg.com/a/how-to-make-an-rpg-stats.html
     - https://jkpenner.wordpress.com/2015/06/09/rpgsystems-stat-system-02-modifiers/
     - https://gamedevelopment.tutsplus.com/tutorials/using-the-composite-design-pattern-for-an-rpg-attributes-system--gamedev-243
+
+    XXX: Consider renaming to IDependantValue? IModifiableValue?
  */
 public interface IStat<T> : IValue<T>, INotifyPropertyChanged {
   string name { get; }
