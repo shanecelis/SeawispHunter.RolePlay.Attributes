@@ -153,7 +153,7 @@ public class UnitTest2 {
   public void TestSidhionStyle() {
     int notifications = 0;
     int notifications2 = 0;
-    var stat = new SidhionModifiableValue<float> { baseValue = 10f };
+    var stat = new SidhionStat<float> { baseValue = 10f };
     stat.PropertyChanged += (_, _) => notifications++;
     stat.rawBonusesPlus.PropertyChanged += (_, _) => notifications2++;
 

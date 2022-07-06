@@ -8,12 +8,12 @@ namespace SeawispHunter.RolePlaying.Attributes;
 
     [1]: https://gamedevelopment.tutsplus.com/tutorials/using-the-composite-design-pattern-for-an-rpg-attributes-system--gamedev-243
 */
-public class SidhionModifiableValue<T> : ModifiableValue<T> where T : IEquatable<T> {
+public class SidhionStat<T> : ModifiableValue<T> {
   public IModifiableValue<T> rawBonusesPlus = new ModifiableValue<T>();
   public IModifiableValue<T> rawBonusesMultiply = new ModifiableValue<T>() { baseValue = one };
   public IModifiableValue<T> finalBonusesPlus = new ModifiableValue<T>();
   public IModifiableValue<T> finalBonusesMultiply = new ModifiableValue<T>() { baseValue = one };
-  public SidhionModifiableValue() {
+  public SidhionStat() {
     this.Add(Modifier.Plus<T,T>(rawBonusesPlus));
     this.Add(Modifier.Multiply<T,T>(rawBonusesMultiply));
     this.Add(Modifier.Plus<T,T>(finalBonusesPlus));

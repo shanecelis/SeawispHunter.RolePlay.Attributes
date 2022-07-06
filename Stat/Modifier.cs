@@ -5,7 +5,7 @@ namespace SeawispHunter.RolePlaying.Attributes;
 
 /** A IModifier<T> modifies an IModifiableValue<T>'s value. */
 public interface IModifier<T> : INotifyPropertyChanged {
-  string name { get; }
+  // string name { get; }
   // S context { get; set; }
   T Modify(T given);
   // event PropertyChangedEventHandler PropertyChanged;
@@ -235,17 +235,17 @@ public static class Modifier {
       let's make that easier to express. */
   internal class ModifierValue<T> : ModifierValue<T,T>, IModifierValue<T> { }
 
-  internal class ModifierReference<T> : ModifierReference<T,T>, IModifierValue<T> where T : IEquatable<T> {
+  internal class ModifierReference<T> : ModifierReference<T,T>, IModifierValue<T> {
     public ModifierReference(IValue<T> value) : base(value) { }
   }
-  internal class ModifierReference<S,T> : IModifierValue<S,T>, IDisposable where S : IEquatable<S> {
+  internal class ModifierReference<S,T> : IModifierValue<S,T>, IDisposable {
     public string name { get; init; }
     public char symbol { get; init; } = '?';
     private readonly IValue<S> reference;
     public S value {
       get => reference.value;
       set {
-        if (reference.value.Equals(value))
+        if (reference.value != null && reference.value.Equals(value))
           return;
         if (reference is IMutableValue<S> mutable)
           mutable.value = value;
@@ -255,7 +255,7 @@ public static class Modifier {
       }
     }
 
-    S IValue<S>.value => reference.value;
+    // S IValue<S>.value => reference.value;
 
     public Func<T,S,T> op { get; init; }
 

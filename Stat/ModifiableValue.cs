@@ -2,12 +2,6 @@ using System.Text;
 using System.ComponentModel;
 
 namespace SeawispHunter.RolePlaying.Attributes;
-// SeawispHunter.Player.Attributes
-// SeawispHunter.RolePlaying.Attributes
-// SeawispHunter.Game.Attributes
-// SeawispHunter.Game.Stats
-// SeawispHunter.Game.Traits
-// SeawispHunter.Game.Traits
 
 /* IValue<T> notifies listeners when changed. That's it. */
 public interface IValue<T> : INotifyPropertyChanged {
@@ -26,8 +20,8 @@ public interface IMutableValue<T> : IValue<T> {
   new T value { get; set; }
 }
 
-/** This IModifiableValue<T> class is meant to capture the many stats in games like health,
-    strength, etc. that can be modified by different effects.
+/** This IModifiableValue<T> class is meant to capture values in games like health,
+    strength, etc. that can be modified by various, some distal, effects.
 
     ## Acknowledgments
 
@@ -68,14 +62,14 @@ public static class Value {
 }
 
 public static class ModifiableValue {
-  public static IModifiableValue<T> FromFunc<T>(Func<T> f, out Action callOnChange) where T : IEquatable<T> => new DerivedModifiableValue<T>(f, out callOnChange);
-  public static IModifiableValue<T> FromFunc<T>(Func<T> f) where T : IEquatable<T> => new DerivedModifiableValue<T>(f, out var callOnChange);
+  public static IModifiableValue<T> FromFunc<T>(Func<T> f, out Action callOnChange) => new DerivedModifiableValue<T>(f, out callOnChange);
+  public static IModifiableValue<T> FromFunc<T>(Func<T> f) => new DerivedModifiableValue<T>(f, out var callOnChange);
 
-  public static IModifiableValue<T> FromValue<T>(IValue<T> v) where T : IEquatable<T> => new DerivedModifiableValue<T>(v);
-  public static IModifiableValue<T> FromValue<T>(IValue<T> v, string name) where T : IEquatable<T> => new DerivedModifiableValue<T>(v) { };
+  public static IModifiableValue<T> FromValue<T>(IValue<T> v) => new DerivedModifiableValue<T>(v);
+  public static IModifiableValue<T> FromValue<T>(IValue<T> v, string name) => new DerivedModifiableValue<T>(v) { };
 
   /* This stat's base value is given by a Func<T> or another stat's value. */
-  internal class DerivedModifiableValue<T> : ModifiableValue<T>, IDisposable where T : IEquatable<T> {
+  internal class DerivedModifiableValue<T> : ModifiableValue<T>, IDisposable {
     public readonly Func<T> func;
     public override T baseValue => func();
     private Action onDispose = null;
@@ -108,7 +102,7 @@ public static class ModifiableValue {
 
 public static class ValueExtensions {
   /** Give ourselves a little projection. */
-  public static IValue<T> Select<S,T>(this IValue<S> v, Func<S,T> func) where T : IEquatable<T> {
+  public static IValue<T> Select<S,T>(this IValue<S> v, Func<S,T> func) {
     /** HACK: This has problems. This "derived" value is still settable. It gets
         updated whenever v is set, which seems a little "magic-y" and is unlike
         the ModifiableValue which notifies but doesn't update any state.
@@ -123,7 +117,7 @@ public static class ValueExtensions {
 
 }
 
-public class Value<T> : IMutableValue<T> where T : IEquatable<T> {
+public class Value<T> : IMutableValue<T> {
 
   private T _value;
   public virtual T value {
@@ -148,8 +142,7 @@ public class Value<T> : IMutableValue<T> where T : IEquatable<T> {
   }
 }
 
-public class ModifiableValue<T> : IModifiableValue<T> where T : IEquatable<T> {
-  // public string description { get; init; }
+public class ModifiableValue<T> : IModifiableValue<T> {
   protected IList<IModifier<T>> _modifiers;
   public IEnumerable<IModifier<T>> modifiers => _modifiers == null ? Enumerable.Empty<IModifier<T>>() : _modifiers;
 
@@ -170,7 +163,6 @@ public class ModifiableValue<T> : IModifiableValue<T> where T : IEquatable<T> {
         v = modifier.Modify(v);
       return v;
     }
-    // set => throw new InvalidOperationException("Cannot set `value` in ModifiableValue<T> class. Consider setting `baseValue` instead.");
   }
   public event PropertyChangedEventHandler PropertyChanged;
   private static PropertyChangedEventArgs modifiersEventArgs
