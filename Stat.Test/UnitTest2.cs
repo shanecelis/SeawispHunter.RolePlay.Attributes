@@ -1,11 +1,11 @@
 using Xunit;
 
-using SeawispHunter.Game.Stat;
-namespace SeawispHunter.Game.Stat.Test;
+using SeawispHunter.RolePlaying.Attributes;
+namespace SeawispHunter.RolePlaying.Attributes.Test;
 
 public class UnitTest2 {
-  Stat<float> health = new Stat<float> { name = "health", baseValue = 100f };
-  IStat<float> currentHealth;
+  ModifiableValue<float> health = new ModifiableValue<float> { baseValue = 100f };
+  IModifiableValue<float> currentHealth;
   IModifierValue<float> boost = Modifier.Multiply(1.10f, "10% boost");// { name = "10% boost", multiply = 1.10f };
   // IModifier<float> boost20 = new ModifierFloat { name = "20% boost", multiply = 1.20f };
   IModifierValue<float> boost20 = Modifier.Multiply(1.2f, "20% boost");
@@ -18,7 +18,7 @@ public class UnitTest2 {
 
   public UnitTest2() {
 
-    currentHealth = Stat.FromValue(health, "current health");
+    currentHealth = ModifiableValue.FromValue(health, "current health");
     // currentHealth.name = "current health";
     health.Add(boost);
     // currentHealth.Add(damage.Select(d => -d));
@@ -89,8 +89,8 @@ public class UnitTest2 {
 
   [Fact]
   public void TestStatToString() {
-    Assert.Equal("health 110", health.ToString());
-    Assert.Equal("current health 110", currentHealth.ToString());
+    Assert.Equal("110", health.ToString());
+    Assert.Equal("110", currentHealth.ToString());
   }
 
   [Fact]
@@ -109,9 +109,9 @@ public class UnitTest2 {
   public void TestDifferentAccumulationStyle() {
 
     // I can't do this with an int.
-    // var strength = new Stat<int> { name = "strength", baseValue = 10 };
-    var strength = new Stat<float> { name = "strength", baseValue = 10f };
-    var strengthPercentageGain = new Stat<float> { baseValue = 1f };
+    // var strength = new ModifiableValue<int> { name = "strength", baseValue = 10 };
+    var strength = new ModifiableValue<float> { baseValue = 10f };
+    var strengthPercentageGain = new ModifiableValue<float> { baseValue = 1f };
     strengthPercentageGain.Add(Modifier.Plus(0.10f));
     strength.Add(Modifier.Multiply(strengthPercentageGain));
     Assert.Equal(11f, strength.value);
@@ -120,9 +120,9 @@ public class UnitTest2 {
   [Fact]
   public void TestDifferentAccumulationStyleMixedTypes() {
 
-    var strength = new Stat<int> { name = "strength", baseValue = 10 };
-    // var strength = new Stat<float> { name = "strength", baseValue = 10f };
-    var strengthPercentageGain = new Stat<float> { baseValue = 1f };
+    var strength = new ModifiableValue<int> { baseValue = 10 };
+    // var strength = new ModifiableValue<float> { name = "strength", baseValue = 10f };
+    var strengthPercentageGain = new ModifiableValue<float> { baseValue = 1f };
     strengthPercentageGain.Add(Modifier.Plus(0.1f));
     strength.Add(Modifier.Multiply<int>(strengthPercentageGain));
     Assert.Equal(11, strength.value);
@@ -133,11 +133,11 @@ public class UnitTest2 {
       https://gamedevelopment.tutsplus.com/tutorials/using-the-composite-design-pattern-for-an-rpg-attributes-system--gamedev-243
   */
   public void TestSidhionAccumulationStyle() {
-    var stat = new Stat<float> { name = "strength", baseValue = 10f };
-    var rawBonusesPlus = new Stat<float>();
-    var rawBonusesMultiply = new Stat<float>() { baseValue = 1f };
-    var finalBonusesPlus = new Stat<float>();
-    var finalBonusesMultiply = new Stat<float>() { baseValue = 1f };
+    var stat = new ModifiableValue<float> { baseValue = 10f };
+    var rawBonusesPlus = new ModifiableValue<float>();
+    var rawBonusesMultiply = new ModifiableValue<float>() { baseValue = 1f };
+    var finalBonusesPlus = new ModifiableValue<float>();
+    var finalBonusesMultiply = new ModifiableValue<float>() { baseValue = 1f };
     stat.Add(Modifier.Plus(rawBonusesPlus));
     stat.Add(Modifier.Multiply(rawBonusesMultiply));
     stat.Add(Modifier.Plus(finalBonusesPlus));
@@ -153,7 +153,7 @@ public class UnitTest2 {
   public void TestSidhionStyle() {
     int notifications = 0;
     int notifications2 = 0;
-    var stat = new SidhionStat<float> { baseValue = 10f };
+    var stat = new SidhionModifiableValue<float> { baseValue = 10f };
     stat.PropertyChanged += (_, _) => notifications++;
     stat.rawBonusesPlus.PropertyChanged += (_, _) => notifications2++;
 

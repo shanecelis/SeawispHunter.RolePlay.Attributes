@@ -1,7 +1,7 @@
 using System.Text;
 using System.ComponentModel;
 
-namespace SeawispHunter.Game.Stat;
+namespace SeawispHunter.RolePlaying.Attributes;
 // SeawispHunter.Player.Attributes
 // SeawispHunter.RolePlaying.Attributes
 // SeawispHunter.Game.Attributes
@@ -26,7 +26,7 @@ public interface IMutableValue<T> : IValue<T> {
   new T value { get; set; }
 }
 
-/** This IStat<T> class is meant to capture the many stats in games like health,
+/** This IModifiableValue<T> class is meant to capture the many stats in games like health,
     strength, etc. that can be modified by different effects.
 
     ## Acknowledgments
@@ -39,8 +39,7 @@ public interface IMutableValue<T> : IValue<T> {
 
     XXX: Consider renaming to IDependantValue? IModifiableValue?
  */
-public interface IStat<T> : IValue<T>, INotifyPropertyChanged {
-  string name { get; }
+public interface IModifiableValue<T> : IValue<T>, INotifyPropertyChanged {
   T baseValue { get; set; }
   // T value { get; set; }
   IEnumerable<IModifier<T>> modifiers { get; }
@@ -55,7 +54,7 @@ public static class Value {
   public static IValue<T> FromFunc<T>(Func<T> f, out Action callOnChange) => new DerivedValue<T>(f, out callOnChange);
   public static IValue<T> FromFunc<T>(Func<T> f) => new DerivedValue<T>(f, out var callOnChange);
 
-  protected class DerivedValue<T> : IValue<T> {
+  internal class DerivedValue<T> : IValue<T> {
     private Func<T> func;
     public DerivedValue(Func<T> func, out Action callOnChange) {
       this.func = func;
@@ -68,29 +67,29 @@ public static class Value {
   }
 }
 
-public static class Stat {
-  public static IStat<T> FromFunc<T>(Func<T> f, out Action callOnChange) where T : IEquatable<T> => new DerivedStat<T>(f, out callOnChange);
-  public static IStat<T> FromFunc<T>(Func<T> f) where T : IEquatable<T> => new DerivedStat<T>(f, out var callOnChange);
+public static class ModifiableValue {
+  public static IModifiableValue<T> FromFunc<T>(Func<T> f, out Action callOnChange) where T : IEquatable<T> => new DerivedModifiableValue<T>(f, out callOnChange);
+  public static IModifiableValue<T> FromFunc<T>(Func<T> f) where T : IEquatable<T> => new DerivedModifiableValue<T>(f, out var callOnChange);
 
-  public static IStat<T> FromValue<T>(IValue<T> v) where T : IEquatable<T> => new DerivedStat<T>(v);
-  public static IStat<T> FromValue<T>(IValue<T> v, string name) where T : IEquatable<T> => new DerivedStat<T>(v) { name = name };
+  public static IModifiableValue<T> FromValue<T>(IValue<T> v) where T : IEquatable<T> => new DerivedModifiableValue<T>(v);
+  public static IModifiableValue<T> FromValue<T>(IValue<T> v, string name) where T : IEquatable<T> => new DerivedModifiableValue<T>(v) { };
 
   /* This stat's base value is given by a Func<T> or another stat's value. */
-  protected class DerivedStat<T> : Stat<T>, IDisposable where T : IEquatable<T> {
+  internal class DerivedModifiableValue<T> : ModifiableValue<T>, IDisposable where T : IEquatable<T> {
     public readonly Func<T> func;
     public override T baseValue => func();
     private Action onDispose = null;
 
-    public DerivedStat(Func<T> func, out Action callOnChange) {
+    public DerivedModifiableValue(Func<T> func, out Action callOnChange) {
       this.func = func;
       callOnChange = () => OnChange(nameof(baseValue));
     }
 
-    public DerivedStat(Func<T> func) {
+    public DerivedModifiableValue(Func<T> func) {
       this.func = func;
     }
 
-    public DerivedStat(IValue<T> value) : this(() => value.value) {
+    public DerivedModifiableValue(IValue<T> value) : this(() => value.value) {
       value.PropertyChanged -= BaseChanged;
       value.PropertyChanged += BaseChanged;
       onDispose = () => value.PropertyChanged -= BaseChanged;
@@ -112,7 +111,7 @@ public static class ValueExtensions {
   public static IValue<T> Select<S,T>(this IValue<S> v, Func<S,T> func) where T : IEquatable<T> {
     /** HACK: This has problems. This "derived" value is still settable. It gets
         updated whenever v is set, which seems a little "magic-y" and is unlike
-        the Stat which notifies but doesn't update any state.
+        the ModifiableValue which notifies but doesn't update any state.
       */
     // var w = new Value<T> { value = func(v.value) };
     // v.PropertyChanged += (_, _) => w.value = func(v.value);
@@ -149,8 +148,7 @@ public class Value<T> : IMutableValue<T> where T : IEquatable<T> {
   }
 }
 
-public class Stat<T> : IStat<T> where T : IEquatable<T> {
-  public string name { get; init; }
+public class ModifiableValue<T> : IModifiableValue<T> where T : IEquatable<T> {
   // public string description { get; init; }
   protected IList<IModifier<T>> _modifiers;
   public IEnumerable<IModifier<T>> modifiers => _modifiers == null ? Enumerable.Empty<IModifier<T>>() : _modifiers;
@@ -172,7 +170,7 @@ public class Stat<T> : IStat<T> where T : IEquatable<T> {
         v = modifier.Modify(v);
       return v;
     }
-    // set => throw new InvalidOperationException("Cannot set `value` in Stat<T> class. Consider setting `baseValue` instead.");
+    // set => throw new InvalidOperationException("Cannot set `value` in ModifiableValue<T> class. Consider setting `baseValue` instead.");
   }
   public event PropertyChangedEventHandler PropertyChanged;
   private static PropertyChangedEventArgs modifiersEventArgs
@@ -214,12 +212,11 @@ public class Stat<T> : IStat<T> where T : IEquatable<T> {
     }
   }
 
-  public override string ToString() => $"{name} {value}";
+  public override string ToString() => value.ToString();
   public string ToString(bool showModifiers) {
     if (! showModifiers)
       return ToString();
     var builder = new StringBuilder();
-    builder.Append(name);
     builder.Append(" \"base\" ");
     builder.Append(baseValue);
     builder.Append(' ');

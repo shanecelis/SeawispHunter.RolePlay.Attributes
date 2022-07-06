@@ -1,4 +1,4 @@
-namespace SeawispHunter.Game.Stat;
+namespace SeawispHunter.RolePlaying.Attributes;
 
 /** This stat class represents the style of stat altering presented by Daniel
     Sidhion in this article[1].
@@ -8,12 +8,12 @@ namespace SeawispHunter.Game.Stat;
 
     [1]: https://gamedevelopment.tutsplus.com/tutorials/using-the-composite-design-pattern-for-an-rpg-attributes-system--gamedev-243
 */
-public class SidhionStat<T> : Stat<T> where T : IEquatable<T> {
-  public IStat<T> rawBonusesPlus = new Stat<T>();
-  public IStat<T> rawBonusesMultiply = new Stat<T>() { baseValue = one };
-  public IStat<T> finalBonusesPlus = new Stat<T>();
-  public IStat<T> finalBonusesMultiply = new Stat<T>() { baseValue = one };
-  public SidhionStat() {
+public class SidhionModifiableValue<T> : ModifiableValue<T> where T : IEquatable<T> {
+  public IModifiableValue<T> rawBonusesPlus = new ModifiableValue<T>();
+  public IModifiableValue<T> rawBonusesMultiply = new ModifiableValue<T>() { baseValue = one };
+  public IModifiableValue<T> finalBonusesPlus = new ModifiableValue<T>();
+  public IModifiableValue<T> finalBonusesMultiply = new ModifiableValue<T>() { baseValue = one };
+  public SidhionModifiableValue() {
     this.Add(Modifier.Plus<T,T>(rawBonusesPlus));
     this.Add(Modifier.Multiply<T,T>(rawBonusesMultiply));
     this.Add(Modifier.Plus<T,T>(finalBonusesPlus));

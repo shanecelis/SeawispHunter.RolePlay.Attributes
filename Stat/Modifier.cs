@@ -1,9 +1,9 @@
 using System.Text;
 using System.ComponentModel;
 
-namespace SeawispHunter.Game.Stat;
+namespace SeawispHunter.RolePlaying.Attributes;
 
-/** A IModifier<T> modifies an IStat<T>'s value. */
+/** A IModifier<T> modifies an IModifiableValue<T>'s value. */
 public interface IModifier<T> : INotifyPropertyChanged {
   string name { get; }
   // S context { get; set; }
