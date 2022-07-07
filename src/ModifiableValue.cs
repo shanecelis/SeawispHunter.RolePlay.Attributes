@@ -1,7 +1,7 @@
 using System.Text;
 using System.ComponentModel;
 
-namespace SeawispHunter.RolePlaying.Attributes;
+namespace SeawispHunter.RolePlay.Attributes;
 
 /* IValue<T> notifies listeners when changed. That's it. */
 public interface IValue<T> : INotifyPropertyChanged {

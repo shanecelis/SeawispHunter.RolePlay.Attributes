@@ -1,7 +1,7 @@
 using System.Text;
 using System.ComponentModel;
 
-namespace SeawispHunter.RolePlaying.Attributes;
+namespace SeawispHunter.RolePlay.Attributes;
 
 /** A IModifier<T> modifies an IModifiableValue<T>'s value. */
 public interface IModifier<T> : INotifyPropertyChanged {

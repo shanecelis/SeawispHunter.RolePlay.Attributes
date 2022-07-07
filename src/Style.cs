@@ -1,4 +1,4 @@
-namespace SeawispHunter.RolePlaying.Attributes;
+namespace SeawispHunter.RolePlay.Attributes;
 
 /** This stat class represents the style of stat altering presented by Daniel
     Sidhion in this article[1].

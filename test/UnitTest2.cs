@@ -1,7 +1,7 @@
 using Xunit;
 
-using SeawispHunter.RolePlaying.Attributes;
-namespace SeawispHunter.RolePlaying.Attributes.Test;
+using SeawispHunter.RolePlay.Attributes;
+namespace SeawispHunter.RolePlay.Attributes.Test;
 
 public class UnitTest2 {
   ModifiableValue<float> health = new ModifiableValue<float> { baseValue = 100f };
