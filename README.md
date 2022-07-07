@@ -33,10 +33,8 @@ from its `baseValue`.
 public interface IModifiableValue<T> {
   T baseValue { get; set; }
   T value { get; }
-  IEnumerable<IModifier<T>> modifiers { get; }
-  void Add(IModifier<T> modifier);
-  void Remove(IModifier<T> modifier);
-  void Clear();
+  /** The list implementation sets up property change events automatically. */
+  IList<IModifier<T>> modifiers { get; }
   event PropertyChangedEventHandler PropertyChanged;
 }
 ```
@@ -47,7 +45,6 @@ A modifier can accept a value and change it arbitrarily.
 
 ``` c#
 public interface IModifier<T> {
-  string name { get; }
   T Modify(T given);
   event PropertyChangedEventHandler PropertyChanged;
 }
@@ -71,8 +68,8 @@ public static class Modifier {
 ## Change Propogation
 
 These classes use the `INotifyPropertyChanged` to propogate change events, so
-any modifier that's changed or added will notify its stat which will notify any
-of its listeners. So there's no need to poll for changes to a stat.
+any modifier that's changed or added will notify its attribute which will notify any
+of its listeners. So there's no need to poll for changes to an attribute.
 
 ## Abridged API
 

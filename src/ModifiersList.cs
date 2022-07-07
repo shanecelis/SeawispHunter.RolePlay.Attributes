@@ -4,16 +4,20 @@ namespace SeawispHunter.RolePlay.Attributes;
 
 public class ModifiersList<T> : IList<IModifier<T>> {
   private readonly ModifiableValue<T> parent;
-  private readonly IList<IModifier<T>> modifiers = new List<IModifier<T>>();
+  private readonly List<IModifier<T>> modifiers = new List<IModifier<T>>();
 
   public ModifiersList(ModifiableValue<T> parent) => this.parent = parent;
 
-  public IEnumerator<IModifier<T>> GetEnumerator() {
+  IEnumerator<IModifier<T>> IEnumerable<IModifier<T>>.GetEnumerator() {
     return modifiers.GetEnumerator();
   }
 
   IEnumerator IEnumerable.GetEnumerator() {
     return ((IEnumerable)modifiers).GetEnumerator();
+  }
+
+  public List<IModifier<T>>.Enumerator GetEnumerator() {
+    return modifiers.GetEnumerator();
   }
 
   public void Add(IModifier<T> modifier) {
@@ -49,7 +53,7 @@ public class ModifiersList<T> : IList<IModifier<T>> {
 
   public int Count => modifiers.Count;
 
-  public bool IsReadOnly => modifiers.IsReadOnly;
+  public bool IsReadOnly => ((IList<IModifier<T>>)modifiers).IsReadOnly;
 
   public int IndexOf(IModifier<T> modifier) {
     return modifiers.IndexOf(modifier);
