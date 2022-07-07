@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Stat\Stat.csproj" />
+    <ProjectReference Include="..\src\Attributes.csproj" />
   </ItemGroup>
 
 </Project>
