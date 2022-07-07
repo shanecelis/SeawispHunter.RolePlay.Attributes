@@ -1,5 +1,6 @@
 using System.Text;
 using System.ComponentModel;
+using System.Collections;
 
 namespace SeawispHunter.RolePlay.Attributes;
 
@@ -140,7 +141,7 @@ public class Value<T> : IMutableValue<T> {
 }
 
 public class ModifiableValue<T> : IModifiableValue<T> {
-  protected ModifiersList<T> _modifiers;
+  protected ModifiersList _modifiers;
   public IList<IModifier<T>> modifiers => _modifiers;
   // public IEnumerable<IModifier<T>> modifiers => _modifiers == null ? Enumerable.Empty<IModifier<T>>() : _modifiers;
 
@@ -165,7 +166,7 @@ public class ModifiableValue<T> : IModifiableValue<T> {
   public event PropertyChangedEventHandler PropertyChanged;
   private static PropertyChangedEventArgs modifiersEventArgs
     = new PropertyChangedEventArgs(nameof(modifiers));
-  public ModifiableValue() => _modifiers = new ModifiersList<T>(this);
+  public ModifiableValue() => _modifiers = new ModifiersList(this);
 
   protected void Chain(object sender, PropertyChangedEventArgs args) => OnChange(nameof(value));
 
@@ -218,6 +219,83 @@ public class ModifiableValue<T> : IModifiableValue<T> {
     builder.Append("-> ");
     builder.Append(value);
     return builder.ToString();
+  }
+
+  protected class ModifiersList : IList<IModifier<T>> {
+    private readonly ModifiableValue<T> parent;
+    private readonly List<IModifier<T>> modifiers = new List<IModifier<T>>();
+
+    public ModifiersList(ModifiableValue<T> parent) => this.parent = parent;
+
+    IEnumerator<IModifier<T>> IEnumerable<IModifier<T>>.GetEnumerator() {
+      return modifiers.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() {
+      return ((IEnumerable)modifiers).GetEnumerator();
+    }
+
+    public List<IModifier<T>>.Enumerator GetEnumerator() {
+      return modifiers.GetEnumerator();
+    }
+
+    public void Add(IModifier<T> modifier) {
+
+      modifier.PropertyChanged -= parent.ModifiersChanged;
+      modifier.PropertyChanged += parent.ModifiersChanged;
+      modifiers.Add(modifier);
+      // _modifiers.Add(modifier);
+      parent.OnChange(nameof(modifiers));
+    }
+
+    public void Clear() {
+      foreach (var modifier in modifiers)
+        modifier.PropertyChanged -= parent.ModifiersChanged;
+      modifiers.Clear();
+      parent.OnChange(nameof(modifiers));
+    }
+
+    public bool Contains(IModifier<T> modifier) {
+      return modifiers.Contains(modifier);
+    }
+
+    public void CopyTo(IModifier<T>[] array, int arrayIndex) {
+      modifiers.CopyTo(array, arrayIndex);
+    }
+
+    public bool Remove(IModifier<T> modifier) {
+      modifier.PropertyChanged -= parent.ModifiersChanged;
+      var result = modifiers.Remove(modifier);
+      parent.OnChange(nameof(modifiers));
+      return result;
+    }
+
+    public int Count => modifiers.Count;
+
+    public bool IsReadOnly => ((IList<IModifier<T>>)modifiers).IsReadOnly;
+
+    public int IndexOf(IModifier<T> modifier) {
+      return modifiers.IndexOf(modifier);
+    }
+
+    public void Insert(int index, IModifier<T> modifier) {
+      modifier.PropertyChanged -= parent.ModifiersChanged;
+      modifier.PropertyChanged += parent.ModifiersChanged;
+      modifiers.Insert(index, modifier);
+      parent.OnChange(nameof(modifiers));
+    }
+
+    public void RemoveAt(int index) {
+      var modifier = modifiers[index];
+      modifier.PropertyChanged -= parent.ModifiersChanged;
+      modifiers.RemoveAt(index);
+      parent.OnChange(nameof(modifiers));
+    }
+
+    public IModifier<T> this[int index] {
+      get => modifiers[index];
+      set => modifiers[index] = value;
+    }
   }
 }
 
