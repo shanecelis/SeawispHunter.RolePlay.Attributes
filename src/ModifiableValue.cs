@@ -36,11 +36,8 @@ public interface IMutableValue<T> : IValue<T> {
 public interface IModifiableValue<T> : IValue<T>, INotifyPropertyChanged {
   T baseValue { get; set; }
   // T value { get; set; }
-  IEnumerable<IModifier<T>> modifiers { get; }
-  void Add(IModifier<T> modifier);
-  void Remove(IModifier<T> modifier);
-  /** Remove all modifiers. */
-  void Clear();
+  /** The list implementation will handle chaining property change events. */
+  IList<IModifier<T>> modifiers { get; }
   // event PropertyChangedEventHandler PropertyChanged;
 }
 
@@ -143,8 +140,9 @@ public class Value<T> : IMutableValue<T> {
 }
 
 public class ModifiableValue<T> : IModifiableValue<T> {
-  protected IList<IModifier<T>> _modifiers;
-  public IEnumerable<IModifier<T>> modifiers => _modifiers == null ? Enumerable.Empty<IModifier<T>>() : _modifiers;
+  protected ModifiersList<T> _modifiers;
+  public IList<IModifier<T>> modifiers => _modifiers;
+  // public IEnumerable<IModifier<T>> modifiers => _modifiers == null ? Enumerable.Empty<IModifier<T>>() : _modifiers;
 
   protected T _baseValue;
   public virtual T baseValue {
@@ -167,42 +165,43 @@ public class ModifiableValue<T> : IModifiableValue<T> {
   public event PropertyChangedEventHandler PropertyChanged;
   private static PropertyChangedEventArgs modifiersEventArgs
     = new PropertyChangedEventArgs(nameof(modifiers));
+  public ModifiableValue() => _modifiers = new ModifiersList<T>(this);
 
   protected void Chain(object sender, PropertyChangedEventArgs args) => OnChange(nameof(value));
 
-  protected void OnChange(string name) {
+  internal void OnChange(string name) {
     PropertyChanged?.Invoke(this, name == nameof(modifiers)
                             ? modifiersEventArgs
                             : new PropertyChangedEventArgs(name));
   }
 
-  protected void ModifiersChanged(object sender, PropertyChangedEventArgs e) {
+  internal void ModifiersChanged(object sender, PropertyChangedEventArgs e) {
     PropertyChanged?.Invoke(this, modifiersEventArgs);
   }
 
-  public void Add(IModifier<T> modifier) {
-    if (_modifiers == null)
-      _modifiers = new List<IModifier<T>>();
-    modifier.PropertyChanged -= ModifiersChanged;
-    modifier.PropertyChanged += ModifiersChanged;
-    _modifiers.Add(modifier);
-    OnChange(nameof(modifiers));
-  }
+  // public void Add(IModifier<T> modifier) {
+  //   if (_modifiers == null)
+  //     _modifiers = new List<IModifier<T>>();
+  //   modifier.PropertyChanged -= ModifiersChanged;
+  //   modifier.PropertyChanged += ModifiersChanged;
+  //   _modifiers.Add(modifier);
+  //   OnChange(nameof(modifiers));
+  // }
 
-  public void Remove(IModifier<T> modifier) {
-    if (_modifiers == null)
-      return;
-    modifier.PropertyChanged -= ModifiersChanged;
-    _modifiers.Remove(modifier);
-    OnChange(nameof(modifiers));
-  }
+  // public void Remove(IModifier<T> modifier) {
+  //   if (_modifiers == null)
+  //     return;
+  //   modifier.PropertyChanged -= ModifiersChanged;
+  //   _modifiers.Remove(modifier);
+  //   OnChange(nameof(modifiers));
+  // }
 
-  public void Clear() {
-    if (_modifiers != null) {
-      _modifiers.Clear();
-      OnChange(nameof(modifiers));
-    }
-  }
+  // public void Clear() {
+  //   if (_modifiers != null) {
+  //     _modifiers.Clear();
+  //     OnChange(nameof(modifiers));
+  //   }
+  // }
 
   public override string ToString() => value.ToString();
   public string ToString(bool showModifiers) {

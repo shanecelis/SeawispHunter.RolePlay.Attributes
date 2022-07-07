@@ -1,35 +1,36 @@
-# SeawispHunter.Game.Stat
+# SeawispHunter.RolePlay.Attributes
 
-There comes a time when every gamedev must create their own stat class, that is
-a class which captures game "statistics" for lack of a better word like health,
-attack, defense, etc. This one is mine.
+There comes a time when every gamedev must create their own attribute class,
+that is a class which captures a game "stat", or "statistic" for lack of a
+better word, like health, attack, defense, etc. This one is mine.
 
-These stats are often affected by a multitude of transient
-things, e.g, a sword that bestows an attack advantage; a shield that raises
-one's defense; a ring that regenerates health.
+These attributes and their derivatives are often affected by a multitude of
+transient things, e.g, a sword that bestows an attack advantage; a shield that
+raises one's defense; a ring that regenerates health.
 
 ## Requirements
 
-* A stat shall be altered non-destructively. 
-* Because so many things may alter a stat, it shall notify us when changed.
+* An attribute shall be altered non-destructively. 
+* Because so many things may alter an attribute, it shall notify us when changed.
 
 ## Example
 
 ``` c#
-var health = new Stat<float> { name = "health", baseValue = 100f };
-health.Add(Modifier.Multiply(1.10f, "10% boost"));
+var health = new ModifiableValue<float> { name = "health", baseValue = 100f };
+health.Add(Modifier.Multiply(1.10f));
 Console.WriteLine($"Health is {health.value}."); // Prints: Health is 110.
 health.Add(Modifier.Plus(5f, "+5 health"));
 Console.WriteLine($"Health is {health.value}."); // Prints: Health is 115.
 ```
 
-## Stat
+## Attribute
 
-At its root, a stat has a `baseValue` that can be altered by modifiers.
+At its root, an attribute has a `baseValue`. With no modifiers present, its
+`baseValue` equals its `value`; its `value` can be altered by modifiers starting
+from its `baseValue`.
 
 ``` c#
-public interface IStat<T> {
-  string name { get; }
+public interface IModifiableValue<T> {
   T baseValue { get; set; }
   T value { get; }
   IEnumerable<IModifier<T>> modifiers { get; }
@@ -61,9 +62,9 @@ public interface IModifierValue<T> : IModifier<T> {
 }
 
 public static class Modifier {
-  public static IModifierValue<T> Plus(T value, string name = null);
-  public static IModifierValue<T> Multiply(T value, string name = null);
-  public static IModifierValue<T> Substitute(T value, string name = null);
+  public static IModifierValue<T> Plus(T value);
+  public static IModifierValue<T> Multiply(T value);
+  public static IModifierValue<T> Substitute(T value);
 }
 ```
 
@@ -77,4 +78,5 @@ of its listeners. So there's no need to poll for changes to a stat.
 
 The API shown above is abridged to make its most salient points easy to
 understand. The actual code includes some abstractions like `IValue<T>` that is
-used to make a stat reuseable as a modifier for instance.
+used to make an attribute reuseable as a modifier for instance.
+

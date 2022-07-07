@@ -235,9 +235,6 @@ public static class Modifier {
       let's make that easier to express. */
   internal class ModifierValue<T> : ModifierValue<T,T>, IModifierValue<T> { }
 
-  internal class ModifierReference<T> : ModifierReference<T,T>, IModifierValue<T> {
-    public ModifierReference(IValue<T> value) : base(value) { }
-  }
   internal class ModifierReference<S,T> : IModifierValue<S,T>, IDisposable {
     public string name { get; init; }
     public char symbol { get; init; } = '?';
@@ -296,6 +293,9 @@ public static class Modifier {
       builder.Append(value);
       return builder.ToString();
     }
+  }
 
+  internal class ModifierReference<T> : ModifierReference<T,T>, IModifierValue<T> {
+    public ModifierReference(IValue<T> value) : base(value) { }
   }
 }

@@ -13,16 +13,12 @@ public class SidhionStat<T> : ModifiableValue<T> {
   public IModifiableValue<T> rawBonusesMultiply = new ModifiableValue<T>() { baseValue = one };
   public IModifiableValue<T> finalBonusesPlus = new ModifiableValue<T>();
   public IModifiableValue<T> finalBonusesMultiply = new ModifiableValue<T>() { baseValue = one };
+
   public SidhionStat() {
-    this.Add(Modifier.Plus<T,T>(rawBonusesPlus));
-    this.Add(Modifier.Multiply<T,T>(rawBonusesMultiply));
-    this.Add(Modifier.Plus<T,T>(finalBonusesPlus));
-    this.Add(Modifier.Multiply<T,T>(finalBonusesMultiply));
-    // We don't have to do this.
-    // rawBonusesPlus.PropertyChanged += ModifiersChanged;
-    // rawBonusesMultiply.PropertyChanged += ModifiersChanged;
-    // finalBonusesPlus.PropertyChanged += ModifiersChanged;
-    // finalBonusesMultiply.PropertyChanged += ModifiersChanged;
+    modifiers.Add(Modifier.Plus<T,T>(rawBonusesPlus));
+    modifiers.Add(Modifier.Multiply<T,T>(rawBonusesMultiply));
+    modifiers.Add(Modifier.Plus<T,T>(finalBonusesPlus));
+    modifiers.Add(Modifier.Multiply<T,T>(finalBonusesMultiply));
   }
 
   private static T one {
@@ -33,7 +29,7 @@ public class SidhionStat<T> : ModifiableValue<T> {
         case TypeCode.Int32:
           return (T) (object) 1;
         default:
-          throw new NotImplementedException($"No one for type {typeof(T)}.");
+          throw new NotImplementedException($"No `one` case provided for type {typeof(T)}. Update `one` property.");
       }
     }
   }
