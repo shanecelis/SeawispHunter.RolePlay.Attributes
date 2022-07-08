@@ -77,3 +77,14 @@ The API shown above is abridged to make its most salient points easy to
 understand. The actual code includes some abstractions like `IValue<T>` that is
 used to make an attribute reuseable as a modifier for instance.
 
+## License
+
+This project is released under the MIT license.
+
+## Acknowledgments
+
+This project was informed by the following sources:
+
+- http://howtomakeanrpg.com/a/how-to-make-an-rpg-stats.html
+- https://jkpenner.wordpress.com/2015/06/09/rpgsystems-stat-system-02-modifiers/
+- https://gamedevelopment.tutsplus.com/tutorials/using-the-composite-design-pattern-for-an-rpg-attributes-system--gamedev-243
