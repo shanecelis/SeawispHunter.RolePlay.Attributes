@@ -71,6 +71,18 @@ public class ModifiableValueTest {
   }
 
   [Fact]
+  public void TestDisabled() {
+    Assert.Equal(100f, health.baseValue);
+    Assert.Equal(110f, health.value);
+    boost.enabled = false;
+    Assert.Equal(100f, health.value);
+    Assert.Equal(0, healthNotifications);
+    Assert.Equal(0, currentHealthNotifications);
+    Assert.Equal(0, damageNotifications);
+    Assert.Equal(0, boostNotifications);
+  }
+
+  [Fact]
   public void TestNotification() {
     Assert.Equal(100f, health.baseValue);
     Assert.Equal(110f, health.value);

@@ -17,9 +17,9 @@ raises one's defense; a ring that regenerates health.
 
 ``` c#
 var health = new ModifiableValue<float> { name = "health", baseValue = 100f };
-health.Add(Modifier.Multiply(1.10f));
+health.modifiers.Add(Modifier.Multiply(1.10f));
 Console.WriteLine($"Health is {health.value}."); // Prints: Health is 110.
-health.Add(Modifier.Plus(5f, "+5 health"));
+health.modifiers.Add(Modifier.Plus(5f, "+5 health"));
 Console.WriteLine($"Health is {health.value}."); // Prints: Health is 115.
 ```
 
@@ -45,6 +45,7 @@ A modifier can accept a value and change it arbitrarily.
 
 ``` c#
 public interface IModifier<T> {
+  bool enabled { get; set; }
   T Modify(T given);
   event PropertyChangedEventHandler PropertyChanged;
 }
@@ -74,7 +75,7 @@ of its listeners. So there's no need to poll for changes to an attribute.
 ## Abridged API
 
 The API shown above is abridged to make its most salient points easy to
-understand. The actual code includes some abstractions like `IValue<T>` that is
+understand. The actual code includes some abstractions like `IValue<T>` which is
 used to make an attribute reuseable as a modifier for instance.
 
 ## License

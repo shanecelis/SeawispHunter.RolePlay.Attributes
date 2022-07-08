@@ -17,6 +17,7 @@ namespace SeawispHunter.RolePlay.Attributes;
 public interface IModifier<T> : INotifyPropertyChanged {
   // string name { get; }
   // S context { get; set; }
+  bool enabled { get; set; }
   T Modify(T given);
   // event PropertyChangedEventHandler PropertyChanged;
 }
@@ -192,6 +193,7 @@ public static class Modifier {
   internal class ModifierValue<S,T> : IModifierValue<S,T> {
     public string name { get; init; }
     public char symbol { get; init; } = '?';
+    public bool enabled { get; set; } = true;
 
     private S _value;
     public S value {
@@ -248,6 +250,7 @@ public static class Modifier {
   internal class ModifierReference<S,T> : IModifierValue<S,T>, IDisposable {
     public string name { get; init; }
     public char symbol { get; init; } = '?';
+    public bool enabled { get; set; } = true;
     private readonly IValue<S> reference;
     public S value {
       get => reference.value;

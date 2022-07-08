@@ -169,7 +169,8 @@ public class ModifiableValue<T> : IModifiableValue<T> {
     get {
       T v = baseValue;
       foreach (var modifier in modifiers)
-        v = modifier.Modify(v);
+        if (modifier.enabled)
+          v = modifier.Modify(v);
       return v;
     }
   }
