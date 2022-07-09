@@ -34,7 +34,7 @@ public interface IValuedModifier<S,T> : IModifier<T>, IMutableValue<S> {
 
 /** Most modifiers will be of the same type as the stat they're modifying, so
     let's make that easier to express. */
-public interface IValuedModifier<T> : IValuedModifier<T,T> { }
+// public interface IValuedModifier<T> : IValuedModifier<T,T> { }
 
 public static class ModifiableValueExtensions {
 
@@ -53,15 +53,9 @@ public static class ModifiableValueExtensions {
 public static class Modifier {
 
 #if NET6_0_OR_GREATER
-
-  public static IValuedModifier<T> Plus<T>(T v, string name = null)
-    where T : INumber<T>
-    => new ValuedModifier<T> { value = v, op = (given, v) => given + v, name = name, symbol = '+' };
-
-  public static IValuedModifier<T> Multiply<T>(T v, string name = null)
-    where T : INumber<T>
-    => new ValuedModifier<T> { value = v, op = (given, v) => given * v, name = name, symbol = '*' };
-
+  /* Four variations per operator because we want to cover T and IValue<T>, and
+     we want to cover cases where the type T for the modifier and S for the
+     value are distinct. */
   public static IValuedModifier<S,T> Plus<S,T>(S v, string name = null)
     where T : INumber<T>
     where S : INumber<S>
@@ -69,18 +63,13 @@ public static class Modifier {
   //                                                                    (T) ((S) given + v)
   //                                                                    ^ How to write typecasts in INumber.
 
-  public static IValuedModifier<T> Plus<T>(IValue<T> v, string name = null)
-    where T : INumber<T>
-    => new ValuedModifierReference<T>(v) { op = (given, v) => given + v, name = name, symbol = '+' };
-
-  public static IValuedModifier<T> Multiply<T>(IValue<T> v, string name = null)
-    where T : INumber<T>
-    => new ValuedModifierReference<T>(v) { op = (given, v) => given * v, name = name, symbol = '*' };
-
   public static IValuedModifier<S,T> Plus<S,T>(IValue<S> v, string name = null)
     where T : INumber<T>
     where S : INumber<S>
     => new ValuedModifierReference<S,T>(v) { op = (given, v) => T.Create(S.Create(given) + v), name = name, symbol = '+' };
+
+  public static IValuedModifier<T,T> Plus<T>(T v, string name = null) where T : INumber<T> => Plus<T,T>(v, name);
+  public static IValuedModifier<T,T> Plus<T>(IValue<T> v, string name = null) where T : INumber<T> => Plus<T,T>(v, name);
 
   public static IValuedModifier<S,T> Multiply<S,T>(S v, string name = null)
     where T : INumber<T>
@@ -92,22 +81,38 @@ public static class Modifier {
     where S : INumber<S>
     => new ValuedModifierReference<S,T>(v) { op = (given, v) => T.Create(S.Create(given) * v), name = name, symbol = '*' };
 
+  public static IValuedModifier<T,T> Multiply<T>(T v, string name = null) where T : INumber<T> => Multiply<T,T>(v, name);
+  public static IValuedModifier<T,T> Multiply<T>(IValue<T> v, string name = null) where T : INumber<T> => Multiply<T,T>(v, name);
+
+  public static IValuedModifier<S,T> Substitute<S,T>(S v, string name = null)
+    where T : INumber<T>
+    where S : INumber<S>
+    => new ValuedModifier<S,T> { value = v, op = (given, v) => T.Create(v), name = name, symbol = '=' };
+
+  public static IValuedModifier<S,T> Substitute<S,T>(IValue<S> v, string name = null)
+    where T : INumber<T>
+    where S : INumber<S>
+    => new ValuedModifierReference<S,T>(v) { op = (given, v) => T.Create(v), name = name, symbol = '=' };
+
+  public static IValuedModifier<T,T> Substitute<T>(T v, string name = null) where T : INumber<T> => Substitute<T,T>(v, name);
+  public static IValuedModifier<T,T> Substitute<T>(IValue<T> v, string name = null) where T : INumber<T> => Substitute<T,T>(v, name);
+
 #else
-  public static IValuedModifier<float> Plus(float v, string name = null) => new ValuedModifier<float> { value = v, op = (given, v) => given + v, name = name, symbol = '+' };
-  public static IValuedModifier<float> Multiply(float v, string name = null) => new ValuedModifier<float> { value = v, op = (given, v) => given * v, name = name, symbol = '*' };
-  public static IValuedModifier<float> Substitute(float v, string name = null) => new ValuedModifier<float> { value = v, op = (given, v) => v, name = name, symbol = '=' };
+  public static IValuedModifier<float,float> Plus(float v, string name = null) => new ValuedModifier<float,float> { value = v, op = (given, v) => given + v, name = name, symbol = '+' };
+  public static IValuedModifier<float,float> Multiply(float v, string name = null) => new ValuedModifier<float,float> { value = v, op = (given, v) => given * v, name = name, symbol = '*' };
+  public static IValuedModifier<float,float> Substitute(float v, string name = null) => new ValuedModifier<float,float> { value = v, op = (given, v) => v, name = name, symbol = '=' };
 
-  public static IValuedModifier<float> Plus(IValue<float> v, string name = null) => new ValuedModifierReference<float>(v) { op = (given, v) => given + v, name = name, symbol = '+' };
-  public static IValuedModifier<float> Multiply(IValue<float> v, string name = null) => new ValuedModifierReference<float>(v) { op = (given, v) => given * v, name = name, symbol = '*' };
-  public static IValuedModifier<float> Substitute(IValue<float> v, string name = null) => new ValuedModifierReference<float>(v) { op = (given, v) => v, name = name, symbol = '=' };
+  public static IValuedModifier<float,float> Plus(IValue<float> v, string name = null) => new ValuedModifierReference<float,float>(v) { op = (given, v) => given + v, name = name, symbol = '+' };
+  public static IValuedModifier<float,float> Multiply(IValue<float> v, string name = null) => new ValuedModifierReference<float,float>(v) { op = (given, v) => given * v, name = name, symbol = '*' };
+  public static IValuedModifier<float,float> Substitute(IValue<float> v, string name = null) => new ValuedModifierReference<float,float>(v) { op = (given, v) => v, name = name, symbol = '=' };
 
-  public static IValuedModifier<int> Plus(int v, string name = null) => new ValuedModifier<int> { value = v, op = (given, v) => given + v, name = name, symbol = '+' };
-  public static IValuedModifier<int> Multiply(int v, string name = null) => new ValuedModifier<int> { value = v, op = (given, v) => given * v, name = name, symbol = '*' };
-  public static IValuedModifier<int> Substitute(int v, string name = null) => new ValuedModifier<int> { value = v, op = (given, v) => v, name = name, symbol = '=' };
+  public static IValuedModifier<int,int> Plus(int v, string name = null) => new ValuedModifier<int,int> { value = v, op = (given, v) => given + v, name = name, symbol = '+' };
+  public static IValuedModifier<int,int> Multiply(int v, string name = null) => new ValuedModifier<int,int> { value = v, op = (given, v) => given * v, name = name, symbol = '*' };
+  public static IValuedModifier<int,int> Substitute(int v, string name = null) => new ValuedModifier<int,int> { value = v, op = (given, v) => v, name = name, symbol = '=' };
 
-  public static IValuedModifier<int> Plus(IValue<int> v, string name = null) => new ValuedModifierReference<int>(v) { op = (given, v) => given + v, name = name, symbol = '+' };
-  public static IValuedModifier<int> Multiply(IValue<int> v, string name = null) => new ValuedModifierReference<int>(v) { op = (given, v) => given * v, name = name, symbol = '*' };
-  public static IValuedModifier<int> Substitute(IValue<int> v, string name = null) => new ValuedModifierReference<int>(v) { op = (given, v) => v, name = name, symbol = '=' };
+  public static IValuedModifier<int,int> Plus(IValue<int> v, string name = null) => new ValuedModifierReference<int,int>(v) { op = (given, v) => given + v, name = name, symbol = '+' };
+  public static IValuedModifier<int,int> Multiply(IValue<int> v, string name = null) => new ValuedModifierReference<int,int>(v) { op = (given, v) => given * v, name = name, symbol = '*' };
+  public static IValuedModifier<int,int> Substitute(IValue<int> v, string name = null) => new ValuedModifierReference<int,int>(v) { op = (given, v) => v, name = name, symbol = '=' };
 
   // This looks way more complicated, does weird runtime stuff. Prefer above.
   public static IValuedModifier<S, T> Plus<S,T>(this IModifiableValue<T> modValue, S v, string name = null) {
@@ -259,8 +264,6 @@ public static class Modifier {
   // public static IValuedModifier<float> Substitute(float v) => new ValuedModifier<float, float> { value = v, op = (given, v) => v };
   // public static IModifier<float> Plus(IValue<float> v) => new ValuedModifier<float, float> { value = v, op => (given, v) => given + v };
 
-
-
   internal class ValuedModifierReference<S,T> : IValuedModifier<S,T>, IDisposable {
     public string name { get; init; }
     public char symbol { get; init; } = '?';
@@ -322,9 +325,9 @@ public static class Modifier {
     }
   }
 
-  internal class ValuedModifierReference<T> : ValuedModifierReference<T,T>, IValuedModifier<T> {
-    public ValuedModifierReference(IValue<T> value) : base(value) { }
-  }
+  // internal class ValuedModifierReference<T> : ValuedModifierReference<T,T>, IValuedModifier<T> {
+  //   public ValuedModifierReference(IValue<T> value) : base(value) { }
+  // }
 }
 
 public class ValuedModifier<S,T> : IValuedModifier<S,T> {
@@ -382,6 +385,6 @@ public class ValuedModifier<S,T> : IValuedModifier<S,T> {
 
 /** Most modifiers will be of the same type as the stat they're modifying, so
     let's make that easier to express. */
-internal class ValuedModifier<T> : ValuedModifier<T,T>, IValuedModifier<T> { }
+// internal class ValuedModifier<T> : ValuedModifier<T,T>, IValuedModifier<T> { }
 
 }
