@@ -27,19 +27,19 @@ public interface IModifier<T> : INotifyPropertyChanged {
   // event PropertyChangedEventHandler PropertyChanged;
 }
 
-public interface IModifierValue<S,T> : IModifier<T>, IMutableValue<S> {
+public interface IValuedModifier<S,T> : IModifier<T>, IMutableValue<S> {
   /* We want this to be settable. */
   // new S value { get; set; }
 }
 
 /** Most modifiers will be of the same type as the stat they're modifying, so
     let's make that easier to express. */
-public interface IModifierValue<T> : IModifierValue<T,T> { }
+public interface IValuedModifier<T> : IValuedModifier<T,T> { }
 
 public static class ModifiableValueExtensions {
 
 #if NET6_0_OR_GREATER
-  public static IModifierValue<S,T> Plus<S,T>(this IModifiableValue<T> mod, S v, string name = null)
+  public static IValuedModifier<S,T> Plus<S,T>(this IModifiableValue<T> mod, S v, string name = null)
     where T : INumber<T>
     where S : INumber<S> {
     var modifier = Modifier.Plus<S,T>(v, name);
@@ -54,73 +54,73 @@ public static class Modifier {
 
 #if NET6_0_OR_GREATER
 
-  public static IModifierValue<T> Plus<T>(T v, string name = null)
+  public static IValuedModifier<T> Plus<T>(T v, string name = null)
     where T : INumber<T>
-    => new ModifierValue<T> { value = v, op = (given, v) => given + v, name = name, symbol = '+' };
+    => new ValuedModifier<T> { value = v, op = (given, v) => given + v, name = name, symbol = '+' };
 
-  public static IModifierValue<T> Multiply<T>(T v, string name = null)
+  public static IValuedModifier<T> Multiply<T>(T v, string name = null)
     where T : INumber<T>
-    => new ModifierValue<T> { value = v, op = (given, v) => given * v, name = name, symbol = '*' };
+    => new ValuedModifier<T> { value = v, op = (given, v) => given * v, name = name, symbol = '*' };
 
-  public static IModifierValue<S,T> Plus<S,T>(S v, string name = null)
+  public static IValuedModifier<S,T> Plus<S,T>(S v, string name = null)
     where T : INumber<T>
     where S : INumber<S>
-    => new ModifierValue<S,T> { value = v, op = (given, v) => T.Create(S.Create(given) + v), name = name, symbol = '+' };
+    => new ValuedModifier<S,T> { value = v, op = (given, v) => T.Create(S.Create(given) + v), name = name, symbol = '+' };
   //                                                                    (T) ((S) given + v)
   //                                                                    ^ How to write typecasts in INumber.
 
-  public static IModifierValue<T> Plus<T>(IValue<T> v, string name = null)
+  public static IValuedModifier<T> Plus<T>(IValue<T> v, string name = null)
     where T : INumber<T>
-    => new ModifierReference<T>(v) { op = (given, v) => given + v, name = name, symbol = '+' };
+    => new ValuedModifierReference<T>(v) { op = (given, v) => given + v, name = name, symbol = '+' };
 
-  public static IModifierValue<T> Multiply<T>(IValue<T> v, string name = null)
+  public static IValuedModifier<T> Multiply<T>(IValue<T> v, string name = null)
     where T : INumber<T>
-    => new ModifierReference<T>(v) { op = (given, v) => given * v, name = name, symbol = '*' };
+    => new ValuedModifierReference<T>(v) { op = (given, v) => given * v, name = name, symbol = '*' };
 
-  public static IModifierValue<S,T> Plus<S,T>(IValue<S> v, string name = null)
+  public static IValuedModifier<S,T> Plus<S,T>(IValue<S> v, string name = null)
     where T : INumber<T>
     where S : INumber<S>
-    => new ModifierReference<S,T>(v) { op = (given, v) => T.Create(S.Create(given) + v), name = name, symbol = '+' };
+    => new ValuedModifierReference<S,T>(v) { op = (given, v) => T.Create(S.Create(given) + v), name = name, symbol = '+' };
 
-  public static IModifierValue<S,T> Multiply<S,T>(S v, string name = null)
+  public static IValuedModifier<S,T> Multiply<S,T>(S v, string name = null)
     where T : INumber<T>
     where S : INumber<S>
-    => new ModifierValue<S,T> { value = v, op = (given, v) => T.Create(S.Create(given) * v), name = name, symbol = '*' };
+    => new ValuedModifier<S,T> { value = v, op = (given, v) => T.Create(S.Create(given) * v), name = name, symbol = '*' };
 
-  public static IModifierValue<S,T> Multiply<S,T>(IValue<S> v, string name = null)
+  public static IValuedModifier<S,T> Multiply<S,T>(IValue<S> v, string name = null)
     where T : INumber<T>
     where S : INumber<S>
-    => new ModifierReference<S,T>(v) { op = (given, v) => T.Create(S.Create(given) * v), name = name, symbol = '*' };
+    => new ValuedModifierReference<S,T>(v) { op = (given, v) => T.Create(S.Create(given) * v), name = name, symbol = '*' };
 
 #else
-  public static IModifierValue<float> Plus(float v, string name = null) => new ModifierValue<float> { value = v, op = (given, v) => given + v, name = name, symbol = '+' };
-  public static IModifierValue<float> Multiply(float v, string name = null) => new ModifierValue<float> { value = v, op = (given, v) => given * v, name = name, symbol = '*' };
-  public static IModifierValue<float> Substitute(float v, string name = null) => new ModifierValue<float> { value = v, op = (given, v) => v, name = name, symbol = '=' };
+  public static IValuedModifier<float> Plus(float v, string name = null) => new ValuedModifier<float> { value = v, op = (given, v) => given + v, name = name, symbol = '+' };
+  public static IValuedModifier<float> Multiply(float v, string name = null) => new ValuedModifier<float> { value = v, op = (given, v) => given * v, name = name, symbol = '*' };
+  public static IValuedModifier<float> Substitute(float v, string name = null) => new ValuedModifier<float> { value = v, op = (given, v) => v, name = name, symbol = '=' };
 
-  public static IModifierValue<float> Plus(IValue<float> v, string name = null) => new ModifierReference<float>(v) { op = (given, v) => given + v, name = name, symbol = '+' };
-  public static IModifierValue<float> Multiply(IValue<float> v, string name = null) => new ModifierReference<float>(v) { op = (given, v) => given * v, name = name, symbol = '*' };
-  public static IModifierValue<float> Substitute(IValue<float> v, string name = null) => new ModifierReference<float>(v) { op = (given, v) => v, name = name, symbol = '=' };
+  public static IValuedModifier<float> Plus(IValue<float> v, string name = null) => new ValuedModifierReference<float>(v) { op = (given, v) => given + v, name = name, symbol = '+' };
+  public static IValuedModifier<float> Multiply(IValue<float> v, string name = null) => new ValuedModifierReference<float>(v) { op = (given, v) => given * v, name = name, symbol = '*' };
+  public static IValuedModifier<float> Substitute(IValue<float> v, string name = null) => new ValuedModifierReference<float>(v) { op = (given, v) => v, name = name, symbol = '=' };
 
-  public static IModifierValue<int> Plus(int v, string name = null) => new ModifierValue<int> { value = v, op = (given, v) => given + v, name = name, symbol = '+' };
-  public static IModifierValue<int> Multiply(int v, string name = null) => new ModifierValue<int> { value = v, op = (given, v) => given * v, name = name, symbol = '*' };
-  public static IModifierValue<int> Substitute(int v, string name = null) => new ModifierValue<int> { value = v, op = (given, v) => v, name = name, symbol = '=' };
+  public static IValuedModifier<int> Plus(int v, string name = null) => new ValuedModifier<int> { value = v, op = (given, v) => given + v, name = name, symbol = '+' };
+  public static IValuedModifier<int> Multiply(int v, string name = null) => new ValuedModifier<int> { value = v, op = (given, v) => given * v, name = name, symbol = '*' };
+  public static IValuedModifier<int> Substitute(int v, string name = null) => new ValuedModifier<int> { value = v, op = (given, v) => v, name = name, symbol = '=' };
 
-  public static IModifierValue<int> Plus(IValue<int> v, string name = null) => new ModifierReference<int>(v) { op = (given, v) => given + v, name = name, symbol = '+' };
-  public static IModifierValue<int> Multiply(IValue<int> v, string name = null) => new ModifierReference<int>(v) { op = (given, v) => given * v, name = name, symbol = '*' };
-  public static IModifierValue<int> Substitute(IValue<int> v, string name = null) => new ModifierReference<int>(v) { op = (given, v) => v, name = name, symbol = '=' };
+  public static IValuedModifier<int> Plus(IValue<int> v, string name = null) => new ValuedModifierReference<int>(v) { op = (given, v) => given + v, name = name, symbol = '+' };
+  public static IValuedModifier<int> Multiply(IValue<int> v, string name = null) => new ValuedModifierReference<int>(v) { op = (given, v) => given * v, name = name, symbol = '*' };
+  public static IValuedModifier<int> Substitute(IValue<int> v, string name = null) => new ValuedModifierReference<int>(v) { op = (given, v) => v, name = name, symbol = '=' };
 
   // This looks way more complicated, does weird runtime stuff. Prefer above.
-  public static IModifierValue<S, T> Plus<S,T>(this IModifiableValue<T> modValue, S v, string name = null) {
-    IModifierValue<S, T> result = null;
+  public static IValuedModifier<S, T> Plus<S,T>(this IModifiableValue<T> modValue, S v, string name = null) {
+    IValuedModifier<S, T> result = null;
     switch (Type.GetTypeCode(typeof(S))) {
       case TypeCode.Single:
         switch (Type.GetTypeCode(typeof(T))) {
           case TypeCode.Int32:
-            result = (IModifierValue<S,T>) new ModifierValue<float, int> { value = (float) (object) v, op = (given, v) => (int) (given + v), name = name, symbol = '+' };
+            result = (IValuedModifier<S,T>) new ValuedModifier<float, int> { value = (float) (object) v, op = (given, v) => (int) (given + v), name = name, symbol = '+' };
             break;
 
           case TypeCode.Single:
-            result = (IModifierValue<S,T>) new ModifierValue<float, float> { value = (float) (object) v, op = (given, v) => given + v, name = name, symbol = '+' };
+            result = (IValuedModifier<S,T>) new ValuedModifier<float, float> { value = (float) (object) v, op = (given, v) => given + v, name = name, symbol = '+' };
             break;
           default:
             throw new NotImplementedException($"No handler for second type {typeof(T)}.");
@@ -129,11 +129,11 @@ public static class Modifier {
       case TypeCode.Int32:
         switch (Type.GetTypeCode(typeof(T))) {
           case TypeCode.Int32:
-            result = (IModifierValue<S,T>) new ModifierValue<int, int> { value = (int) (object) v, op = (given, v) => given + v, name = name, symbol = '+' };
+            result = (IValuedModifier<S,T>) new ValuedModifier<int, int> { value = (int) (object) v, op = (given, v) => given + v, name = name, symbol = '+' };
             break;
 
           case TypeCode.Single:
-            result = (IModifierValue<S,T>) new ModifierValue<int, float> { value = (int) (object) v, op = (given, v) => given + v, name = name, symbol = '+' };
+            result = (IValuedModifier<S,T>) new ValuedModifier<int, float> { value = (int) (object) v, op = (given, v) => given + v, name = name, symbol = '+' };
             break;
           default:
             throw new NotImplementedException($"No handler for second type {typeof(T)}.");
@@ -146,25 +146,25 @@ public static class Modifier {
     return result;
   }
 
-  public static IModifierValue<S, T> Plus<S,T>(IValue<S> v, string name = null) {
+  public static IValuedModifier<S, T> Plus<S,T>(IValue<S> v, string name = null) {
     switch (Type.GetTypeCode(typeof(S))) {
       case TypeCode.Single:
         switch (Type.GetTypeCode(typeof(T))) {
           case TypeCode.Int32:
-            return (IModifierValue<S,T>) new ModifierReference<float, int>((IValue<float>) v) { op = (given, v) => (int) (given + v), name = name };
+            return (IValuedModifier<S,T>) new ValuedModifierReference<float, int>((IValue<float>) v) { op = (given, v) => (int) (given + v), name = name };
 
           case TypeCode.Single:
-            return (IModifierValue<S,T>) new ModifierReference<float, float>((IValue<float>) v) { op = (given, v) => given + v, name = name };
+            return (IValuedModifier<S,T>) new ValuedModifierReference<float, float>((IValue<float>) v) { op = (given, v) => given + v, name = name };
           default:
             throw new NotImplementedException($"No handler for second type {typeof(T)}.");
         }
       case TypeCode.Int32:
         switch (Type.GetTypeCode(typeof(T))) {
           case TypeCode.Int32:
-            return (IModifierValue<S,T>) new ModifierReference<int, int>((IValue<int>) v) { op = (given, v) => given + v, name = name };
+            return (IValuedModifier<S,T>) new ValuedModifierReference<int, int>((IValue<int>) v) { op = (given, v) => given + v, name = name };
 
           case TypeCode.Single:
-            return (IModifierValue<S,T>) new ModifierReference<int, float>((IValue<int>) v) { op = (given, v) => given + v, name = name };
+            return (IValuedModifier<S,T>) new ValuedModifierReference<int, float>((IValue<int>) v) { op = (given, v) => given + v, name = name };
           default:
             throw new NotImplementedException($"No handler for second type {typeof(T)}.");
         }
@@ -173,25 +173,25 @@ public static class Modifier {
     }
   }
 
-  public static IModifierValue<S, T> Multiply<S,T>(S v, string name = null) {
+  public static IValuedModifier<S, T> Multiply<S,T>(S v, string name = null) {
     switch (Type.GetTypeCode(typeof(S))) {
       case TypeCode.Single:
         switch (Type.GetTypeCode(typeof(T))) {
           case TypeCode.Int32:
-            return (IModifierValue<S,T>) new ModifierValue<float, int> { value = (float) (object) v, op = (given, v) => (int) (given * v), name = name, symbol = '*' };
+            return (IValuedModifier<S,T>) new ValuedModifier<float, int> { value = (float) (object) v, op = (given, v) => (int) (given * v), name = name, symbol = '*' };
 
           case TypeCode.Single:
-            return (IModifierValue<S,T>) new ModifierValue<float, float> { value = (float) (object) v, op = (given, v) => given * v, name = name, symbol = '*' };
+            return (IValuedModifier<S,T>) new ValuedModifier<float, float> { value = (float) (object) v, op = (given, v) => given * v, name = name, symbol = '*' };
           default:
             throw new NotImplementedException($"No handler for second type {typeof(T)}.");
         }
       case TypeCode.Int32:
         switch (Type.GetTypeCode(typeof(T))) {
           case TypeCode.Int32:
-            return (IModifierValue<S,T>) new ModifierValue<int, int> { value = (int) (object) v, op = (given, v) => given * v, name = name, symbol = '*' };
+            return (IValuedModifier<S,T>) new ValuedModifier<int, int> { value = (int) (object) v, op = (given, v) => given * v, name = name, symbol = '*' };
 
           case TypeCode.Single:
-            return (IModifierValue<S,T>) new ModifierValue<int, float> { value = (int) (object) v, op = (given, v) => given * v, name = name, symbol = '*' };
+            return (IValuedModifier<S,T>) new ValuedModifier<int, float> { value = (int) (object) v, op = (given, v) => given * v, name = name, symbol = '*' };
           default:
             throw new NotImplementedException($"No handler for second type {typeof(T)}.");
         }
@@ -200,25 +200,25 @@ public static class Modifier {
     }
   }
 
-  public static IModifierValue<S, T> Multiply<S,T>(IValue<S> v, string name = null) {
+  public static IValuedModifier<S, T> Multiply<S,T>(IValue<S> v, string name = null) {
     switch (Type.GetTypeCode(typeof(S))) {
       case TypeCode.Single:
         switch (Type.GetTypeCode(typeof(T))) {
           case TypeCode.Int32:
-            return (IModifierValue<S,T>) new ModifierReference<float, int>((IValue<float>) v) { op = (given, v) => (int) (given * v), name = name };
+            return (IValuedModifier<S,T>) new ValuedModifierReference<float, int>((IValue<float>) v) { op = (given, v) => (int) (given * v), name = name };
 
           case TypeCode.Single:
-            return (IModifierValue<S,T>) new ModifierReference<float, float>((IValue<float>) v) { op = (given, v) => given * v, name = name };
+            return (IValuedModifier<S,T>) new ValuedModifierReference<float, float>((IValue<float>) v) { op = (given, v) => given * v, name = name };
           default:
             throw new NotImplementedException($"No handler for second type {typeof(T)}.");
         }
       case TypeCode.Int32:
         switch (Type.GetTypeCode(typeof(T))) {
           case TypeCode.Int32:
-            return (IModifierValue<S,T>) new ModifierReference<int, int>((IValue<int>) v) { op = (given, v) => given * v, name = name };
+            return (IValuedModifier<S,T>) new ValuedModifierReference<int, int>((IValue<int>) v) { op = (given, v) => given * v, name = name };
 
           case TypeCode.Single:
-            return (IModifierValue<S,T>) new ModifierReference<int, float>((IValue<int>) v) { op = (given, v) => given * v, name = name };
+            return (IValuedModifier<S,T>) new ValuedModifierReference<int, float>((IValue<int>) v) { op = (given, v) => given * v, name = name };
           default:
             throw new NotImplementedException($"No handler for second type {typeof(T)}.");
         }
@@ -227,41 +227,41 @@ public static class Modifier {
     }
   }
 
-  public static IModifierValue<float, int> Multiply<T>(float v, string name = null) {
+  public static IValuedModifier<float, int> Multiply<T>(float v, string name = null) {
     switch (Type.GetTypeCode(typeof(T))) {
         case TypeCode.Int32:
-          return new ModifierValue<float, int> { value = v, op = (given, v) => (int) (given * v), name = name };
+          return new ValuedModifier<float, int> { value = v, op = (given, v) => (int) (given * v), name = name };
       default:
         throw new NotImplementedException($"No handler for type {typeof(T)}.");
     }
   }
 
-  public static IModifierValue<float, int> Multiply<T>(IValue<float> v, string name = null) {
+  public static IValuedModifier<float, int> Multiply<T>(IValue<float> v, string name = null) {
     switch (Type.GetTypeCode(typeof(T))) {
         case TypeCode.Int32:
-          return new ModifierReference<float, int>(v) { op = (given, v) => (int) (given * v), name = name };
+          return new ValuedModifierReference<float, int>(v) { op = (given, v) => (int) (given * v), name = name };
       default:
         throw new NotImplementedException($"No handler for type {typeof(T)}.");
     }
   }
 
-  public static IModifierValue<float, int> Substitute<T>(float v, string name = null) {
+  public static IValuedModifier<float, int> Substitute<T>(float v, string name = null) {
     switch (Type.GetTypeCode(typeof(T))) {
         case TypeCode.Int32:
-          return new ModifierValue<float, int> { value = v, op = (given, v) => (int) given, name = name };
+          return new ValuedModifier<float, int> { value = v, op = (given, v) => (int) given, name = name };
       default:
         throw new NotImplementedException($"No handler for type {typeof(T)}.");
     }
   }
 #endif
-  // public static IModifierValue<float> Plus(float v) => new ModifierValue<float, float> { value = v, op = (given, v) => given + v };
-  // public static IModifierValue<float> Multiply(float v) => new ModifierValue<float, float> { value = v, op = (given, v) => given * v };
-  // public static IModifierValue<float> Substitute(float v) => new ModifierValue<float, float> { value = v, op = (given, v) => v };
-  // public static IModifier<float> Plus(IValue<float> v) => new ModifierValue<float, float> { value = v, op => (given, v) => given + v };
+  // public static IValuedModifier<float> Plus(float v) => new ValuedModifier<float, float> { value = v, op = (given, v) => given + v };
+  // public static IValuedModifier<float> Multiply(float v) => new ValuedModifier<float, float> { value = v, op = (given, v) => given * v };
+  // public static IValuedModifier<float> Substitute(float v) => new ValuedModifier<float, float> { value = v, op = (given, v) => v };
+  // public static IModifier<float> Plus(IValue<float> v) => new ValuedModifier<float, float> { value = v, op => (given, v) => given + v };
 
 
 
-  internal class ModifierReference<S,T> : IModifierValue<S,T>, IDisposable {
+  internal class ValuedModifierReference<S,T> : IValuedModifier<S,T>, IDisposable {
     public string name { get; init; }
     public char symbol { get; init; } = '?';
     public bool enabled { get; set; } = true;
@@ -285,7 +285,7 @@ public static class Modifier {
 
     public event PropertyChangedEventHandler PropertyChanged;
 
-    public ModifierReference(IValue<S> value) {
+    public ValuedModifierReference(IValue<S> value) {
       reference = value;
       value.PropertyChanged += Chain;
     }
@@ -322,12 +322,12 @@ public static class Modifier {
     }
   }
 
-  internal class ModifierReference<T> : ModifierReference<T,T>, IModifierValue<T> {
-    public ModifierReference(IValue<T> value) : base(value) { }
+  internal class ValuedModifierReference<T> : ValuedModifierReference<T,T>, IValuedModifier<T> {
+    public ValuedModifierReference(IValue<T> value) : base(value) { }
   }
 }
 
-public class ModifierValue<S,T> : IModifierValue<S,T> {
+public class ValuedModifier<S,T> : IValuedModifier<S,T> {
   public string name { get; init; }
   public char symbol { get; init; } = '?';
   public bool enabled { get; set; } = true;
@@ -356,8 +356,8 @@ public class ModifierValue<S,T> : IModifierValue<S,T> {
 
   // internal void Chain(object sender, PropertyChangedEventArgs args) => OnChange(nameof(value));
 
-  public ModifierValue<S,T> Select(Func<S,S> func) {
-    var m = new ModifierValue<S,T> { name = this.name,
+  public ValuedModifier<S,T> Select(Func<S,S> func) {
+    var m = new ValuedModifier<S,T> { name = this.name,
                                       op = this.op,
                                       value = func(this.value) };
     // HACK: Not sure I like this. Notify? yes. Mutate on notify? No.
@@ -382,6 +382,6 @@ public class ModifierValue<S,T> : IModifierValue<S,T> {
 
 /** Most modifiers will be of the same type as the stat they're modifying, so
     let's make that easier to express. */
-internal class ModifierValue<T> : ModifierValue<T,T>, IModifierValue<T> { }
+internal class ValuedModifier<T> : ValuedModifier<T,T>, IValuedModifier<T> { }
 
 }

@@ -16,11 +16,11 @@ namespace SeawispHunter.RolePlay.Attributes.Test {
 public class ModifiableValueTest {
   ModifiableValue<float> health = new ModifiableValue<float> { baseValue = 100f };
   IModifiableValue<float> currentHealth;
-  IModifierValue<float> boost = Modifier.Multiply(1.10f, "10% boost");// { name = "10% boost", multiply = 1.10f };
+  IValuedModifier<float> boost = Modifier.Multiply(1.10f, "10% boost");// { name = "10% boost", multiply = 1.10f };
   // IModifier<float> boost20 = new ModifierFloat { name = "20% boost", multiply = 1.20f };
-  IModifierValue<float> boost20 = Modifier.Multiply(1.2f, "20% boost");
+  IValuedModifier<float> boost20 = Modifier.Multiply(1.2f, "20% boost");
   // IModifier<float> damage = new ModifierFloat { name = "damage", plus = 0f };
-  IModifierValue<float> damage = Modifier.Plus(0f, "damage");
+  IValuedModifier<float> damage = Modifier.Plus(0f, "damage");
   private int healthNotifications = 0;
   private int currentHealthNotifications = 0;
   private int damageNotifications = 0;
