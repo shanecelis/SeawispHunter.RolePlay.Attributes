@@ -1,11 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net6.0;netcoreapp3.1</TargetFrameworks>
     <Nullable>disable</Nullable>
 
     <IsPackable>false</IsPackable>
     <AssemblyName>SeawispHunter.RolePlay.Attributes.Test</AssemblyName>
+    <!-- <LangVersion>9.0</LangVersion> -->
+
+    <LangVersion>preview</LangVersion>
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +27,16 @@
 
   <ItemGroup>
     <ProjectReference Include="..\src\src.csproj" />
+  </ItemGroup>
+
+  <!-- https://stackoverflow.com/questions/58166709/how-to-test-net-standard-and-core-versions-of-a-library-properly -->
+  <!-- Add test configuration for netstandard2.0 assemblies -->
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1'">
+      <Reference Include="ProjectToTest">
+          <HintPath>..\src\bin\$(Configuration)\netstandard2.0\SeawispHunter.RolePlay.Attributes.dll</HintPath>
+      </Reference>
+      <!-- Include all package references of the netstandard2.0 assembly -->
+      <PackageReference Include="System.Memory" Version="4.5.4" />
   </ItemGroup>
 
 </Project>

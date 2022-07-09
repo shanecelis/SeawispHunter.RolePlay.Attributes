@@ -11,7 +11,7 @@
 using Xunit;
 
 using SeawispHunter.RolePlay.Attributes;
-namespace SeawispHunter.RolePlay.Attributes.Test;
+namespace SeawispHunter.RolePlay.Attributes.Test {
 
 public class ModifiableValueTest {
   ModifiableValue<float> health = new ModifiableValue<float> { baseValue = 100f };
@@ -28,7 +28,7 @@ public class ModifiableValueTest {
 
   public ModifiableValueTest() {
 
-    currentHealth = ModifiableValue.FromValue(health, "current health");
+    currentHealth = ModifiableValue.FromValue(health);
     // currentHealth.name = "current health";
     health.modifiers.Add(boost);
     // currentHealth.Add(damage.Select(d => -d));
@@ -146,7 +146,7 @@ public class ModifiableValueTest {
     // var strength = new ModifiableValue<float> { name = "strength", baseValue = 10f };
     var strengthPercentageGain = new ModifiableValue<float> { baseValue = 1f };
     strengthPercentageGain.modifiers.Add(Modifier.Plus(0.1f));
-    strength.modifiers.Add(Modifier.Multiply<int>(strengthPercentageGain));
+    strength.modifiers.Add(Modifier.Multiply<float,int>(strengthPercentageGain));
     Assert.Equal(11, strength.value);
   }
 
@@ -190,5 +190,7 @@ public class ModifiableValueTest {
     Assert.Equal(2, notifications);
     Assert.Equal(22f, stat.value);
   }
+
+}
 
 }

@@ -8,7 +8,13 @@
    [3]: https://opensource.org/licenses/MIT
    [4]: https://github.com/shanecelis/code-cite
 */
-namespace SeawispHunter.RolePlay.Attributes;
+
+#if NET6_0_OR_GREATER
+using System.Numerics;
+#endif
+using System;
+
+namespace SeawispHunter.RolePlay.Attributes {
 
 /** This stat class represents the style of stat altering presented by Daniel
     Sidhion in this article[1].
@@ -18,11 +24,27 @@ namespace SeawispHunter.RolePlay.Attributes;
 
     [1]: https://gamedevelopment.tutsplus.com/tutorials/using-the-composite-design-pattern-for-an-rpg-attributes-system--gamedev-243
 */
-public class SidhionStat<T> : ModifiableValue<T> {
+public class SidhionStat<T> : ModifiableValue<T>
+#if NET6_0_OR_GREATER
+  where T : INumber<T>
+#endif
+{
   public IModifiableValue<T> rawBonusesPlus = new ModifiableValue<T>();
-  public IModifiableValue<T> rawBonusesMultiply = new ModifiableValue<T>() { baseValue = one };
+  public IModifiableValue<T> rawBonusesMultiply = new ModifiableValue<T>() {
+#if NET6_0_OR_GREATER
+    baseValue = T.One
+#else
+    baseValue = one
+#endif
+  };
   public IModifiableValue<T> finalBonusesPlus = new ModifiableValue<T>();
-  public IModifiableValue<T> finalBonusesMultiply = new ModifiableValue<T>() { baseValue = one };
+  public IModifiableValue<T> finalBonusesMultiply = new ModifiableValue<T>() {
+#if NET6_0_OR_GREATER
+    baseValue = T.One
+#else
+    baseValue = one
+#endif
+  };
 
   public SidhionStat() {
     modifiers.Add(Modifier.Plus<T,T>(rawBonusesPlus));
@@ -31,6 +53,7 @@ public class SidhionStat<T> : ModifiableValue<T> {
     modifiers.Add(Modifier.Multiply<T,T>(finalBonusesMultiply));
   }
 
+#if ! NET6_0_OR_GREATER
   private static T one {
     get {
       switch (Type.GetTypeCode(typeof(T))) {
@@ -43,4 +66,7 @@ public class SidhionStat<T> : ModifiableValue<T> {
       }
     }
   }
+#endif
+}
+
 }

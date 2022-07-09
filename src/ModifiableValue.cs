@@ -8,11 +8,13 @@
    [3]: https://opensource.org/licenses/MIT
    [4]: https://github.com/shanecelis/code-cite
 */
+using System;
 using System.Text;
 using System.ComponentModel;
 using System.Collections;
+using System.Collections.Generic;
 
-namespace SeawispHunter.RolePlay.Attributes;
+namespace SeawispHunter.RolePlay.Attributes {
 
 /* IValue<T> notifies listeners when changed. That's it. */
 public interface IValue<T> : INotifyPropertyChanged {
@@ -33,16 +35,6 @@ public interface IMutableValue<T> : IValue<T> {
 
 /** This IModifiableValue<T> class is meant to capture values in games like health,
     strength, etc. that can be modified by various, some distal, effects.
-
-    ## Acknowledgments
-
-    This class was informed by the following sources:
-
-    - http://howtomakeanrpg.com/a/how-to-make-an-rpg-stats.html
-    - https://jkpenner.wordpress.com/2015/06/09/rpgsystems-stat-system-02-modifiers/
-    - https://gamedevelopment.tutsplus.com/tutorials/using-the-composite-design-pattern-for-an-rpg-attributes-system--gamedev-243
-
-    XXX: Consider renaming to IDependantValue? IModifiableValue?
  */
 public interface IModifiableValue<T> : IValue<T>, INotifyPropertyChanged {
   T baseValue { get; set; }
@@ -74,7 +66,7 @@ public static class ModifiableValue {
   public static IModifiableValue<T> FromFunc<T>(Func<T> f) => new DerivedModifiableValue<T>(f, out var callOnChange);
 
   public static IModifiableValue<T> FromValue<T>(IValue<T> v) => new DerivedModifiableValue<T>(v);
-  public static IModifiableValue<T> FromValue<T>(IValue<T> v, string name) => new DerivedModifiableValue<T>(v) { };
+  // public static IModifiableValue<T> FromValue<T>(IValue<T> v, string name) => new DerivedModifiableValue<T>(v) { };
 
   /* This stat's base value is given by a Func<T> or another stat's value. */
   internal class DerivedModifiableValue<T> : ModifiableValue<T>, IDisposable {
@@ -310,3 +302,11 @@ public class ModifiableValue<T> : IModifiableValue<T> {
   }
 }
 
+}
+#if NETSTANDARD
+// https://stackoverflow.com/a/62656145
+namespace System.Runtime.CompilerServices {
+  [EditorBrowsable(EditorBrowsableState.Never)]
+  internal class IsExternalInit{}
+}
+#endif
