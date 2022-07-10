@@ -99,40 +99,40 @@ public static class Modifier {
 
 #else
   /* Here is the alternative to having a nice INumber<T> type like .NET7 will have. */
-  public interface IOperationProvider<X,Y> {
+  internal interface IOperator<X,Y> {
     X Sum(X lhs, Y rhs);
     X Times(X lhs, Y rhs);
   }
-  struct OpFloatFloat : IOperationProvider<float,float> {
+  internal struct OpFloatFloat : IOperator<float,float> {
     public float Sum(float a, float b) => a + b;
     public float Times(float a, float b) => a * b;
   }
-  struct OpIntInt : IOperationProvider<int,int> {
+  internal struct OpIntInt : IOperator<int,int> {
     public int Sum(int a, int b) => a + b;
     public int Times(int a, int b) => a * b;
   }
 
-  struct OpFloatInt : IOperationProvider<float,int> {
+  internal struct OpFloatInt : IOperator<float,int> {
     public float Sum(float a, int b) => a + b;
     public float Times(float a, int b) => a * b;
   }
 
-  struct OpIntFloat : IOperationProvider<int,float> {
+  internal struct OpIntFloat : IOperator<int,float> {
     public int Sum(int a, float b) => (int) (a + b);
     public int Times(int a, float b) => (int) (a * b);
   }
 
   public static IValuedModifier<S,T> Plus<S,T>(S v, string name = null)
-    => new ValuedModifier<S,T> { value = v, op = (given, v) => GetOperationProvider<T,S>().Sum(given, v), name = name, symbol = '+' };
+    => new ValuedModifier<S,T> { value = v, op = (given, v) => GetOperator<T,S>().Sum(given, v), name = name, symbol = '+' };
   public static IValuedModifier<S,T> Plus<S,T>(IValue<S> v, string name = null)
-    => new ValuedModifierReference<S,T>(v) { op = (given, v) => GetOperationProvider<T,S>().Sum(given, v), name = name, symbol = '+' };
+    => new ValuedModifierReference<S,T>(v) { op = (given, v) => GetOperator<T,S>().Sum(given, v), name = name, symbol = '+' };
   public static IValuedModifier<T,T> Plus<T>(T v, string name = null) => Plus<T,T>(v, name);
   public static IValuedModifier<T,T> Plus<T>(IValue<T> v, string name = null) => Plus<T,T>(v, name);
 
   public static IValuedModifier<S,T> Multiply<S,T>(S v, string name = null)
-    => new ValuedModifier<S,T> { value = v, op = (given, v) => GetOperationProvider<T,S>().Times(given, v), name = name, symbol = '*' };
+    => new ValuedModifier<S,T> { value = v, op = (given, v) => GetOperator<T,S>().Times(given, v), name = name, symbol = '*' };
   public static IValuedModifier<S,T> Multiply<S,T>(IValue<S> v, string name = null)
-    => new ValuedModifierReference<S,T>(v) { op = (given, v) => GetOperationProvider<T,S>().Times(given, v), name = name, symbol = '*' };
+    => new ValuedModifierReference<S,T>(v) { op = (given, v) => GetOperator<T,S>().Times(given, v), name = name, symbol = '*' };
   public static IValuedModifier<T,T> Multiply<T>(T v, string name = null) => Multiply<T,T>(v, name);
   public static IValuedModifier<T,T> Multiply<T>(IValue<T> v, string name = null) => Multiply<T,T>(v, name);
 
@@ -143,23 +143,23 @@ public static class Modifier {
   public static IValuedModifier<T,T> Substitute<T>(T v, string name = null) => Substitute<T,T>(v, name);
   public static IValuedModifier<T,T> Substitute<T>(IValue<T> v, string name = null) => Substitute<T,T>(v, name);
 
-  private static IOperationProvider<S,T> GetOperationProvider<S,T>() {
+  private static IOperator<S,T> GetOperator<S,T>() {
     switch (Type.GetTypeCode(typeof(S))) {
       case TypeCode.Single:
         switch (Type.GetTypeCode(typeof(T))) {
           case TypeCode.Int32:
-            return (IOperationProvider<S,T>) (object) default(OpFloatInt);
+            return (IOperator<S,T>) (object) default(OpFloatInt);
           case TypeCode.Single:
-            return (IOperationProvider<S,T>) (object) default(OpFloatFloat);
+            return (IOperator<S,T>) (object) default(OpFloatFloat);
           default:
             throw new NotImplementedException($"No handler for second type {typeof(T)}.");
         }
       case TypeCode.Int32:
         switch (Type.GetTypeCode(typeof(T))) {
           case TypeCode.Int32:
-            return (IOperationProvider<S,T>) (object) default(OpIntInt);
+            return (IOperator<S,T>) (object) default(OpIntInt);
           case TypeCode.Single:
-            return (IOperationProvider<S,T>) (object) default(OpIntFloat);
+            return (IOperator<S,T>) (object) default(OpIntFloat);
           default:
             throw new NotImplementedException($"No handler for second type {typeof(T)}.");
         }
@@ -170,7 +170,7 @@ public static class Modifier {
 
 // https://pvs-studio.com/en/blog/posts/csharp/0878/
 // void SomeProcessing<T, TOperation>(...)
-//     where TOperation : struct, IOperationProvider<T>
+//     where TOperation : struct, IOperator<T>
 // {
 //     T var1 = ...;
 //     T var2 = ...;
