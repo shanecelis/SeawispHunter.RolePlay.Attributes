@@ -135,7 +135,7 @@ public class ModifiableValueTest {
     var strength = new ModifiableValue<float> { baseValue = 10f };
     var strengthPercentageGain = new ModifiableValue<float> { baseValue = 1f };
     strengthPercentageGain.modifiers.Add(Modifier.Plus(0.10f));
-    strength.modifiers.Add(Modifier.Multiply(strengthPercentageGain));
+    strength.modifiers.Add(Modifier.Multiply<float>(strengthPercentageGain));
     Assert.Equal(11f, strength.value);
   }
 
@@ -160,10 +160,10 @@ public class ModifiableValueTest {
     var rawBonusesMultiply = new ModifiableValue<float>() { baseValue = 1f };
     var finalBonusesPlus = new ModifiableValue<float>();
     var finalBonusesMultiply = new ModifiableValue<float>() { baseValue = 1f };
-    stat.modifiers.Add(Modifier.Plus(rawBonusesPlus));
-    stat.modifiers.Add(Modifier.Multiply(rawBonusesMultiply));
-    stat.modifiers.Add(Modifier.Plus(finalBonusesPlus));
-    stat.modifiers.Add(Modifier.Multiply(finalBonusesMultiply));
+    stat.modifiers.Add(Modifier.Plus<float>(rawBonusesPlus));
+    stat.modifiers.Add(Modifier.Multiply<float>(rawBonusesMultiply));
+    stat.modifiers.Add(Modifier.Plus<float>(finalBonusesPlus));
+    stat.modifiers.Add(Modifier.Multiply<float>(finalBonusesMultiply));
     Assert.Equal(10f, stat.value);
     rawBonusesPlus.modifiers.Add(Modifier.Plus(1f));
     Assert.Equal(11f, stat.value);
