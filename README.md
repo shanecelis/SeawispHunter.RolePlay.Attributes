@@ -1,26 +1,27 @@
 # SeawispHunter.RolePlay.Attributes
 
 There comes a time when many a gamedev sets out for adventure but first must
-create their own attribute class, that is a class which captures a game "stat",
-or "statistic" for lack of a better word, like health, attack, defense, etc.
-This one is mine. Oh wait! there is a better word: attribute. But I don't want
-to take "attribute" from your game, so I'll call mine `IModifiableValue<T>`.
+create their own attribute class. That is to say a class which captures a game
+"stat", or "statistic" for lack of a better word, like health, attack, defense,
+etc. This one is mine. Oh wait! there is a better word: "attribute." But I don't
+want to take "attribute" from your game, so I'll call mine
+`IModifiableValue<T>`.
 
-These attributes and their derivatives are often affected by a multitude of
-transient things, e.g, a sword that bestows an attack advantage; a shield that
-raises one's defense; a ring that regenerates health. Because of that attributes
-ought to respect the following requirements.
+These attributes and their derivatives may affect and be effected by a multitude
+of transient things, e.g, a sword that bestows an attack advantage; a shield
+that raises one's defense; a ring that regenerates health. Because of that
+attributes ought to respect the following requirements.
 
 ## Requirements
 
-* An attribute shall be altered non-destructively. 
+* An attribute's value shall be altered non-destructively. 
 * Because so many things may alter an attribute, it shall notify us when changed.
 
 ## Example
 
 ``` c#
 var health = new ModifiableValue<float> { name = "health", baseValue = 100f };
-health.modifiers.Add(Modifier.Multiply(1.10f));
+health.modifiers.Add(Modifier.Times(1.10f));
 Console.WriteLine($"Health is {health.value}."); // Prints: Health is 110.
 health.modifiers.Add(Modifier.Plus(5f, "+5 health"));
 Console.WriteLine($"Health is {health.value}."); // Prints: Health is 115.
@@ -29,7 +30,7 @@ Console.WriteLine($"Health is {health.value}."); // Prints: Health is 115.
 ## Attribute
 
 At its root, an attribute has a `baseValue`. With no modifiers present, its
-`baseValue` equals its `value`; its `value` can be altered by modifiers starting
+`value` equals its `baseValue`; its `value` is altered by modifiers starting
 from its `baseValue`.
 
 ``` c#
@@ -55,7 +56,8 @@ public interface IModifier<T> {
 ```
 
 However, often times the changes one wants to make are simple: add a value,
-multiple a value, or substitute a value so these are made convenient.
+multiple a value, or substitute a value so these are made convenient for `int`
+and `float` types.
 
 ``` c#
 public interface IValuedModifier<T> : IModifier<T> {
@@ -64,22 +66,22 @@ public interface IValuedModifier<T> : IModifier<T> {
 
 public static class Modifier {
   public static IValuedModifier<T> Plus(T value);
-  public static IValuedModifier<T> Multiply(T value);
+  public static IValuedModifier<T> Times(T value);
   public static IValuedModifier<T> Substitute(T value);
 }
 ```
 
 ## Change Propogation
 
-These classes use the `INotifyPropertyChanged` to propogate change events, so
-any modifier that's changed or added will notify its attribute which will notify any
-of its listeners. So there's no need to poll for changes to an attribute.
+These classes use the `INotifyPropertyChanged` interface to propogate change
+events, so any modifier that's changed or added will notify its attribute which
+will notify any of its listeners. No need to poll for changes to an attribute.
 
 ## Abridged API
 
 The API shown above is abridged to make its most salient points easy to
 understand. The actual code includes some abstractions like `IValue<T>` and
-`IMutableValue<T>` which is used to make an attribute reuseable as a modifier
+`IMutableValue<T>` which are used to make attributes reuseable as modifiers
 for instance.
 
 ## License
