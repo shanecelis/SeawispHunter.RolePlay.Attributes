@@ -1,12 +1,15 @@
 # SeawispHunter.RolePlay.Attributes
 
-There comes a time when every gamedev must create their own attribute class,
-that is a class which captures a game "stat", or "statistic" for lack of a
-better word, like health, attack, defense, etc. This one is mine.
+There comes a time when many a gamedev sets out for adventure but first must
+create their own attribute class, that is a class which captures a game "stat",
+or "statistic" for lack of a better word, like health, attack, defense, etc.
+This one is mine. Oh wait! there is a better word: attribute. But I don't want
+to take "attribute" from your game, so I'll call mine `IModifiableValue<T>`.
 
 These attributes and their derivatives are often affected by a multitude of
 transient things, e.g, a sword that bestows an attack advantage; a shield that
-raises one's defense; a ring that regenerates health.
+raises one's defense; a ring that regenerates health. Because of that attributes
+ought to respect the following requirements.
 
 ## Requirements
 
@@ -55,14 +58,14 @@ However, often times the changes one wants to make are simple: add a value,
 multiple a value, or substitute a value so these are made convenient.
 
 ``` c#
-public interface IModifierValue<T> : IModifier<T> {
+public interface IValuedModifier<T> : IModifier<T> {
   T value { get; set; }
 }
 
 public static class Modifier {
-  public static IModifierValue<T> Plus(T value);
-  public static IModifierValue<T> Multiply(T value);
-  public static IModifierValue<T> Substitute(T value);
+  public static IValuedModifier<T> Plus(T value);
+  public static IValuedModifier<T> Multiply(T value);
+  public static IValuedModifier<T> Substitute(T value);
 }
 ```
 
@@ -75,8 +78,9 @@ of its listeners. So there's no need to poll for changes to an attribute.
 ## Abridged API
 
 The API shown above is abridged to make its most salient points easy to
-understand. The actual code includes some abstractions like `IValue<T>` which is
-used to make an attribute reuseable as a modifier for instance.
+understand. The actual code includes some abstractions like `IValue<T>` and
+`IMutableValue<T>` which is used to make an attribute reuseable as a modifier
+for instance.
 
 ## License
 
@@ -84,7 +88,7 @@ This project is released under the MIT license.
 
 ## Acknowledgments
 
-This project was informed by the following sources:
+This project was inspired and informed by the following sources:
 
 - http://howtomakeanrpg.com/a/how-to-make-an-rpg-stats.html
 - https://jkpenner.wordpress.com/2015/06/09/rpgsystems-stat-system-02-modifiers/
