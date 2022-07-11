@@ -174,6 +174,31 @@ public class ModifiableValueTest {
     Assert.Equal(22f, stat.value);
   }
 
+  [Fact]
+  public void TestWaysToAdd() {
+    var stat = new ModifiableValue<float> { baseValue = 10f };
+    var rawBonusesPlus = new ModifiableValue<float>();
+    Assert.True(stat is IValue<float>);
+    Assert.True(rawBonusesPlus is IValue<float>);
+    var m = Modifier.Plus((IValue<float>)rawBonusesPlus);
+    stat.modifiers.Add(m);
+    stat.modifiers.Add(rawBonusesPlus.Plus());
+    // XXX: This line does not work.
+    // stat.modifiers.Add(Modifier.Plus(rawBonusesPlus));
+    stat.modifiers.Add(Modifier.Plus<float>(rawBonusesPlus));
+    stat.modifiers.Add(Modifier.Plus<float,float>(rawBonusesPlus));
+  }
+
+  [Fact]
+  public void TestWaysToAddLiterals() {
+    var stat = new ModifiableValue<float> { baseValue = 10f };
+    var m = Modifier.Plus(1f);
+    stat.modifiers.Add(m);
+    stat.modifiers.Add(Modifier.Plus(1f));
+    stat.modifiers.Add(Modifier.Plus<float>(1f));
+    stat.modifiers.Add(Modifier.Plus<float,float>(1f));
+  }
+
   /** Turned Sidhion's into a class. */
   [Fact]
   public void TestSidhionStyle() {
