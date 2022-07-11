@@ -48,9 +48,9 @@ public class SidhionStat<T> : ModifiableValue<T>
 
   public SidhionStat() {
     modifiers.Add(Modifier.Plus<T,T>(rawBonusesPlus));
-    modifiers.Add(Modifier.Multiply<T,T>(rawBonusesMultiply));
+    modifiers.Add(Modifier.Times<T,T>(rawBonusesMultiply));
     modifiers.Add(Modifier.Plus<T,T>(finalBonusesPlus));
-    modifiers.Add(Modifier.Multiply<T,T>(finalBonusesMultiply));
+    modifiers.Add(Modifier.Times<T,T>(finalBonusesMultiply));
   }
 
 #if ! NET6_0_OR_GREATER

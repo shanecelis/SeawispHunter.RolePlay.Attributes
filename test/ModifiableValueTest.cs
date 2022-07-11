@@ -16,9 +16,9 @@ namespace SeawispHunter.RolePlay.Attributes.Test {
 public class ModifiableValueTest {
   ModifiableValue<float> health = new ModifiableValue<float> { baseValue = 100f };
   IModifiableValue<float> currentHealth;
-  IValuedModifier<float,float> boost = Modifier.Multiply(1.10f, "10% boost");// { name = "10% boost", multiply = 1.10f };
+  IValuedModifier<float,float> boost = Modifier.Times(1.10f, "10% boost");// { name = "10% boost", multiply = 1.10f };
   // IModifier<float> boost20 = new ModifierFloat { name = "20% boost", multiply = 1.20f };
-  IValuedModifier<float,float> boost20 = Modifier.Multiply(1.2f, "20% boost");
+  IValuedModifier<float,float> boost20 = Modifier.Times(1.2f, "20% boost");
   // IModifier<float> damage = new ModifierFloat { name = "damage", plus = 0f };
   IValuedModifier<float,float> damage = Modifier.Plus(0f, "damage");
   private int healthNotifications = 0;
@@ -124,7 +124,7 @@ public class ModifiableValueTest {
     m = Modifier.Plus(1, "+1 sword");
     Assert.Equal("\"+1 sword\" +1", m.ToString());
 
-    m = Modifier.Multiply(2, "blah");
+    m = Modifier.Times(2, "blah");
     Assert.Equal("\"blah\" *2", m.ToString());
   }
 
@@ -136,7 +136,7 @@ public class ModifiableValueTest {
     var strength = new ModifiableValue<float> { baseValue = 10f };
     var strengthPercentageGain = new ModifiableValue<float> { baseValue = 1f };
     strengthPercentageGain.modifiers.Add(Modifier.Plus(0.10f));
-    strength.modifiers.Add(Modifier.Multiply<float>(strengthPercentageGain));
+    strength.modifiers.Add(Modifier.Times<float>(strengthPercentageGain));
     Assert.Equal(11f, strength.value);
   }
 
@@ -147,7 +147,7 @@ public class ModifiableValueTest {
     // var strength = new ModifiableValue<float> { name = "strength", baseValue = 10f };
     var strengthPercentageGain = new ModifiableValue<float> { baseValue = 1f };
     strengthPercentageGain.modifiers.Add(Modifier.Plus(0.1f));
-    strength.modifiers.Add(Modifier.Multiply<float,int>(strengthPercentageGain));
+    strength.modifiers.Add(Modifier.Times<float,int>(strengthPercentageGain));
     Assert.Equal(11, strength.value);
   }
 
@@ -161,10 +161,12 @@ public class ModifiableValueTest {
     var rawBonusesMultiply = new ModifiableValue<float>() { baseValue = 1f };
     var finalBonusesPlus = new ModifiableValue<float>();
     var finalBonusesMultiply = new ModifiableValue<float>() { baseValue = 1f };
+    Assert.True(stat is IValue<float>);
+    Assert.True(rawBonusesPlus is IValue<float>);
     stat.modifiers.Add(Modifier.Plus<float>(rawBonusesPlus));
-    stat.modifiers.Add(Modifier.Multiply<float>(rawBonusesMultiply));
+    stat.modifiers.Add(Modifier.Times<float>(rawBonusesMultiply));
     stat.modifiers.Add(Modifier.Plus<float>(finalBonusesPlus));
-    stat.modifiers.Add(Modifier.Multiply<float>(finalBonusesMultiply));
+    stat.modifiers.Add(Modifier.Times<float>(finalBonusesMultiply));
     Assert.Equal(10f, stat.value);
     rawBonusesPlus.modifiers.Add(Modifier.Plus(1f));
     Assert.Equal(11f, stat.value);

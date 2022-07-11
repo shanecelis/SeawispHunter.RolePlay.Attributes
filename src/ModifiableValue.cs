@@ -157,6 +157,7 @@ public class ModifiableValue<T> : IModifiableValue<T> {
       OnChange(nameof(baseValue));
     }
   }
+  // XXX: Consider caching?
   public T value {
     get {
       T v = baseValue;
