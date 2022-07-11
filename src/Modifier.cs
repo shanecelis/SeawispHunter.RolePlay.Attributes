@@ -29,7 +29,7 @@ public interface IModifier<T> : INotifyPropertyChanged {
 
 public interface IValuedModifier<S,T> : IModifier<T>, IMutableValue<S> {
   /* We want this to be settable. */
-  // new S value { get; set; }
+  // S value { get; set; }
 }
 
 /** Most modifiers will be of the same type as the stat they're modifying, so
@@ -181,7 +181,16 @@ public static class Modifier {
   internal class ValuedModifierReference<S,T> : IValuedModifier<S,T>, IDisposable {
     public string name { get; init; }
     public char symbol { get; init; } = '?';
-    public bool enabled { get; set; } = true;
+    private bool _enabled = true;
+    public bool enabled {
+      get => _enabled;
+      set {
+        if (_enabled == value)
+          return;
+        _enabled = value;
+        OnChange(nameof(enabled));
+      }
+    }
     private readonly IValue<S> reference;
     public S value {
       get => reference.value;
@@ -196,6 +205,7 @@ public static class Modifier {
       }
     }
 
+    // Unnecessary:
     // S IValue<S>.value => reference.value;
 
     public Func<T,S,T> op { get; init; }
@@ -211,9 +221,6 @@ public static class Modifier {
     }
 
     internal void Chain(object sender, PropertyChangedEventArgs args) => OnChange(nameof(value));
-    // protected void Chain(object sender, PropertyChangedEventArgs args) {
-    //   PropertyChanged?.Invoke(this, args);
-    // }
 
     public T Modify(T given) => op(given, value);
 
@@ -247,7 +254,16 @@ public static class Modifier {
 public class ValuedModifier<S,T> : IValuedModifier<S,T> {
   public string name { get; init; }
   public char symbol { get; init; } = '?';
-  public bool enabled { get; set; } = true;
+  private bool _enabled = true;
+  public bool enabled {
+    get => _enabled;
+    set {
+      if (_enabled == value)
+        return;
+      _enabled = value;
+      OnChange(nameof(enabled));
+    }
+  }
 
   private S _value;
   public S value {

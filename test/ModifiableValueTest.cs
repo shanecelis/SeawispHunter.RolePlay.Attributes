@@ -46,6 +46,7 @@ public class ModifiableValueTest {
     var iv = (IValue<int>) v;
     Assert.Equal(1, iv.value);
     v.value = 2;
+    Assert.Equal(2, v.value);
     Assert.Equal(2, iv.value);
   }
 
@@ -76,10 +77,10 @@ public class ModifiableValueTest {
     Assert.Equal(110f, health.value);
     boost.enabled = false;
     Assert.Equal(100f, health.value);
-    Assert.Equal(0, healthNotifications);
-    Assert.Equal(0, currentHealthNotifications);
+    Assert.Equal(1, healthNotifications);
+    Assert.Equal(1, currentHealthNotifications);
     Assert.Equal(0, damageNotifications);
-    Assert.Equal(0, boostNotifications);
+    Assert.Equal(1, boostNotifications);
   }
 
   [Fact]
@@ -171,6 +172,7 @@ public class ModifiableValueTest {
     Assert.Equal(22f, stat.value);
   }
 
+  /** Turned Sidhion's into a class. */
   [Fact]
   public void TestSidhionStyle() {
     int notifications = 0;
