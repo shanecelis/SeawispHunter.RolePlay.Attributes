@@ -21,7 +21,6 @@ namespace SeawispHunter.RolePlay.Attributes {
 /** A IModifier<T> modifies an IModifiableValue<T>'s value. */
 public interface IModifier<T> : INotifyPropertyChanged {
   // string name { get; }
-  // S context { get; set; }
   bool enabled { get; set; }
   T Modify(T given);
   // event PropertyChangedEventHandler PropertyChanged;
@@ -31,20 +30,6 @@ public interface IValuedModifier<S,T> : IModifier<T>, IMutableValue<S> {
   /* We want this to be settable. */
   // S value { get; set; }
 }
-
-/** Most modifiers will be of the same type as the stat they're modifying, so
-    let's make that easier to express. */
-// public static class ModifiableValueExtensions {
-// #if NET6_0_OR_GREATER
-//   public static IValuedModifier<S,T> Plus<S,T>(this IModifiableValue<T> mod, S v, string name = null)
-//     where T : INumber<T>
-//     where S : INumber<S> {
-//     var modifier = Modifier.Plus<S,T>(v, name);
-//     mod.modifiers.Add(modifier);
-//     return modifier;
-//   }
-// #endif
-// }
 
 public static class Modifier {
 
@@ -232,6 +217,7 @@ public static class Modifier {
 //     T var2 = ...;
 //     T sum = default(TOperation).Sum(var1, var2);  // This is zero cost!
 // }
+
 #endif
 
   internal class ValuedModifierReference<S,T> : IValuedModifier<S,T>, IDisposable {
