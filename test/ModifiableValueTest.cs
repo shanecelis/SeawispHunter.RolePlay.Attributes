@@ -8,6 +8,9 @@
    [3]: https://opensource.org/licenses/MIT
    [4]: https://github.com/shanecelis/code-cite
 */
+
+using System;
+using System.Threading;
 using Xunit;
 
 using SeawispHunter.RolePlay.Attributes;
@@ -219,6 +222,42 @@ public class ModifiableValueTest {
     Assert.Equal(2, notifications);
     Assert.Equal(22f, stat.value);
   }
+
+// #if ! NETCOREAPP
+#if NET6_0_OR_GREATER
+  #warning Using a Timer.
+  [Fact]
+  public void TestDisableTimeout() {
+    Assert.Equal(110f, health.value);
+    Assert.True(boost.enabled);
+    boost.DisableAfter(TimeSpan.FromMilliseconds(100f));
+    Assert.True(boost.enabled);
+    Assert.Equal(110f, health.value);
+    Thread.Sleep(TimeSpan.FromMilliseconds(10f));
+    Assert.True(boost.enabled);
+    Assert.Equal(110f, health.value);
+    Thread.Sleep(TimeSpan.FromMilliseconds(200f));
+    Assert.False(boost.enabled);
+    Assert.Equal(100f, health.value);
+  }
+
+  [Fact]
+  public void TestEnableTimeout() {
+    Assert.Equal(110f, health.value);
+    boost.enabled = false;
+    Assert.False(boost.enabled);
+    boost.EnableAfter(TimeSpan.FromMilliseconds(100f));
+    Assert.False(boost.enabled);
+    Assert.Equal(100f, health.value);
+    Thread.Sleep(TimeSpan.FromMilliseconds(10f));
+    Assert.False(boost.enabled);
+    Assert.Equal(100f, health.value);
+    Thread.Sleep(TimeSpan.FromMilliseconds(200f));
+    Assert.True(boost.enabled);
+    Assert.Equal(110f, health.value);
+  }
+#endif
+
 
 }
 
