@@ -22,7 +22,7 @@ attributes ought to respect the following requirements.
 ### Simple
 
 ``` c#
-var health = new ModifiableValue<float> { name = "health", baseValue = 100f };
+var health = new ModifiableValue<float> { baseValue = 100f };
 health.modifiers.Add(Modifier.Times(1.10f));
 Console.WriteLine($"Health is {health.value}."); // Prints: Health is 110.
 health.modifiers.Add(Modifier.Plus(5f, "+5 health"));
@@ -32,7 +32,7 @@ Console.WriteLine($"Health is {health.value}."); // Prints: Health is 115.
 ### Using Notifications
 
 ``` c#
-var health = new ModifiableValue<float> { name = "health", baseValue = 100f };
+var health = new ModifiableValue<float> { baseValue = 100f };
 health.PropertyChanged += (_, _) => Console.WriteLine($"Health is {health.value}.");
 health.modifiers.Add(Modifier.Times(1.10f));
 // Prints: Health is 110.
@@ -42,15 +42,21 @@ health.modifiers.Add(Modifier.Plus(5f, "+5 health"));
 
 ### Using Attribute as Modifiers
 
-``` c#
-var maxHealth = new ModifiableValue<float> { name = "max health", baseValue = 100f };
-var health = ModifiableValue.FromValue(maxHealth) { name = "current health" };
+Let's create a max health attribute and we'll create a current health attribute,
+which uses the max health as its `baseValue`.
 
-health.PropertyChanged += (_, _) => Console.WriteLine($"Health is {health.value}.");
-health.modifiers.Add(Modifier.Times(1.10f));
-// Prints: Health is 110.
-health.modifiers.Add(Modifier.Plus(5f, "+5 health"));
-// Prints: Health is 115.
+``` c#
+var maxHealth = new ModifiableValue<float> { baseValue = 100f };
+var health = ModifiableValue.FromValue(maxHealth);
+var damage = Modifier.Subtract(0f);
+
+health.PropertyChanged += (_, _) => Console.WriteLine($"Health is {health.value}/{maxHealth.value}.");
+health.modifiers.Add(damage);
+// Prints: Health is 100/100.
+damage.value = 10f;
+// Prints: Health is 90/100.
+maxHealth.modifier.Add(Modifier.Plus(20f, "+20 level gain"));
+// Prints: Health is 110/120.
 ```
 
 ## Attribute
@@ -92,7 +98,9 @@ public interface IValuedModifier<T> : IModifier<T> {
 
 public static class Modifier {
   public static IValuedModifier<T> Plus(T value);
+  public static IValuedModifier<T> Subtract(T value);
   public static IValuedModifier<T> Times(T value);
+  public static IValuedModifier<T> Divide(T value);
   public static IValuedModifier<T> Substitute(T value);
 }
 ```
@@ -109,6 +117,45 @@ The API shown above is abridged to make its most salient points easy to
 understand. The actual code includes some abstractions like `IValue<T>` and
 `IMutableValue<T>` which are used to make attributes reuseable as modifiers
 for instance.
+
+## Notes
+
+### Dealing with Math in Generics
+
+.NET 7 has [generic math
+operators](https://pvs-studio.com/en/blog/posts/csharp/0878/), which will be a
+godsend. It will allow us to write methods like this:
+
+``` c#
+T Plus<T>(T a, T b) where T : INumber<T> => a + b;
+```
+
+which is invalid for prior versions. 
+
+This attributes library makes use of this generic math, however, we also want to
+support `netstandard2.0` because that's what Unity supports. So here's a trick
+given by the [above article](https://pvs-studio.com/en/blog/posts/csharp/0878/#ID119C0760DC)
+to allow you to do generic math without .NET 7's `INumber<T>` support.
+
+``` c#
+interface IOperator<T> {
+  T Plus(T a, T a)
+}
+
+struct OpFloat : IOperator<float> {
+  public float Plus(float a, float b) => a + b;
+}
+
+void SomeProcessing<T, TOperator>(...) where TOperation : struct, IOperator<T> {
+  T var1 = ...;
+  T var2 = ...;
+  T sum = default(TOperator).Plus(var1, var2);  // This is zero cost!
+}
+
+void Caller() {
+  SomeProcessing<float, OpFloat>(...);
+}
+```
 
 ## License
 
