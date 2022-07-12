@@ -268,6 +268,7 @@ public class ModifiableValue<T> : IModifiableValue<T> {
       get => modifiers[index];
       set => modifiers[index] = value;
     }
+
   }
 }
 

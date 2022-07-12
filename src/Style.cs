@@ -31,19 +31,11 @@ public class SidhionStat<T> : ModifiableValue<T>
 {
   public IModifiableValue<T> rawBonusesPlus = new ModifiableValue<T>();
   public IModifiableValue<T> rawBonusesMultiply = new ModifiableValue<T>() {
-#if NET6_0_OR_GREATER
-    baseValue = T.One
-#else
     baseValue = one
-#endif
   };
   public IModifiableValue<T> finalBonusesPlus = new ModifiableValue<T>();
   public IModifiableValue<T> finalBonusesMultiply = new ModifiableValue<T>() {
-#if NET6_0_OR_GREATER
-    baseValue = T.One
-#else
     baseValue = one
-#endif
   };
 
   public SidhionStat() {
@@ -53,19 +45,10 @@ public class SidhionStat<T> : ModifiableValue<T>
     modifiers.Add(Modifier.Times<T,T>(finalBonusesMultiply));
   }
 
-#if ! NET6_0_OR_GREATER
-  private static T one {
-    get {
-      switch (Type.GetTypeCode(typeof(T))) {
-        case TypeCode.Single:
-          return (T) (object) 1f;
-        case TypeCode.Int32:
-          return (T) (object) 1;
-        default:
-          throw new NotImplementedException($"No `one` case provided for type {typeof(T)}. Update `one` property.");
-      }
-    }
-  }
+#if NET6_0_OR_GREATER
+  private static T one => T.One;
+#else
+  private static T one => Modifier.GetOp<T>().one;
 #endif
 }
 

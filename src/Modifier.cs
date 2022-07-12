@@ -233,7 +233,7 @@ public static class Modifier {
   public static IValuedModifier<T,T> Substitute<T>(IValue<T> v, string name = null) => Substitute<T,T>(v, name);
 
   /* Not quite zero cost since this boxes the struct. */
-  private static IOperator<S> GetOp<S>() {
+  internal static IOperator<S> GetOp<S>() {
     switch (Type.GetTypeCode(typeof(S))) {
       case TypeCode.Single:
         return (IOperator<S>) (object) default(OpFloat);
@@ -359,6 +359,7 @@ public class ValuedModifier<S,T> : IValuedModifier<S,T> {
                                       op = this.op,
                                       value = func(this.value) };
     // HACK: Not sure I like this. Notify? yes. Mutate on notify? No.
+    // XXX: There should be DerivedValuedModifier to avoid this weird mutation.
     this.PropertyChanged += (_, _) => m.value = func(this.value);
     return m;
   }
