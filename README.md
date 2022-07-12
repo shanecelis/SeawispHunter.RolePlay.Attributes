@@ -17,7 +17,9 @@ attributes ought to respect the following requirements.
 * An attribute's value shall be altered non-destructively. 
 * Because so many things may alter an attribute, it shall notify us when changed.
 
-## Example
+## Examples
+
+### Simple
 
 ``` c#
 var health = new ModifiableValue<float> { name = "health", baseValue = 100f };
@@ -25,6 +27,30 @@ health.modifiers.Add(Modifier.Times(1.10f));
 Console.WriteLine($"Health is {health.value}."); // Prints: Health is 110.
 health.modifiers.Add(Modifier.Plus(5f, "+5 health"));
 Console.WriteLine($"Health is {health.value}."); // Prints: Health is 115.
+```
+
+### Using Notifications
+
+``` c#
+var health = new ModifiableValue<float> { name = "health", baseValue = 100f };
+health.PropertyChanged += (_, _) => Console.WriteLine($"Health is {health.value}.");
+health.modifiers.Add(Modifier.Times(1.10f));
+// Prints: Health is 110.
+health.modifiers.Add(Modifier.Plus(5f, "+5 health"));
+// Prints: Health is 115.
+```
+
+### Using Attribute as Modifiers
+
+``` c#
+var maxHealth = new ModifiableValue<float> { name = "max health", baseValue = 100f };
+var health = ModifiableValue.FromValue(maxHealth) { name = "current health" };
+
+health.PropertyChanged += (_, _) => Console.WriteLine($"Health is {health.value}.");
+health.modifiers.Add(Modifier.Times(1.10f));
+// Prints: Health is 110.
+health.modifiers.Add(Modifier.Plus(5f, "+5 health"));
+// Prints: Health is 115.
 ```
 
 ## Attribute

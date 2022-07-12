@@ -92,45 +92,58 @@ public static class Modifier {
 
 #else
   /* Here is the alternative to having a nice INumber<T> type like .NET7 will have. */
-  internal interface IOperator<X,Y> {
-    X Sum(X lhs, Y rhs);
-    X Times(X lhs, Y rhs);
+  internal interface IOperator<X> {
+    X Create<T>(T other);
+    X Sum(X a, X b);
+    X Times(X a, X b);
+    X Negate(X a);
+    X zero { get; }
+    X one { get; }
   }
 
-  internal struct OpFloatFloat : IOperator<float,float> {
+  internal struct OpFloat : IOperator<float> {
+    public float Create<T>(T other) => Convert.ToSingle(other);
     public float Sum(float a, float b) => a + b;
     public float Times(float a, float b) => a * b;
+    public float Negate(float a) => -a;
+    public float zero => 0f;
+    public float one => 1f;
   }
 
-  internal struct OpIntInt : IOperator<int,int> {
+  internal struct OpInt : IOperator<int> {
+    public int Create<T>(T other) => Convert.ToInt32(other);
     public int Sum(int a, int b) => a + b;
     public int Times(int a, int b) => a * b;
-  }
-
-  internal struct OpFloatInt : IOperator<float,int> {
-    public float Sum(float a, int b) => a + b;
-    public float Times(float a, int b) => a * b;
-  }
-
-  internal struct OpIntFloat : IOperator<int,float> {
-    public int Sum(int a, float b) => (int) (a + b);
-    public int Times(int a, float b) => (int) (a * b);
+    public int Negate(int a) => -a;
+    public int zero => 0;
+    public int one => 1;
   }
 
   // Plus
-  public static IValuedModifier<S,T> Plus<S,T>(S v, string name = null)
-    => new ValuedModifier<S,T> { value = v, op = (given, v) => GetOperator<T,S>().Sum(given, v), name = name, symbol = '+' };
-  public static IValuedModifier<S,T> Plus<S,T>(IValue<S> v, string name = null)
-    => new ValuedModifierReference<S,T>(v) { op = (given, v) => GetOperator<T,S>().Sum(given, v), name = name, symbol = '+' };
+  public static IValuedModifier<S,T> Plus<S,T>(S v, string name = null) {
+    var s = GetOp<S>();
+    var t = GetOp<T>();
+    return new ValuedModifier<S,T> { value = v, op = (given, v) => t.Create(s.Sum(s.Create(given), v)), name = name, symbol = '+' };
+  }
+  public static IValuedModifier<S,T> Plus<S,T>(IValue<S> v, string name = null) {
+    var s = GetOp<S>();
+    var t = GetOp<T>();
+    return new ValuedModifierReference<S,T>(v) { op = (given, v) => t.Create(s.Sum(s.Create(given), v)), name = name, symbol = '+' };
+  }
   public static IValuedModifier<T,T> Plus<T>(T v, string name = null) => Plus<T,T>(v, name);
   public static IValuedModifier<T,T> Plus<T>(this IValue<T> v, string name = null) => Plus<T,T>(v, name);
-  // public static IValuedModifier<T,T> Plus<T>(ModifiableValue<T> v, string name = null) => Plus<T,T>(v, name);
 
   // Times
-  public static IValuedModifier<S,T> Times<S,T>(S v, string name = null)
-    => new ValuedModifier<S,T> { value = v, op = (given, v) => GetOperator<T,S>().Times(given, v), name = name, symbol = '*' };
-  public static IValuedModifier<S,T> Times<S,T>(IValue<S> v, string name = null)
-    => new ValuedModifierReference<S,T>(v) { op = (given, v) => GetOperator<T,S>().Times(given, v), name = name, symbol = '*' };
+  public static IValuedModifier<S,T> Times<S,T>(S v, string name = null) {
+    var s = GetOp<S>();
+    var t = GetOp<T>();
+    return new ValuedModifier<S,T> { value = v, op = (given, v) => t.Create(s.Times(s.Create(given), v)), name = name, symbol = '*' };
+  }
+  public static IValuedModifier<S,T> Times<S,T>(IValue<S> v, string name = null) {
+    var s = GetOp<S>();
+    var t = GetOp<T>();
+    return new ValuedModifierReference<S,T>(v) { op = (given, v) => t.Create(s.Times(s.Create(given), v)), name = name, symbol = '*' };
+  }
   public static IValuedModifier<T,T> Times<T>(T v, string name = null) => Times<T,T>(v, name);
   public static IValuedModifier<T,T> Times<T>(IValue<T> v, string name = null) => Times<T,T>(v, name);
 
@@ -143,28 +156,14 @@ public static class Modifier {
   public static IValuedModifier<T,T> Substitute<T>(IValue<T> v, string name = null) => Substitute<T,T>(v, name);
 
   /* Not quite zero cost since this boxes the struct. */
-  private static IOperator<S,T> GetOperator<S,T>() {
+  private static IOperator<S> GetOp<S>() {
     switch (Type.GetTypeCode(typeof(S))) {
       case TypeCode.Single:
-        switch (Type.GetTypeCode(typeof(T))) {
-          case TypeCode.Int32:
-            return (IOperator<S,T>) (object) default(OpFloatInt);
-          case TypeCode.Single:
-            return (IOperator<S,T>) (object) default(OpFloatFloat);
-          default:
-            throw new NotImplementedException($"No handler for second type {typeof(T)}.");
-        }
+        return (IOperator<S>) (object) default(OpFloat);
       case TypeCode.Int32:
-        switch (Type.GetTypeCode(typeof(T))) {
-          case TypeCode.Int32:
-            return (IOperator<S,T>) (object) default(OpIntInt);
-          case TypeCode.Single:
-            return (IOperator<S,T>) (object) default(OpIntFloat);
-          default:
-            throw new NotImplementedException($"No handler for second type {typeof(T)}.");
-        }
+        return (IOperator<S>) (object) default(OpInt);
       default:
-        throw new NotImplementedException($"No handler for first type {typeof(S)}.");
+            throw new NotImplementedException($"No handler for second type {typeof(S)}.");
     }
   }
 
