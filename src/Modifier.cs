@@ -52,19 +52,34 @@ public static class Modifier {
   /* Four variations per operator because we want to cover T and IValue<T>, and
      we want to cover cases where the type T for the modifier and type S for the
      value are distinct. */
+
+  // Plus
   public static IValuedModifier<S,T> Plus<S,T>(S v, string name = null)
     where T : INumber<T>
     where S : INumber<S>
     => new ValuedModifier<S,T> { value = v, op = (given, v) => T.Create(S.Create(given) + v), name = name, symbol = '+' };
   //                                                                    (T) ((S) given + v)
   //                                                                    ^ How to write typecasts in INumber.
-  // Plus
   public static IValuedModifier<S,T> Plus<S,T>(IValue<S> v, string name = null)
     where T : INumber<T>
     where S : INumber<S>
     => new ValuedModifierReference<S,T>(v) { op = (given, v) => T.Create(S.Create(given) + v), name = name, symbol = '+' };
   public static IValuedModifier<T,T> Plus<T>(T v, string name = null) where T : INumber<T> => Plus<T,T>(v, name);
   public static IValuedModifier<T,T> Plus<T>(this IValue<T> v, string name = null) where T : INumber<T> => Plus<T,T>(v, name);
+
+  // Subtract
+  public static IValuedModifier<S,T> Subtract<S,T>(S v, string name = null)
+    where T : INumber<T>
+    where S : INumber<S>
+    => new ValuedModifier<S,T> { value = v, op = (given, v) => T.Create(S.Create(given) - v), name = name, symbol = '-' };
+  //                                                                    (T) ((S) given + v)
+  //                                                                  ^ How to write typecasts in INumber.
+  public static IValuedModifier<S,T> Subtract<S,T>(IValue<S> v, string name = null)
+    where T : INumber<T>
+    where S : INumber<S>
+    => new ValuedModifierReference<S,T>(v) { op = (given, v) => T.Create(S.Create(given) - v), name = name, symbol = '-' };
+  public static IValuedModifier<T,T> Subtract<T>(T v, string name = null) where T : INumber<T> => Subtract<T,T>(v, name);
+  public static IValuedModifier<T,T> Subtract<T>(this IValue<T> v, string name = null) where T : INumber<T> => Subtract<T,T>(v, name);
 
   // Times
   public static IValuedModifier<S,T> Times<S,T>(S v, string name = null)
@@ -77,6 +92,18 @@ public static class Modifier {
     => new ValuedModifierReference<S,T>(v) { op = (given, v) => T.Create(S.Create(given) * v), name = name, symbol = '*' };
   public static IValuedModifier<T,T> Times<T>(T v, string name = null) where T : INumber<T> => Times<T,T>(v, name);
   public static IValuedModifier<T,T> Times<T>(IValue<T> v, string name = null) where T : INumber<T> => Times<T,T>(v, name);
+
+  // Divide
+  public static IValuedModifier<S,T> Divide<S,T>(S v, string name = null)
+    where T : INumber<T>
+    where S : INumber<S>
+    => new ValuedModifier<S,T> { value = v, op = (given, v) => T.Create(S.Create(given) / v), name = name, symbol = '/' };
+  public static IValuedModifier<S,T> Divide<S,T>(IValue<S> v, string name = null)
+    where T : INumber<T>
+    where S : INumber<S>
+    => new ValuedModifierReference<S,T>(v) { op = (given, v) => T.Create(S.Create(given) / v), name = name, symbol = '/' };
+  public static IValuedModifier<T,T> Divide<T>(T v, string name = null) where T : INumber<T> => Divide<T,T>(v, name);
+  public static IValuedModifier<T,T> Divide<T>(IValue<T> v, string name = null) where T : INumber<T> => Divide<T,T>(v, name);
 
   // Substitute
   public static IValuedModifier<S,T> Substitute<S,T>(S v, string name = null)
@@ -96,6 +123,7 @@ public static class Modifier {
     X Create<T>(T other);
     X Sum(X a, X b);
     X Times(X a, X b);
+    X Divide(X a, X b);
     X Negate(X a);
     X zero { get; }
     X one { get; }
@@ -105,6 +133,7 @@ public static class Modifier {
     public float Create<T>(T other) => Convert.ToSingle(other);
     public float Sum(float a, float b) => a + b;
     public float Times(float a, float b) => a * b;
+    public float Divide(float a, float b) => a / b;
     public float Negate(float a) => -a;
     public float zero => 0f;
     public float one => 1f;
@@ -114,6 +143,7 @@ public static class Modifier {
     public int Create<T>(T other) => Convert.ToInt32(other);
     public int Sum(int a, int b) => a + b;
     public int Times(int a, int b) => a * b;
+    public int Divide(int a, int b) => a / b;
     public int Negate(int a) => -a;
     public int zero => 0;
     public int one => 1;
@@ -133,6 +163,20 @@ public static class Modifier {
   public static IValuedModifier<T,T> Plus<T>(T v, string name = null) => Plus<T,T>(v, name);
   public static IValuedModifier<T,T> Plus<T>(this IValue<T> v, string name = null) => Plus<T,T>(v, name);
 
+  // Plus
+  public static IValuedModifier<S,T> Subtract<S,T>(S v, string name = null) {
+    var s = GetOp<S>();
+    var t = GetOp<T>();
+    return new ValuedModifier<S,T> { value = v, op = (given, v) => t.Create(s.Sum(s.Create(given), s.Negate(v))), name = name, symbol = '-' };
+  }
+  public static IValuedModifier<S,T> Subtract<S,T>(IValue<S> v, string name = null) {
+    var s = GetOp<S>();
+    var t = GetOp<T>();
+    return new ValuedModifierReference<S,T>(v) { op = (given, v) => t.Create(s.Sum(s.Create(given), s.Negate(v))), name = name, symbol = '-' };
+  }
+  public static IValuedModifier<T,T> Subtract<T>(T v, string name = null) => Subtract<T,T>(v, name);
+  public static IValuedModifier<T,T> Subtract<T>(this IValue<T> v, string name = null) => Subtract<T,T>(v, name);
+
   // Times
   public static IValuedModifier<S,T> Times<S,T>(S v, string name = null) {
     var s = GetOp<S>();
@@ -146,6 +190,19 @@ public static class Modifier {
   }
   public static IValuedModifier<T,T> Times<T>(T v, string name = null) => Times<T,T>(v, name);
   public static IValuedModifier<T,T> Times<T>(IValue<T> v, string name = null) => Times<T,T>(v, name);
+
+  public static IValuedModifier<S,T> Divide<S,T>(S v, string name = null) {
+    var s = GetOp<S>();
+    var t = GetOp<T>();
+    return new ValuedModifier<S,T> { value = v, op = (given, v) => t.Create(s.Divide(s.Create(given), v)), name = name, symbol = '/' };
+  }
+  public static IValuedModifier<S,T> Divide<S,T>(IValue<S> v, string name = null) {
+    var s = GetOp<S>();
+    var t = GetOp<T>();
+    return new ValuedModifierReference<S,T>(v) { op = (given, v) => t.Create(s.Divide(s.Create(given), v)), name = name, symbol = '/' };
+  }
+  public static IValuedModifier<T,T> Divide<T>(T v, string name = null) => Divide<T,T>(v, name);
+  public static IValuedModifier<T,T> Divide<T>(IValue<T> v, string name = null) => Divide<T,T>(v, name);
 
   // Substitute
   public static IValuedModifier<S,T> Substitute<S,T>(S v, string name = null)
