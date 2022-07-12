@@ -123,8 +123,8 @@ for instance.
 ### Dealing with Math in Generics
 
 .NET 7 has [generic math
-operators](https://pvs-studio.com/en/blog/posts/csharp/0878/), which will be a
-godsend. It will allow us to write methods like this:
+operators](https://devblogs.microsoft.com/dotnet/dotnet-7-generic-math/), which
+will be a godsend. It will allow us to write methods like this:
 
 ``` c#
 T Plus<T>(T a, T b) where T : INumber<T> => a + b;
@@ -134,7 +134,7 @@ which is invalid for prior versions.
 
 This attributes library makes use of this generic math, however, we also want to
 support `netstandard2.0` because that's what Unity supports. So here's a trick
-given by the [above article](https://pvs-studio.com/en/blog/posts/csharp/0878/#ID119C0760DC)
+given by this [article](https://pvs-studio.com/en/blog/posts/csharp/0878/#ID119C0760DC)
 to allow you to do generic math without .NET 7's `INumber<T>` support.
 
 ``` c#
