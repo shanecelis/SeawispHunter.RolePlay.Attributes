@@ -40,7 +40,7 @@ health.modifiers.Add(Modifier.Plus(5f, "+5 health"));
 // Prints: Health is 115.
 ```
 
-### Using Attribute as Modifiers
+### Using an Attribute as a Modifier
 
 Let's create a max health attribute and we'll create a current health attribute,
 which uses the max health as its `baseValue`.
@@ -57,6 +57,22 @@ damage.value = 10f;
 // Prints: Health is 90/100.
 maxHealth.modifier.Add(Modifier.Plus(20f, "+20 level gain"));
 // Prints: Health is 110/120.
+```
+
+### Time Out a Modifier
+
+There are `EnableAfter()` and `DisableAfter()` extension methods for `IModifier<T>`.
+
+``` c#
+var armor = new ModifiableValue<int> { baseValue = 10 };
+var powerUp = Modifier.Plus(5);
+armor.modifiers.Add(powerUp);
+health.PropertyChanged += (_, _) => Console.WriteLine($"Armor is {armor.value}.");
+// Prints: Armor is 15.
+powerUp.DisableAfter(TimeSpan.FromSeconds(20f));
+// ... 
+// [Wait 20 seconds.]
+// Prints: Armor is 10.
 ```
 
 ## Attribute

@@ -12,6 +12,7 @@
 using System;
 using System.Text;
 using System.ComponentModel;
+using System.Threading;
 #if NET6_0_OR_GREATER
 using System.Numerics;
 #endif
@@ -32,6 +33,40 @@ public interface IValuedModifier<S,T> : IModifier<T>, IMutableValue<S> {
 }
 
 public static class Modifier {
+  public static IModifier<T> FromFunc<T>(Func<T,T> func) => new FuncModifier<T>(func);
+
+  internal class FuncModifier<T> : IModifier<T> {
+    private readonly Func<T,T> func;
+    private bool _enabled = true;
+    public bool enabled {
+      get => _enabled;
+      set {
+        if (_enabled == value)
+          return;
+        _enabled = value;
+        OnChange(nameof(enabled));
+      }
+    }
+
+    public FuncModifier(Func<T,T> func) => this.func = func;
+    
+    public event PropertyChangedEventHandler PropertyChanged;
+    protected void OnChange(string name) {
+      PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
+    
+    public T Modify(T given) => func(given);
+  }
+
+  public static void EnableAfter<T>(this IModifier<T> modifier, TimeSpan timeSpan) {
+    var timer = new Timer(Enable, modifier, timeSpan, Timeout.InfiniteTimeSpan);
+    void Enable(object modifier) => ((IModifier<T>) modifier).enabled = true;
+  }
+  
+  public static void DisableAfter<T>(this IModifier<T> modifier, TimeSpan timeSpan) {
+    var timer = new Timer(Disable, modifier, timeSpan, Timeout.InfiniteTimeSpan);
+    void Disable(object modifier) => ((IModifier<T>) modifier).enabled = false;
+  }
 
 #if NET6_0_OR_GREATER
   /* Four variations per operator because we want to cover T and IValue<T>, and
