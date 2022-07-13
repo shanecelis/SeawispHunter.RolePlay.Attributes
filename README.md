@@ -5,7 +5,8 @@ create their own stat class. That is to say a class which captures a game
 "stat", or "statistic" for lack of a better word, like health, attack, defense,
 etc. This one is mine. Oh wait! there is a better word: "attribute." But I don't
 want to take "attribute"[^1] from your game, so I'll call mine
-`IModifiableValue<T>`. 
+`IModifiableValue<T>`. Consider it a sound building block for you to create
+your own attribute class.
 
 These attributes and their derivatives may affect and be effected by a multitude
 of transient things, e.g, a sword that bestows an attack advantage; a shield
@@ -167,11 +168,11 @@ powerUp.DisableAfter(TimeSpan.FromSeconds(20f));
 // Prints: Armor is 10.
 ```
 
-## Writing Your Own Stat Class
+## Writing Your Own Attribute Class
 
 You can go far with `IModifiableValue<T>` but you'll probably want to bring some
-organization to it. Here is an example of what that might look like if organized
-yours like [Jacob
+organization to it beyond the order of modifiers. Here is an example of what
+that might look like if organized yours like [Jacob
 Penner](https://jkpenner.wordpress.com/2015/06/09/rpgsystems-stat-system-02-modifiers/)
 does:
 
