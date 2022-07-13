@@ -10,6 +10,7 @@
 */
 
 using System;
+using System.Linq;
 using System.Threading;
 using Xunit;
 
@@ -258,7 +259,16 @@ public class ModifiableValueTest {
   }
 #endif
 
-
+  [Fact]
+  public void TestModifierPriority() {
+    health.modifiers.Clear();
+    health.modifiers.Add(boost);
+    health.modifiers.Add(-10, damage);
+    Assert.Equal(damage, health.modifiers.First());
+    Assert.Equal(boost, health.modifiers.Skip(1).First());
+    health.modifiers.Add(boost20);
+    Assert.Equal(boost20, health.modifiers.Skip(2).First());
+  }
 }
 
 }
