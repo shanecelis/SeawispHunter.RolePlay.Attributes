@@ -138,7 +138,8 @@ default but you can [add it](https://khalidabuhakmeh.com/calculate-moon-phase-wi
 
 The priority of a modifier defines its order. The default priority is `0`. Lower
 numbers apply earlier; higher numbers apply later. Modifiers of the same
-priority apply in the order of they were inserted.
+priority apply in the order of they were inserted. This also demonstrates how we
+can clamp a value by creating an ad hoc modifier with a `Func<float,float>`.
 
 ``` c#
 var maxMana = new ModifiableValue<float> { baseValue = 50f };
@@ -246,7 +247,7 @@ stat.percentTimes.modifiers.Add(Modifier.Times(1.2f, "+20%")); // percentTimes e
 ```
 
 But that's either a discipline you can adopt or a convenience method you can
-write. And I believe a small price to pay for the flexibility these modifiers
+write. A small price to pay for the flexibility these modifiers
 provide.
 
 ### Other Stat Classes
