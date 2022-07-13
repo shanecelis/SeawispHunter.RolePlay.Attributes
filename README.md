@@ -27,7 +27,6 @@ health.modifiers.Add(Modifier.Plus(5f, "+5 health"));
 Console.WriteLine($"Health is {health.value}."); // Prints: Health is 115.
 ```
 
-
 ## Attribute
 
 At its root, an attribute has a `baseValue`. With no modifiers present, its
@@ -126,7 +125,7 @@ using the convenience methods in `Modifier` like `FromFunc()` shown below.
 
 ``` c#
 var moonArmor = new ModifiableValue<float> { baseValue = 20f };
-moonArmor.modifiers.Add(Modifier.FromFunc((float x) => DateTime.Now.IsFullMoon() ? 2 * x : x);
+moonArmor.modifiers.Add(Modifier.FromFunc((float x) => DateTime.Now.IsFullMoon() ? 2 * x : x));
 ```
 
 Unfortunately there is no such extension method `IsFullMoon()` for DateTime by
@@ -165,6 +164,43 @@ powerUp.DisableAfter(TimeSpan.FromSeconds(20f));
 // [Wait 20 seconds.]
 // Prints: Armor is 10.
 ```
+
+## Writing Your Own Stat Class
+
+You can go far with `IModifiableValue<T>` but you'll probably want to bring some
+organization to it. Here is an example of what that might look like if organized
+yours like [Jacob
+Penner](https://jkpenner.wordpress.com/2015/06/09/rpgsystems-stat-system-02-modifiers/)
+does:
+
+``` c#
+public class PennerStat<T> : ModifiableValue<T> {
+  public readonly IModifiableValue<T> baseValuePlus = new ModifiableValue<T>();
+  public readonly IModifiableValue<T> baseValueTimes = new ModifiableValue<T>() {
+    baseValue = one
+  };
+  public readonly IModifiableValue<T> totalValuePlus = new ModifiableValue<T>();
+  public readonly IModifiableValue<T> totalValueTimes = new ModifiableValue<T>() {
+    baseValue = one
+  };
+
+  public PennerStat() {
+    // value = (baseValue * baseValueTimes + baseValuePlus) * totalValueTimes + totalValuePlus
+    modifiers.Add(100, Modifier.Times<T,T>(baseValueTimes));
+    modifiers.Add(200, Modifier.Plus<T,T>(baseValuePlus));
+    modifiers.Add(300, Modifier.Times<T,T>(totalValueTimes));
+    modifiers.Add(400, Modifier.Plus<T,T>(totalValuePlus));
+  }
+
+  private static T one => Modifier.GetOp<T>().one;
+}
+```
+
+See the
+[Style.cs](https://github.com/shanecelis/SeawispHunter.RolePlay.Attributes/blob/master/src/Style.cs)
+file for more examples.
+
+
 ## Notes
 
 ### Dealing with Math in Generics
@@ -216,5 +252,6 @@ This project was inspired and informed by the following sources:
 - [RPGSystems: Stat System 03: Modifiers](https://jkpenner.wordpress.com/2015/06/09/rpgsystems-stat-system-02-modifiers/) by Jacob Penner;
 - [Using the Composite Design Pattern for an RPG Attributes System](https://gamedevelopment.tutsplus.com/tutorials/using-the-composite-design-pattern-for-an-rpg-attributes-system--gamedev-243) Daniel Sidhion;
 - [Character Stats (aka Attributes) System](https://forum.unity.com/threads/tutorial-character-stats-aka-attributes-system.504095/) by Kryzarel.
-  This also has an associated [asset](https://assetstore.unity.com/packages/tools/integration/character-stats-106351) for Unity3D.
+  This also has an associated Unity3D [asset](https://assetstore.unity.com/packages/tools/integration/character-stats-106351).
+  
 
