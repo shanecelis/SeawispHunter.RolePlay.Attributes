@@ -138,7 +138,7 @@ default but you can [add it](https://khalidabuhakmeh.com/calculate-moon-phase-wi
 
 The priority of a modifier defines its order. The default priority is `0`. Lower
 numbers apply earlier; higher numbers apply later. Modifiers of the same
-priority go in order of insertion.
+priority apply in the order of they were inserted.
 
 ``` c#
 var maxMana = new ModifiableValue<float> { baseValue = 50f };
@@ -170,11 +170,15 @@ powerUp.DisableAfter(TimeSpan.FromSeconds(20f));
 
 ## Writing Your Own Attribute Class
 
-You can go far with `IModifiableValue<T>` but you'll probably want to bring some
-organization to it beyond the order of modifiers. Here is an example of what
-that might look like if organized yours like [Jacob
-Penner](https://jkpenner.wordpress.com/2015/06/09/rpgsystems-stat-system-02-modifiers/)
-does:
+You can go far with `IModifiableValue<T>` but you'll probably want to organize
+modifiers beyond just their order at some point. This library was informed by a
+number of sources. What would their stats classes look like?
+
+### Jacob Penner's Stat Class
+
+Here is an example of what an attribute class might look like if organized 
+like [Jacob
+Penner](https://jkpenner.wordpress.com/2015/06/09/rpgsystems-stat-system-02-modifiers/):
 
 ``` c#
 public class PennerStat<T> : ModifiableValue<T> {
@@ -199,10 +203,60 @@ public class PennerStat<T> : ModifiableValue<T> {
 }
 ```
 
+### Kryzarel's Stat Class
+
+[Kryzarel](https://forum.unity.com/threads/tutorial-character-stats-aka-attributes-system.504095/)'s
+Stat class might look like this:
+
+``` c#
+public class KryzarelStat<T> : ModifiableValue<T> {
+  public enum Priority {
+    Flat = 100,
+    PercentAdd = 200,
+    PercentTimes = 300
+  };
+
+  public readonly IModifiableValue<T> flat = new ModifiableValue<T>();
+  public readonly IModifiableValue<T> percentAdd = new ModifiableValue<T>() {
+    baseValue = one
+  };
+  public readonly IModifiableValue<T> percentTimes = new ModifiableValue<T>() {
+    baseValue = one
+  };
+
+  public KryzarelStat() {
+    // value = (baseValue + flat) * percentAdd * percentTimes
+    modifiers.Add((int) Priority.Flat, Modifier.Plus<T,T>(flat));
+    modifiers.Add((int) Priority.PercentAdd, Modifier.Times<T,T>(percentAdd));
+    modifiers.Add((int) Priority.PercentTimes, Modifier.Times<T,T>(percentTimes));
+  }
+
+  private static T one => Modifier.GetOp<T>().one;
+}
+```
+
+Some care might need to be taken when adding modifiers to preserve the
+original's behavior.
+
+``` c#
+var stat = new KryzarelStat { baseValue = 30f };
+stat.flat.modifiers.Add(Modifier.Plus(10f)); // flat expects plus modifiers (or subtract).
+stat.percentAdd.modifiers.Add(Modifier.Plus(10f)); // percentAdd expects plus modifiers (or subtract).
+stat.percentTimes.modifiers.Add(Modifier.Times(1.2f, "+20%")); // percentTimes expects times modifiers (or divide but who does that?).
+```
+
+But that's either a discipline you can adopt or a convenience method you can
+write. And I believe a small price to pay for the flexibility these modifiers
+provide.
+
+### Other Stat Classes
+
 See the
 [Style.cs](https://github.com/shanecelis/SeawispHunter.RolePlay.Attributes/blob/master/src/Style.cs)
 file for more examples.
 
+And Please feel free to share any that you develop with me
+[@shanecelis](https://twitter.com/shanecelis).
 
 ## Notes
 
@@ -255,6 +309,8 @@ This project was inspired and informed by the following sources:
 - [RPGSystems: Stat System 03: Modifiers](https://jkpenner.wordpress.com/2015/06/09/rpgsystems-stat-system-02-modifiers/) by Jacob Penner;
 - [Using the Composite Design Pattern for an RPG Attributes System](https://gamedevelopment.tutsplus.com/tutorials/using-the-composite-design-pattern-for-an-rpg-attributes-system--gamedev-243) Daniel Sidhion;
 - [Character Stats (aka Attributes) System](https://forum.unity.com/threads/tutorial-character-stats-aka-attributes-system.504095/) by Kryzarel.
-  This also has an associated Unity3D [asset](https://assetstore.unity.com/packages/tools/integration/character-stats-106351).
+  Kryzarel has an associated Unity3D [Character Stats asset](https://assetstore.unity.com/packages/tools/integration/character-stats-106351).
   
+I am indebted to each of them for the generosity they showed in writing about
+the role playing attributes problem, both for their prose and code.
 
