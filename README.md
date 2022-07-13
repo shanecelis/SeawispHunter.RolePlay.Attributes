@@ -4,13 +4,15 @@ There comes a time when many a gamedev sets out for adventure but first must
 create their own stat class. That is to say a class which captures a game
 "stat", or "statistic" for lack of a better word, like health, attack, defense,
 etc. This one is mine. Oh wait! there is a better word: "attribute." But I don't
-want to take "attribute" from your game, so I'll call mine
-`IModifiableValue<T>`.
+want to take "attribute"[^1] from your game, so I'll call mine
+`IModifiableValue<T>`. 
 
 These attributes and their derivatives may affect and be effected by a multitude
 of transient things, e.g, a sword that bestows an attack advantage; a shield
 that raises one's defense; a ring that regenerates health. Because of that
 attributes ought to respect the following requirements.
+
+[^1]: Or "Attribute", "IAttribute", etc.
 
 ## Requirements
 
