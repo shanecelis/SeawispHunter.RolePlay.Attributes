@@ -29,20 +29,82 @@ public class SidhionStat<T> : ModifiableValue<T>
   where T : INumber<T>
 #endif
 {
-  public IModifiableValue<T> rawBonusesPlus = new ModifiableValue<T>();
-  public IModifiableValue<T> rawBonusesMultiply = new ModifiableValue<T>() {
+  public readonly IModifiableValue<T> rawBonusesPlus = new ModifiableValue<T>();
+  public readonly IModifiableValue<T> rawBonusesTimes = new ModifiableValue<T>() {
     baseValue = one
   };
-  public IModifiableValue<T> finalBonusesPlus = new ModifiableValue<T>();
-  public IModifiableValue<T> finalBonusesMultiply = new ModifiableValue<T>() {
+  public readonly IModifiableValue<T> finalBonusesPlus = new ModifiableValue<T>();
+  public readonly IModifiableValue<T> finalBonusesTimes = new ModifiableValue<T>() {
     baseValue = one
   };
 
   public SidhionStat() {
-    modifiers.Add(Modifier.Plus<T,T>(rawBonusesPlus));
-    modifiers.Add(Modifier.Times<T,T>(rawBonusesMultiply));
-    modifiers.Add(Modifier.Plus<T,T>(finalBonusesPlus));
-    modifiers.Add(Modifier.Times<T,T>(finalBonusesMultiply));
+    // value = ((baseValue + rawBonusesPlus) * rawBonusesTimes + finalBonusesPlus) * finalBonusesTimes
+    modifiers.Add(100, Modifier.Plus<T,T>(rawBonusesPlus));
+    modifiers.Add(200, Modifier.Times<T,T>(rawBonusesTimes));
+    modifiers.Add(300, Modifier.Plus<T,T>(finalBonusesPlus));
+    modifiers.Add(400, Modifier.Times<T,T>(finalBonusesTimes));
+  }
+
+#if NET6_0_OR_GREATER
+  private static T one => T.One;
+#else
+  private static T one => Modifier.GetOp<T>().one;
+#endif
+}
+
+public class KryzarelStat<T> : ModifiableValue<T>
+#if NET6_0_OR_GREATER
+  where T : INumber<T>
+#endif
+{
+  public enum Priority {
+    Flat = 100,
+    PercentAdd = 200,
+    PercentTimes = 300
+  };
+
+  public readonly IModifiableValue<T> flat = new ModifiableValue<T>();
+  public readonly IModifiableValue<T> percentAdd = new ModifiableValue<T>() {
+    baseValue = one
+  };
+  public readonly IModifiableValue<T> percentTimes = new ModifiableValue<T>() {
+    baseValue = one
+  };
+  public KryzarelStat() {
+    modifiers.Add((int) Priority.Flat, Modifier.Plus<T,T>(flat));
+    modifiers.Add((int) Priority.PercentAdd, Modifier.Times<T,T>(percentAdd));
+    modifiers.Add((int) Priority.PercentTimes, Modifier.Times<T,T>(percentTimes));
+  }
+
+#if NET6_0_OR_GREATER
+  private static T one => T.One;
+#else
+  private static T one => Modifier.GetOp<T>().one;
+#endif
+}
+
+public class PennerStat<T> : ModifiableValue<T>
+#if NET6_0_OR_GREATER
+  where T : INumber<T>
+#endif
+{
+  public readonly IModifiableValue<T> baseValuePlus = new ModifiableValue<T>();
+  public readonly IModifiableValue<T> baseValueTimes = new ModifiableValue<T>() {
+    baseValue = one
+  };
+  public readonly IModifiableValue<T> totalValuePlus = new ModifiableValue<T>();
+  public readonly IModifiableValue<T> totalValueTimes = new ModifiableValue<T>() {
+    baseValue = one
+  };
+
+  public PennerStat() {
+    // This class looks similar to Sidhion, but it is different.
+    // value = (baseValue * baseValueTimes + baseValuePlus) * totalValueTimes + totalValuePlus
+    modifiers.Add(100, Modifier.Times<T,T>(baseValueTimes));
+    modifiers.Add(200, Modifier.Plus<T,T>(baseValuePlus));
+    modifiers.Add(300, Modifier.Times<T,T>(totalValueTimes));
+    modifiers.Add(400, Modifier.Plus<T,T>(totalValuePlus));
   }
 
 #if NET6_0_OR_GREATER
