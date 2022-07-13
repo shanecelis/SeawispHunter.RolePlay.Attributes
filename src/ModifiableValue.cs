@@ -33,14 +33,18 @@ public interface IMutableValue<T> : IValue<T> {
 }
 
 /** This IModifiableValue<T> class is meant to capture values in games like health,
-    strength, etc. that can be modified by various, sometimes distal, effects.
- */
+    strength, etc. that can be modified by various, sometimes distal, effects. */
 public interface IModifiableValue<T> : IValue<T>, INotifyPropertyChanged {
   T baseValue { get; set; }
   // T value { get; set; }
   /** The list implementation will handle chaining property change events. */
-  IList<IModifier<T>> modifiers { get; }
+  IPriorityCollection<IModifier<T>> modifiers { get; }
   // event PropertyChangedEventHandler PropertyChanged;
+}
+
+/** We want to be able to specify a priority. */
+public interface IPriorityCollection<T> : ICollection<T> {
+  void Add(int priority, T modifier);
 }
 
 public static class Value {
@@ -136,8 +140,8 @@ public class Value<T> : IMutableValue<T> {
 
 public class ModifiableValue<T> : IModifiableValue<T> {
 
-  protected ModifiersList _modifiers;
-  public IList<IModifier<T>> modifiers => _modifiers;
+  protected ModifiersSortedList _modifiers;
+  public IPriorityCollection<IModifier<T>> modifiers => _modifiers;
 
   protected T _baseValue;
   public virtual T baseValue {
@@ -162,7 +166,7 @@ public class ModifiableValue<T> : IModifiableValue<T> {
   public event PropertyChangedEventHandler PropertyChanged;
   private static PropertyChangedEventArgs modifiersEventArgs
     = new PropertyChangedEventArgs(nameof(modifiers));
-  public ModifiableValue() => _modifiers = new ModifiersList(this);
+  public ModifiableValue() => _modifiers = new ModifiersSortedList(this);
 
   protected void Chain(object sender, PropertyChangedEventArgs args) => OnChange(nameof(value));
 
@@ -191,6 +195,61 @@ public class ModifiableValue<T> : IModifiableValue<T> {
     builder.Append("-> ");
     builder.Append(value);
     return builder.ToString();
+  }
+
+  /** A sorted list for modifiers. It uses a tuple (int priority, int age)
+      because SortedList<K,V> can only store one value for one key. We may have
+      many modifiers with the same priority (default priority is 0). So
+      modifiers are ordered by priority first and age second. Each modifier will
+      have a unique age which ensures the keys will be unique.
+   */
+  protected class ModifiersSortedList : IPriorityCollection<IModifier<T>>, IComparer<(int priority, int age)> {
+    private readonly ModifiableValue<T> parent;
+    private readonly SortedList<(int, int), IModifier<T>> modifiers = new();
+    private int addCount = 0;
+    public ModifiersSortedList(ModifiableValue<T> parent) => this.parent = parent;
+
+    public IEnumerator<IModifier<T>> GetEnumerator() => modifiers.Values.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    public void Add(IModifier<T> modifier) => Add(0, modifier);
+    public void Add(int priority, IModifier<T> modifier) {
+      modifier.PropertyChanged -= parent.ModifiersChanged;
+      modifier.PropertyChanged += parent.ModifiersChanged;
+      modifiers.Add((priority, ++addCount), modifier);
+      parent.OnChange(nameof(modifiers));
+    }
+
+    public void Clear() {
+      foreach (var modifier in modifiers.Values)
+        modifier.PropertyChanged -= parent.ModifiersChanged;
+      modifiers.Clear();
+      parent.OnChange(nameof(modifiers));
+    }
+
+    public bool Contains(IModifier<T> modifier) => modifiers.ContainsValue(modifier);
+
+    public void CopyTo(IModifier<T>[] array, int arrayIndex) => modifiers.Values.CopyTo(array, arrayIndex);
+
+    public bool Remove(IModifier<T> modifier) {
+      int i = modifiers.IndexOfValue(modifier);
+      if (i < 0)
+        return false;
+      modifier.PropertyChanged -= parent.ModifiersChanged;
+      modifiers.RemoveAt(i);
+      parent.OnChange(nameof(modifiers));
+      return true;
+    }
+
+    public int Count => modifiers.Count;
+    public bool IsReadOnly => false;
+
+    public int Compare((int priority, int age) x, (int priority, int age) y) {
+      int result = x.priority.CompareTo(y.priority);
+      if (result != 0)
+        return result;
+      return x.age.CompareTo(y.age);
+    }
   }
 
   protected class ModifiersList : IList<IModifier<T>> {
