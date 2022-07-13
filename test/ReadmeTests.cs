@@ -84,5 +84,23 @@ public class ReadmeTest {
     Assert.Equal(0f, health.value);
     Assert.Equal(120f, maxHealth.value);
   }
+
+  [Fact]
+  public void TestExampleMoon() {
+    var moonArmor = new ModifiableValue<float> { baseValue = 20f };
+    moonArmor.modifiers.Add(Modifier.FromFunc((float x) => DateTime.Now.IsFullMoon() ? 2 * x : x));
+    Assert.Equal(20f, moonArmor.value);
+    try {
+      Extensions.isFullMoon = true;
+      Assert.Equal(40f, moonArmor.value);
+    } finally {
+      Extensions.isFullMoon = false;
+    }
+  }
+}
+
+public static class Extensions {
+  public static bool isFullMoon = false;
+  public static bool IsFullMoon(this DateTime d) => isFullMoon;
 }
 }

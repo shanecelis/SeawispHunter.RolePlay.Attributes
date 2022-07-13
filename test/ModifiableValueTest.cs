@@ -162,19 +162,19 @@ public class ModifiableValueTest {
   public void TestSidhionAccumulationStyle() {
     var stat = new ModifiableValue<float> { baseValue = 10f };
     var rawBonusesPlus = new ModifiableValue<float>();
-    var rawBonusesMultiply = new ModifiableValue<float>() { baseValue = 1f };
+    var rawBonusesTimes = new ModifiableValue<float>() { baseValue = 1f };
     var finalBonusesPlus = new ModifiableValue<float>();
     var finalBonusesMultiply = new ModifiableValue<float>() { baseValue = 1f };
     Assert.True(stat is IValue<float>);
     Assert.True(rawBonusesPlus is IValue<float>);
     stat.modifiers.Add(Modifier.Plus<float>(rawBonusesPlus));
-    stat.modifiers.Add(Modifier.Times<float>(rawBonusesMultiply));
+    stat.modifiers.Add(Modifier.Times<float>(rawBonusesTimes));
     stat.modifiers.Add(Modifier.Plus<float>(finalBonusesPlus));
     stat.modifiers.Add(Modifier.Times<float>(finalBonusesMultiply));
     Assert.Equal(10f, stat.value);
     rawBonusesPlus.modifiers.Add(Modifier.Plus(1f));
     Assert.Equal(11f, stat.value);
-    rawBonusesMultiply.modifiers.Add(Modifier.Plus(1f));
+    rawBonusesTimes.modifiers.Add(Modifier.Plus(1f));
     Assert.Equal(22f, stat.value);
   }
 
@@ -219,7 +219,7 @@ public class ModifiableValueTest {
     Assert.Equal(1, notifications2);
     Assert.Equal(1, notifications);
     Assert.Equal(11f, stat.value);
-    stat.rawBonusesMultiply.modifiers.Add(Modifier.Plus(1f));
+    stat.rawBonusesTimes.modifiers.Add(Modifier.Plus(1f));
     Assert.Equal(2, notifications);
     Assert.Equal(22f, stat.value);
   }
