@@ -64,17 +64,24 @@ public class ReadmeTest {
     Assert.Equal(1, notificationCount);
     Assert.Equal(100f, health.value);
     Assert.Equal(100f, maxHealth.value);
+    health.modifiers.Add(priority: 100, Modifier.FromFunc((float x) => Math.Clamp(x, 0, maxHealth.value)));
+    Assert.Equal(2, notificationCount);
     // Prints: Health is 100.
     damage.value = 10f;
     // Prints: Health is 90.
-    Assert.Equal(2, notificationCount);
+    Assert.Equal(3, notificationCount);
     Assert.Equal(90f, health.value);
     Assert.Equal(100f, maxHealth.value);
 
     maxHealth.modifiers.Add(Modifier.Plus(20f, "+20 level gain"));
     // Prints: Health is 110/120.
-    Assert.Equal(3, notificationCount);
+    Assert.Equal(4, notificationCount);
     Assert.Equal(110f, health.value);
+    Assert.Equal(120f, maxHealth.value);
+
+    damage.value = 1000f;
+    Assert.Equal(5, notificationCount);
+    Assert.Equal(0f, health.value);
     Assert.Equal(120f, maxHealth.value);
   }
 }
