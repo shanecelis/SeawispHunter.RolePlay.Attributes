@@ -1,7 +1,7 @@
 # SeawispHunter.RolePlay.Attributes
 
 There comes a time when many a gamedev sets out for adventure but first must
-create their own attribute class. That is to say a class which captures a game
+create their own stat class. That is to say a class which captures a game
 "stat", or "statistic" for lack of a better word, like health, attack, defense,
 etc. This one is mine. Oh wait! there is a better word: "attribute." But I don't
 want to take "attribute" from your game, so I'll call mine
@@ -17,9 +17,7 @@ attributes ought to respect the following requirements.
 * An attribute's value shall be altered non-destructively. 
 * Because so many things may alter an attribute, it shall notify us when changed.
 
-## Examples
-
-### Simple
+## Barebones Example
 
 ``` c#
 var health = new ModifiableValue<float> { baseValue = 100f };
@@ -29,51 +27,6 @@ health.modifiers.Add(Modifier.Plus(5f, "+5 health"));
 Console.WriteLine($"Health is {health.value}."); // Prints: Health is 115.
 ```
 
-### Using Notifications
-
-``` c#
-var health = new ModifiableValue<float> { baseValue = 100f };
-health.PropertyChanged += (_, _) => Console.WriteLine($"Health is {health.value}.");
-health.modifiers.Add(Modifier.Times(1.10f));
-// Prints: Health is 110.
-health.modifiers.Add(Modifier.Plus(5f, "+5 health"));
-// Prints: Health is 115.
-```
-
-### Using an Attribute as a Modifier
-
-Let's create a max health attribute and we'll create a current health attribute,
-which uses the max health as its `baseValue`.
-
-``` c#
-var maxHealth = new ModifiableValue<float> { baseValue = 100f };
-var health = ModifiableValue.FromValue(maxHealth);
-var damage = Modifier.Subtract(0f);
-
-health.PropertyChanged += (_, _) => Console.WriteLine($"Health is {health.value}/{maxHealth.value}.");
-health.modifiers.Add(damage);
-// Prints: Health is 100/100.
-damage.value = 10f;
-// Prints: Health is 90/100.
-maxHealth.modifier.Add(Modifier.Plus(20f, "+20 level gain"));
-// Prints: Health is 110/120.
-```
-
-### Time Out a Modifier
-
-There are `EnableAfter()` and `DisableAfter()` extension methods for `IModifier<T>`.
-
-``` c#
-var armor = new ModifiableValue<int> { baseValue = 10 };
-var powerUp = Modifier.Plus(5);
-armor.modifiers.Add(powerUp);
-health.PropertyChanged += (_, _) => Console.WriteLine($"Armor is {armor.value}.");
-// Prints: Armor is 15.
-powerUp.DisableAfter(TimeSpan.FromSeconds(20f));
-// ... 
-// [Wait 20 seconds.]
-// Prints: Armor is 10.
-```
 
 ## Attribute
 
@@ -86,7 +39,7 @@ public interface IModifiableValue<T> {
   T baseValue { get; set; }
   T value { get; }
   /** The list implementation sets up property change events automatically. */
-  IList<IModifier<T>> modifiers { get; }
+  ICollection<IModifier<T>> modifiers { get; }
   event PropertyChangedEventHandler PropertyChanged;
 }
 ```
@@ -134,6 +87,84 @@ understand. The actual code includes some abstractions like `IValue<T>` and
 `IMutableValue<T>` which are used to make attributes reuseable as modifiers
 for instance.
 
+## Further Examples
+
+### Using Notifications
+
+``` c#
+var health = new ModifiableValue<float> { baseValue = 100f };
+health.PropertyChanged += (_, _) => Console.WriteLine($"Health is {health.value}.");
+health.modifiers.Add(Modifier.Times(1.10f));
+// Prints: Health is 110.
+health.modifiers.Add(Modifier.Plus(5f, "+5 health"));
+// Prints: Health is 115.
+```
+
+### Using an Attribute as a Modifier
+
+Let's create a max health attribute and we'll create a current health attribute,
+which uses the max health as its `baseValue`.
+
+``` c#
+var maxHealth = new ModifiableValue<float> { baseValue = 100f };
+var health = ModifiableValue.FromValue(maxHealth);
+var damage = Modifier.Subtract(0f);
+
+health.PropertyChanged += (_, _) => Console.WriteLine($"Health is {health.value}/{maxHealth.value}.");
+health.modifiers.Add(damage);
+// Prints: Health is 100/100.
+damage.value = 10f;
+// Prints: Health is 90/100.
+maxHealth.modifier.Add(Modifier.Plus(20f, "+20 level gain"));
+// Prints: Health is 110/120.
+```
+
+### Creating New Modifiers
+
+New modifiers can be created by implementing the `IModifier<T>` interface or by
+using the convenience methods in `Modifier` like `FromFunc()` shown below.
+
+``` c#
+var moonArmor = new ModifiableValue<float> { baseValue = 20f };
+moonArmor.modifiers.Add(Modifier.FromFunc((float x) => DateTime.Now.IsFullMoon() ? 2 * x : x);
+```
+
+Unfortunately there is no such extension method `IsFullMoon()` for DateTime by
+default but you can [add it](https://khalidabuhakmeh.com/calculate-moon-phase-with-csharp).
+
+### Ordering Modifiers
+
+The priority of a modifier defines its order. The default priority is `0`. Lower
+numbers apply earlier; higher numbers apply later. Modifiers of the same
+priority go in order of insertion.
+
+``` c#
+var maxMana = new ModifiableValue<float> { baseValue = 50f };
+var mana = ModifiableValue.FromValue(maxMana);
+var manaCost = Modifier.Subtract(0f);
+mana.modifiers.Add(manaCost);
+mana.PropertyChanged += (_, _) => Console.WriteLine($"Mana is {mana.value}/{maxMana.value}.");
+mana.modifiers.Add(priority: 100, Modifier.FromFunc((float x) => Math.Clamp(x, 0, maxMana.value));
+// Prints: Mana is 50/50.
+manaCost.value = 1000f;
+// Prints: Mana is 0/50.
+```
+
+### Time Out a Modifier
+
+There are `EnableAfter()` and `DisableAfter()` extension methods for `IModifier<T>`.
+
+``` c#
+var armor = new ModifiableValue<int> { baseValue = 10 };
+var powerUp = Modifier.Plus(5);
+armor.modifiers.Add(powerUp);
+health.PropertyChanged += (_, _) => Console.WriteLine($"Armor is {armor.value}.");
+// Prints: Armor is 15.
+powerUp.DisableAfter(TimeSpan.FromSeconds(20f));
+// ... 
+// [Wait 20 seconds.]
+// Prints: Armor is 10.
+```
 ## Notes
 
 ### Dealing with Math in Generics
@@ -181,6 +212,9 @@ This project is released under the MIT license.
 
 This project was inspired and informed by the following sources:
 
-- http://howtomakeanrpg.com/a/how-to-make-an-rpg-stats.html
-- https://jkpenner.wordpress.com/2015/06/09/rpgsystems-stat-system-02-modifiers/
-- https://gamedevelopment.tutsplus.com/tutorials/using-the-composite-design-pattern-for-an-rpg-attributes-system--gamedev-243
+- [How to Make an RPG: Stats](http://howtomakeanrpg.com/a/how-to-make-an-rpg-stats.html) by Dan Schuller;
+- [RPGSystems: Stat System 03: Modifiers](https://jkpenner.wordpress.com/2015/06/09/rpgsystems-stat-system-02-modifiers/) by Jacob Penner;
+- [Using the Composite Design Pattern for an RPG Attributes System](https://gamedevelopment.tutsplus.com/tutorials/using-the-composite-design-pattern-for-an-rpg-attributes-system--gamedev-243) Daniel Sidhion;
+- [Character Stats (aka Attributes) System](https://forum.unity.com/threads/tutorial-character-stats-aka-attributes-system.504095/) by Kryzarel.
+  This also has an associated [asset](https://assetstore.unity.com/packages/tools/integration/character-stats-106351) for Unity3D.
+
