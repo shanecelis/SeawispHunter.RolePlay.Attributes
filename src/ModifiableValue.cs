@@ -47,7 +47,6 @@ public interface IMutableValue<T> : IValue<T> {
   new T value { get; set; }
 }
 
-
 public static class Value {
   public static IValue<T> FromFunc<T>(Func<T> f, out Action callOnChange) => new DerivedValue<T>(f, out callOnChange);
   public static IValue<T> FromFunc<T>(Func<T> f) => new DerivedValue<T>(f, out var callOnChange);
@@ -115,15 +114,17 @@ public static class ValueExtensions {
 }
 
 public class Value<T> : IMutableValue<T> {
+  /** When value is set, pass through `setter()` first. */
+  public Func<T,T> setter;
 
-  private T _value;
+  protected T _value;
   public virtual T value {
     get => _value;
     set {
-      // Not valid for structs generally.
-      if (_value != null && _value.Equals(value))
-        return;
-      _value = value;
+      if (setter == null)
+        _value = value;
+      else
+        _value = setter(value);
       OnChange(nameof(value));
     }
   }
