@@ -14,6 +14,9 @@ using System.ComponentModel;
 using System.Collections;
 using System.Collections.Generic;
 
+#if NET6_0_OR_GREATER
+using System.Numerics;
+#endif
 namespace SeawispHunter.RolePlay.Attributes {
 
 /* IValue<T> notifies listeners when changed. That's it. */
@@ -50,7 +53,35 @@ public interface IMutableValue<T> : IValue<T> {
 public static class Value {
   public static IValue<T> FromFunc<T>(Func<T> f, out Action callOnChange) => new DerivedValue<T>(f, out callOnChange);
   public static IValue<T> FromFunc<T>(Func<T> f) => new DerivedValue<T>(f, out var callOnChange);
+  public static IMutableValue<T> WithBounds<T>(T value, T lowerBound, T upperBound)
+#if NET6_0_OR_GREATER
+    where T : INumber<T>
+#else
+    where T : IEquatable<T>
+#endif
+    => new BoundedValue<T>(value,
+                        new ReadOnlyValue<T> { value = lowerBound },
+                        new ReadOnlyValue<T> { value = upperBound });
 
+  public static IMutableValue<T> WithBounds<T>(T value, T lowerBound, IValue<T> upperBound)
+#if NET6_0_OR_GREATER
+    where T : INumber<T>
+#else
+    where T : IEquatable<T>
+#endif
+    => new BoundedValue<T>(value,
+    new ReadOnlyValue<T> { value = lowerBound },
+    upperBound);
+
+  public static IMutableValue<T> WithBounds<T>(T value, IValue<T> lowerBound, IValue<T> upperBound)
+#if NET6_0_OR_GREATER
+    where T : INumber<T>
+#else
+    where T : IEquatable<T>
+#endif
+    => new BoundedValue<T>(value,
+    lowerBound,
+    upperBound);
   internal class DerivedValue<T> : IValue<T> {
     private Func<T> func;
     public DerivedValue(Func<T> func, out Action callOnChange) {
@@ -62,6 +93,64 @@ public static class Value {
     private static PropertyChangedEventArgs eventArgs = new PropertyChangedEventArgs(nameof(value));
     protected void OnChange() => PropertyChanged?.Invoke(this, eventArgs);
   }
+  internal class BoundedValue<T> : IMutableValue<T>
+#if NET6_0_OR_GREATER
+    where T : INumber<T>
+#else
+    where T : IEquatable<T>
+#endif
+  {
+    public readonly IValue<T> lowerBound;
+    public readonly IValue<T> upperBound;
+    private T _value;
+    public T value {
+      get => _value;
+      set {
+#if NET6_0_OR_GREATER
+        _value = value;
+        if (_value < lowerBound.value)
+          _value = lowerBound.value;
+        if (_value > upperBound.value)
+          _value = upperBound.value;
+
+#else
+        var op = Modifier.GetOp<T>();
+        _value = op.Max(lowerBound.value, op.Min(upperBound.value, value));
+#endif
+        OnChange();
+      }
+    }
+    public BoundedValue(T value, IValue<T> lowerBound, IValue<T> upperBound) {
+      _value = value;
+      this.lowerBound = lowerBound;
+      // this.lowerBound.PropertyChanged -= BoundChanged;
+      this.lowerBound.PropertyChanged += BoundChanged;
+      this.upperBound = upperBound;
+      // this.upperBound.PropertyChanged -= BoundChanged;
+      this.upperBound.PropertyChanged += BoundChanged;
+    }
+
+    protected void BoundChanged(object sender, PropertyChangedEventArgs e) {
+      var oldValue = _value;
+      var newValue = value;
+      if (! oldValue.Equals(newValue))
+        OnChange();
+    }
+
+    public event PropertyChangedEventHandler PropertyChanged;
+    private static PropertyChangedEventArgs eventArgs = new PropertyChangedEventArgs(nameof(value));
+    protected void OnChange() => PropertyChanged?.Invoke(this, eventArgs);
+  }
+
+  internal class ReadOnlyValue<T> : IValue<T> {
+    public T value { get; init; }
+    // We don't ever call this because we don't change.
+    public event PropertyChangedEventHandler PropertyChanged {
+      add { }
+      remove { }
+    }
+  }
+
 }
 
 public static class ModifiableValue {

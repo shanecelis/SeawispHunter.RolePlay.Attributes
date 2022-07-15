@@ -139,12 +139,14 @@ public static class Modifier {
 
 #else
   /* Here is the alternative to having a nice INumber<T> type like .NET7 will have. */
-  internal interface IOperator<X> {
+  public interface IOperator<X> {
     X Create<T>(T other);
     X Sum(X a, X b);
     X Times(X a, X b);
     X Divide(X a, X b);
     X Negate(X a);
+    X Max(X a, X b);
+    X Min(X a, X b);
     X zero { get; }
     X one { get; }
   }
@@ -155,6 +157,8 @@ public static class Modifier {
     public float Times(float a, float b) => a * b;
     public float Divide(float a, float b) => a / b;
     public float Negate(float a) => -a;
+    public float Max(float a, float b) => Math.Max(a, b);
+    public float Min(float a, float b) => Math.Min(a, b);
     public float zero => 0f;
     public float one => 1f;
   }
@@ -165,6 +169,8 @@ public static class Modifier {
     public int Times(int a, int b) => a * b;
     public int Divide(int a, int b) => a / b;
     public int Negate(int a) => -a;
+    public int Max(int a, int b) => Math.Max(a, b);
+    public int Min(int a, int b) => Math.Min(a, b);
     public int zero => 0;
     public int one => 1;
   }
@@ -233,7 +239,7 @@ public static class Modifier {
   public static IValuedModifier<T,T> Substitute<T>(IValue<T> v, string name = null) => Substitute<T,T>(v, name);
 
   /* Not quite zero cost since this boxes the struct. */
-  internal static IOperator<S> GetOp<S>() {
+  public static IOperator<S> GetOp<S>() {
     switch (Type.GetTypeCode(typeof(S))) {
       case TypeCode.Single:
         return (IOperator<S>) (object) default(OpFloat);
