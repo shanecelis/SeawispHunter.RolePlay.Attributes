@@ -29,6 +29,12 @@ public interface IValue<T> : INotifyPropertyChanged {
   // event PropertyChangedEventHandler PropertyChanged;
 }
 
+/* IMutableValue<T> is an IValue<T> that can be directly changed. */
+public interface IMutableValue<T> : IValue<T> {
+  /* We want this to be settable. */
+  new T value { get; set; }
+}
+
 /** This IModifiableValue<T> class is meant to capture values in games like health,
     strength, etc. that can be modified by various, sometimes distal, effects. */
 public interface IModifiableValue<T> : IValue<T>, INotifyPropertyChanged {
@@ -42,12 +48,6 @@ public interface IModifiableValue<T> : IValue<T>, INotifyPropertyChanged {
 /** We want to be able to specify a priority. */
 public interface IPriorityCollection<T> : ICollection<T> {
   void Add(int priority, T modifier);
-}
-
-/* IMutableValue<T> is an IValue<T> that can be directly changed. */
-public interface IMutableValue<T> : IValue<T> {
-  /* We want this to be settable. */
-  new T value { get; set; }
 }
 
 public static class Value {
@@ -70,8 +70,18 @@ public static class Value {
     where T : IEquatable<T>
 #endif
     => new BoundedValue<T>(value,
-    new ReadOnlyValue<T> { value = lowerBound },
-    upperBound);
+                           new ReadOnlyValue<T> { value = lowerBound },
+                           upperBound);
+
+  public static IMutableValue<T> WithBounds<T>(T value, IValue<T> lowerBound, T upperBound)
+#if NET6_0_OR_GREATER
+    where T : INumber<T>
+#else
+    where T : IEquatable<T>
+#endif
+    => new BoundedValue<T>(value,
+                           lowerBound,
+                           new ReadOnlyValue<T> { value = upperBound });
 
   public static IMutableValue<T> WithBounds<T>(T value, IValue<T> lowerBound, IValue<T> upperBound)
 #if NET6_0_OR_GREATER
@@ -80,8 +90,8 @@ public static class Value {
     where T : IEquatable<T>
 #endif
     => new BoundedValue<T>(value,
-    lowerBound,
-    upperBound);
+                           lowerBound,
+                           upperBound);
   internal class DerivedValue<T> : IValue<T> {
     private Func<T> func;
     public DerivedValue(Func<T> func, out Action callOnChange) {
@@ -112,7 +122,6 @@ public static class Value {
           _value = lowerBound.value;
         if (_value > upperBound.value)
           _value = upperBound.value;
-
 #else
         var op = Modifier.GetOp<T>();
         _value = op.Max(lowerBound.value, op.Min(upperBound.value, value));
