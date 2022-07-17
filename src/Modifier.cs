@@ -27,7 +27,13 @@ public interface IModifier<T> : INotifyPropertyChanged {
   // event PropertyChangedEventHandler PropertyChanged;
 }
 
-public interface IValuedModifier<S,T> : IModifier<T>, IMutableValue<S> {
+// What good is this?
+public interface IModifier<S,T> : IModifier<T> {
+  S context { get; }
+}
+
+// Having a big is-a IValue or has-a IValue problem here.
+public interface IValuedModifier<S,T> : IModifier<IValue<S>,T>, IMutableValue<S> {
   /* We want this to be settable. */
   // S value { get; set; }
 }
@@ -261,6 +267,42 @@ public static class Modifier {
 
 #endif
 
+  internal abstract class ContextModifier<S,T> : IModifier<S,T>, IDisposable {
+    private bool _enabled = true;
+    public bool enabled {
+      get => _enabled;
+      set {
+        if (_enabled == value)
+          return;
+        _enabled = value;
+        OnChange(nameof(enabled));
+      }
+    }
+    public S context { get; init; }
+
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    public ContextModifier(S context) {
+      if (context is INotifyPropertyChanged notify)
+        notify.PropertyChanged += Chain;
+      this.context = context;
+    }
+
+    protected void OnChange(string name) {
+      PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
+
+    internal void Chain(object sender, PropertyChangedEventArgs args) => OnChange(nameof(context));
+
+    public T Modify(T given) => Modify(given, context);
+    public abstract T Modify(T given, S context);
+
+    public void Dispose() {
+      if (context is INotifyPropertyChanged notify)
+        notify.PropertyChanged -= Chain;
+    }
+  }
+
   internal class ValuedModifierReference<S,T> : IValuedModifier<S,T>, IDisposable {
     public string name { get; init; }
     public char symbol { get; init; } = '?';
@@ -275,6 +317,7 @@ public static class Modifier {
       }
     }
     private readonly IValue<S> reference;
+    public IValue<S> context => reference;
     public S value {
       get => reference.value;
       set {
@@ -339,6 +382,7 @@ public class ValuedModifier<S,T> : IValuedModifier<S,T> {
       OnChange(nameof(enabled));
     }
   }
+  public IValue<S> context => this;
 
   private S _value;
   public S value {
@@ -359,17 +403,6 @@ public class ValuedModifier<S,T> : IValuedModifier<S,T> {
 
   public T Modify(T given) => op(given, value);
 
-  // Is this worth having?
-  public ValuedModifier<S,T> Select(Func<S,S> func) {
-    var m = new ValuedModifier<S,T> { name = this.name,
-                                      op = this.op,
-                                      value = func(this.value) };
-    // HACK: Not sure I like this. Notify? yes. Mutate on notify? No.
-    // XXX: There should be DerivedValuedModifier to avoid this weird mutation.
-    this.PropertyChanged += (_, _) => m.value = func(this.value);
-    return m;
-  }
-  
   public override string ToString() {
     var builder = new StringBuilder();
     if (name != null) {

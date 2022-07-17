@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Numerics;
 #endif
 namespace SeawispHunter.RolePlay.Attributes {
+  // XXX: Can IValue<T> work like a single value IEnumerable?
 
 /* IValue<T> notifies listeners when changed. That's it. */
 public interface IValue<T> : INotifyPropertyChanged {
@@ -29,6 +30,7 @@ public interface IValue<T> : INotifyPropertyChanged {
   // event PropertyChangedEventHandler PropertyChanged;
 }
 
+// XXX: Consider renaming IValue to IReadOnlyValue and IMutableValue to IValue.
 /* IMutableValue<T> is an IValue<T> that can be directly changed. */
 public interface IMutableValue<T> : IValue<T> {
   /* We want this to be settable. */
@@ -53,6 +55,9 @@ public interface IPriorityCollection<T> : ICollection<T> {
 public static class Value {
   public static IValue<T> FromFunc<T>(Func<T> f, out Action callOnChange) => new DerivedValue<T>(f, out callOnChange);
   public static IValue<T> FromFunc<T>(Func<T> f) => new DerivedValue<T>(f, out var callOnChange);
+  public static IMutableValue<T> FromFunc<T>(Func<T> f, Action<T> @set, out Action callOnChange)
+    => new DerivedMutableValue<T>(f, @set, out callOnChange);
+
   public static IMutableValue<T> WithBounds<T>(T value, T lowerBound, T upperBound)
 #if NET6_0_OR_GREATER
     where T : INumber<T>
@@ -99,6 +104,23 @@ public static class Value {
       callOnChange = OnChange;
     }
     public T value => func();
+    public event PropertyChangedEventHandler PropertyChanged;
+    private static PropertyChangedEventArgs eventArgs = new PropertyChangedEventArgs(nameof(value));
+    protected void OnChange() => PropertyChanged?.Invoke(this, eventArgs);
+  }
+
+  internal class DerivedMutableValue<T> : IMutableValue<T> {
+    private readonly Func<T> @get;
+    private readonly Action<T> @set;
+    public DerivedMutableValue(Func<T> @get, Action<T> @set, out Action callOnChange) {
+      this.@get = @get;
+      this.@set = @set;
+      callOnChange = OnChange;
+    }
+    public T value {
+      get => @get();
+      set => @set(value);
+    }
     public event PropertyChangedEventHandler PropertyChanged;
     private static PropertyChangedEventArgs eventArgs = new PropertyChangedEventArgs(nameof(value));
     protected void OnChange() => PropertyChanged?.Invoke(this, eventArgs);
@@ -209,9 +231,19 @@ public static class ValueExtensions {
     v.PropertyChanged += (_, _) => callOnChange();
     return w;
   }
+
+  /* I don't know. This seems overly complicated. It's no longer projection, it's projection and an inverse/coalesce action. */
+  public static IMutableValue<T> Select<S,T>(this IMutableValue<S> v, Func<S,T> func, Action<IMutableValue<S>,T> @set) {
+    var w = Value.FromFunc(() => func(v.value), x => @set(v, x), out var callOnChange);
+    v.PropertyChanged += (_, _) => callOnChange();
+    return w;
+  }
+
+  // public static IModifier<S,T> Select<S,T>(this IModifier<S,T> m, Func<
 }
 
 public class Value<T> : IMutableValue<T> {
+  // HACK: This just seems like it's too much.
   /** When value is set, pass through `setter()` first. */
   public Func<T,T> setter;
 
