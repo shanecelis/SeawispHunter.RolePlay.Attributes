@@ -21,14 +21,6 @@ namespace SeawispHunter.RolePlay.Attributes {
   // XXX: Can IValue<T> work like a single value IEnumerable?
 
 /* IValue<T> notifies listeners when changed. That's it. */
-public interface IValue<T> : INotifyPropertyChanged {
-  /** NOTE: This might seem weird to not have a setter since it will notify you
-      when it changes. However, if you consider a value that is not provided by
-      a field but by some other thing like a `Func<T>` then it makes more sense.
-  */
-  T value { get; }
-  // event PropertyChangedEventHandler PropertyChanged;
-}
 
 // XXX: Consider renaming IValue to IReadOnlyValue and IMutableValue to IValue.
 /* IMutableValue<T> is an IValue<T> that can be directly changed. */
