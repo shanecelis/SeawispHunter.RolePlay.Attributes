@@ -61,68 +61,55 @@ public static class Modifier {
      value are distinct. */
 
   // Plus
-  public static IValuedModifier<S,T> Plus<S,T>(S v, string name = null)
-    where T : INumber<T>
-    where S : INumber<S>
-    => new ValuedModifier<S,T> { value = v, op = (given, v) => T.Create(S.Create(given) + v), name = name, symbol = '+' };
-  //                                                                    (T) ((S) given + v)
-  //                                                                    ^ How to write typecasts in INumber.
-  public static IValuedModifier<S,T> Plus<S,T>(IValue<S> v, string name = null)
-    where T : INumber<T>
-    where S : INumber<S>
-    => new ValuedModifierReference<S,T>(v) { op = (given, v) => T.Create(S.Create(given) + v), name = name, symbol = '+' };
-  public static IValuedModifier<T,T> Plus<T>(T v, string name = null) where T : INumber<T> => Plus<T,T>(v, name);
-  public static IValuedModifier<T,T> Plus<T>(this IValue<T> v, string name = null) where T : INumber<T> => Plus<T,T>(v, name);
+  public static IModifier<S,S> Plus<S>(S v, string name = null) where S : INumber<S>
+    => new NumericalModifier<S,S>(v) { name = name, symbol = '+' };
 
-  // Minus
-  public static IValuedModifier<S,T> Minus<S,T>(S v, string name = null)
-    where T : INumber<T>
-    where S : INumber<S>
-    => new ValuedModifier<S,T> { value = v, op = (given, v) => T.Create(S.Create(given) - v), name = name, symbol = '-' };
-  //                                                                    (T) ((S) given + v)
-  //                                                                  ^ How to write typecasts in INumber.
-  public static IValuedModifier<S,T> Minus<S,T>(IValue<S> v, string name = null)
-    where T : INumber<T>
-    where S : INumber<S>
-    => new ValuedModifierReference<S,T>(v) { op = (given, v) => T.Create(S.Create(given) - v), name = name, symbol = '-' };
-  public static IValuedModifier<T,T> Minus<T>(T v, string name = null) where T : INumber<T> => Minus<T,T>(v, name);
-  public static IValuedModifier<T,T> Minus<T>(this IValue<T> v, string name = null) where T : INumber<T> => Minus<T,T>(v, name);
+  public static IModifier<IValue<S>,S> Plus<S>(IValue<S> v, string name = null) where S : INumber<S>
+    => new NumericalModifier<IValue<S>,S>(v) { name = name, symbol = '+' };
+
+  public static IModifier<IMutableValue<S>,S> Plus<S>(IMutableValue<S> v, string name = null) where S : INumber<S>
+    => new NumericalModifier<IMutableValue<S>,S>(v) { name = name, symbol = '+' };
 
   // Times
-  public static IValuedModifier<S,T> Times<S,T>(S v, string name = null)
-    where T : INumber<T>
-    where S : INumber<S>
-    => new ValuedModifier<S,T> { value = v, op = (given, v) => T.Create(S.Create(given) * v), name = name, symbol = '*' };
-  public static IValuedModifier<S,T> Times<S,T>(IValue<S> v, string name = null)
-    where T : INumber<T>
-    where S : INumber<S>
-    => new ValuedModifierReference<S,T>(v) { op = (given, v) => T.Create(S.Create(given) * v), name = name, symbol = '*' };
-  public static IValuedModifier<T,T> Times<T>(T v, string name = null) where T : INumber<T> => Times<T,T>(v, name);
-  public static IValuedModifier<T,T> Times<T>(IValue<T> v, string name = null) where T : INumber<T> => Times<T,T>(v, name);
+  public static IModifier<S,S> Times<S>(S v, string name = null) where S : INumber<S>
+    => new NumericalModifier<S,S>(v) { name = name, symbol = '*' };
+
+  public static IModifier<IValue<S>,S> Times<S>(IValue<S> v, string name = null) where S : INumber<S>
+    => new NumericalModifier<IValue<S>,S>(v) { name = name, symbol = '*' };
+
+  public static IModifier<IMutableValue<S>,S> Times<S>(IMutableValue<S> v, string name = null) where S : INumber<S>
+    => new NumericalModifier<IMutableValue<S>,S>(v) { name = name, symbol = '*' };
+
+  // Minus
+  public static IModifier<S,S> Minus<S>(S v, string name = null) where S : INumber<S>
+    => new NumericalModifier<S,S>(v) { name = name, symbol = '-' };
+
+  public static IModifier<IValue<S>,S> Minus<S>(IValue<S> v, string name = null) where S : INumber<S>
+    => new NumericalModifier<IValue<S>,S>(v) { name = name, symbol = '-' };
+
+  public static IModifier<IMutableValue<S>,S> Minus<S>(IMutableValue<S> v, string name = null) where S : INumber<S>
+    => new NumericalModifier<IMutableValue<S>,S>(v) { name = name, symbol = '-' };
+
 
   // Divide
-  public static IValuedModifier<S,T> Divide<S,T>(S v, string name = null)
-    where T : INumber<T>
-    where S : INumber<S>
-    => new ValuedModifier<S,T> { value = v, op = (given, v) => T.Create(S.Create(given) / v), name = name, symbol = '/' };
-  public static IValuedModifier<S,T> Divide<S,T>(IValue<S> v, string name = null)
-    where T : INumber<T>
-    where S : INumber<S>
-    => new ValuedModifierReference<S,T>(v) { op = (given, v) => T.Create(S.Create(given) / v), name = name, symbol = '/' };
-  public static IValuedModifier<T,T> Divide<T>(T v, string name = null) where T : INumber<T> => Divide<T,T>(v, name);
-  public static IValuedModifier<T,T> Divide<T>(IValue<T> v, string name = null) where T : INumber<T> => Divide<T,T>(v, name);
+  public static IModifier<S,S> Divide<S>(S v, string name = null) where S : INumber<S>
+    => new NumericalModifier<S,S>(v) { name = name, symbol = '/' };
+
+  public static IModifier<IValue<S>,S> Divide<S>(IValue<S> v, string name = null) where S : INumber<S>
+    => new NumericalModifier<IValue<S>,S>(v) { name = name, symbol = '/' };
+
+  public static IModifier<IMutableValue<S>,S> Divide<S>(IMutableValue<S> v, string name = null) where S : INumber<S>
+    => new NumericalModifier<IMutableValue<S>,S>(v) { name = name, symbol = '/' };
 
   // Substitute
-  public static IValuedModifier<S,T> Substitute<S,T>(S v, string name = null)
-    where T : INumber<T>
-    where S : INumber<S>
-    => new ValuedModifier<S,T> { value = v, op = (given, v) => T.Create(v), name = name, symbol = '=' };
-  public static IValuedModifier<S,T> Substitute<S,T>(IValue<S> v, string name = null)
-    where T : INumber<T>
-    where S : INumber<S>
-    => new ValuedModifierReference<S,T>(v) { op = (given, v) => T.Create(v), name = name, symbol = '=' };
-  public static IValuedModifier<T,T> Substitute<T>(T v, string name = null) where T : INumber<T> => Substitute<T,T>(v, name);
-  public static IValuedModifier<T,T> Substitute<T>(IValue<T> v, string name = null) where T : INumber<T> => Substitute<T,T>(v, name);
+  public static IModifier<S,S> Substitute<S>(S v, string name = null) where S : INumber<S>
+    => new NumericalModifier<S,S>(v) { name = name, symbol = '=' };
+
+  public static IModifier<IValue<S>,S> Substitute<S>(IValue<S> v, string name = null) where S : INumber<S>
+    => new NumericalModifier<IValue<S>,S>(v) { name = name, symbol = '=' };
+
+  public static IModifier<IMutableValue<S>,S> Substitute<S>(IMutableValue<S> v, string name = null) where S : INumber<S>
+    => new NumericalModifier<IMutableValue<S>,S>(v) { name = name, symbol = '=' };
 
 #else
   /* Here is the alternative to having a nice INumber<T> type like .NET7 will have. */
@@ -247,8 +234,30 @@ public static class Modifier {
 // }
 
 #endif
+/** Cast a numerical type into something else. */
+  internal class CastingModifier<S,T> : ContextModifier<IModifier<S>,T>
 
-  internal abstract class ContextModifier<S,T> : IModifier<S,T>, IDisposable {
+#if NET6_0_OR_GREATER
+    where S : INumber<S>
+    where T : INumber<T>
+#endif
+  {
+    public CastingModifier(IModifier<S> context) : base(context) { }
+
+#if NET6_0_OR_GREATER
+    public override T Modify(T given)
+      => T.Create(context.Modify(S.Create(given)));
+#else
+    public override T Modify(T given) {
+      var s = GetOp<S>();
+      var t = GetOp<T>();
+      return t.Create(context.Modify(s.Create(given)));
+    }
+#endif
+  }
+
+  public abstract class ContextModifier<S,T> : IModifier<S,T>, IDisposable {
+    public string name { get; init; }
     private bool _enabled = true;
     public bool enabled {
       get => _enabled;
@@ -280,6 +289,77 @@ public static class Modifier {
     public void Dispose() {
       if (context is INotifyPropertyChanged notify)
         notify.PropertyChanged -= Chain;
+    }
+
+    public override string ToString() {
+      var builder = new StringBuilder();
+      // builder.Append("ref ");
+      if (name != null) {
+        builder.Append('"');
+        builder.Append(name);
+        builder.Append('"');
+        builder.Append(' ');
+      }
+      // if (symbol != null)
+        // builder.Append(symbol);
+
+      builder.Append(context);
+      return builder.ToString();
+    }
+  }
+
+  internal class NumericalModifier<S,T> : ContextModifier<S,T>
+#if NET6_0_OR_GREATER
+    where T : INumber<T>
+#endif
+  {
+    public char symbol { get; init; } = '?';
+    public NumericalModifier(S context) : base(context) { }
+
+#if NET6_0_OR_GREATER
+    public override T Modify(T given) {
+      T v;
+      if (context is T r)
+        v = r;
+      else if (context is IValue<T> ivalue)
+        v = ivalue.value;
+      else
+        throw new InvalidOperationException();
+      switch (symbol) {
+        case '+':
+          return given + v;
+        case '-':
+          return given - v;
+        case '*':
+          return given * v;
+        case '/':
+          return given / v;
+        case '=':
+          return v;
+        default:
+          throw new NotImplementedException();
+      }
+    }
+#else
+    public override T Modify(T given) {
+      throw new NotImplementedException();
+    }
+#endif
+
+    public override string ToString() {
+      var builder = new StringBuilder();
+      // builder.Append("ref ");
+      if (name != null) {
+        builder.Append('"');
+        builder.Append(name);
+        builder.Append('"');
+        builder.Append(' ');
+      }
+      if (symbol != null)
+        builder.Append(symbol);
+
+      builder.Append(context);
+      return builder.ToString();
     }
   }
 

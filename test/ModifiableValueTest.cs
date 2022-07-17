@@ -20,11 +20,11 @@ namespace SeawispHunter.RolePlay.Attributes.Test {
 public class ModifiableValueTest {
   ModifiableValue<float> health = new ModifiableValue<float> { baseValue = 100f };
   IModifiableValue<float> currentHealth;
-  IValuedModifier<float,float> boost = Modifier.Times(1.10f, "10% boost");// { name = "10% boost", multiply = 1.10f };
+  IModifier<float,float> boost = Modifier.Times(1.10f, "10% boost");// { name = "10% boost", multiply = 1.10f };
   // IModifier<float> boost20 = new ModifierFloat { name = "20% boost", multiply = 1.20f };
-  IValuedModifier<float,float> boost20 = Modifier.Times(1.2f, "20% boost");
+  IModifier<float,float> boost20 = Modifier.Times(1.2f, "20% boost");
   // IModifier<float> damage = new ModifierFloat { name = "damage", plus = 0f };
-  IValuedModifier<float,float> damage = Modifier.Plus(0f, "damage");
+  IModifier<IMutableValue<float>,float> damage = Modifier.Plus(new Value<float>(), "damage");
   private int healthNotifications = 0;
   private int currentHealthNotifications = 0;
   private int damageNotifications = 0;
@@ -151,7 +151,7 @@ public class ModifiableValueTest {
     // var strength = new ModifiableValue<float> { name = "strength", baseValue = 10f };
     var strengthPercentageGain = new ModifiableValue<float> { baseValue = 1f };
     strengthPercentageGain.modifiers.Add(Modifier.Plus(0.1f));
-    strength.modifiers.Add(Modifier.Times<float,int>(strengthPercentageGain));
+    strength.modifiers.Add(Modifier.Times(strengthPercentageGain).Cast<float,int>());
     Assert.Equal(11, strength.value);
   }
 
@@ -186,11 +186,11 @@ public class ModifiableValueTest {
     Assert.True(rawBonusesPlus is IValue<float>);
     var m = Modifier.Plus((IValue<float>)rawBonusesPlus);
     stat.modifiers.Add(m);
-    stat.modifiers.Add(rawBonusesPlus.Plus());
+    // stat.modifiers.Add(rawBonusesPlus.Plus());
     // XXX: This line does not work.
     // stat.modifiers.Add(Modifier.Plus(rawBonusesPlus));
     stat.modifiers.Add(Modifier.Plus<float>(rawBonusesPlus));
-    stat.modifiers.Add(Modifier.Plus<float,float>(rawBonusesPlus));
+    stat.modifiers.Add(Modifier.Plus<float>(rawBonusesPlus));
   }
 
   [Fact]
@@ -200,7 +200,7 @@ public class ModifiableValueTest {
     stat.modifiers.Add(m);
     stat.modifiers.Add(Modifier.Plus(1f));
     stat.modifiers.Add(Modifier.Plus<float>(1f));
-    stat.modifiers.Add(Modifier.Plus<float,float>(1f));
+    // stat.modifiers.Add(Modifier.Plus<float,float>(1f));
   }
 
   /** Turned Sidhion's into a class. */

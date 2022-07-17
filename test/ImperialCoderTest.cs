@@ -106,9 +106,9 @@ public class ImperialCoderTest {
 
   ModifiableValue<float> maxHealth = new ModifiableValue<float> { baseValue = 100f };
   IModifiableValue<float> health;
-  IValuedModifier<float,float> boost = Modifier.Times(1.10f, "10% boost");// { name = "10% boost", multiply = 1.10f };
+  IModifier<float,float> boost = Modifier.Times(1.10f, "10% boost");// { name = "10% boost", multiply = 1.10f };
   // IModifier<float> boost20 = new ModifierFloat { name = "20% boost", multiply = 1.20f };
-  IValuedModifier<float,float> boost20 = Modifier.Times(1.2f, "20% boost");
+  IModifier<float,float> boost20 = Modifier.Times(1.2f, "20% boost");
   // IModifier<float> damage = new ModifierFloat { name = "damage", plus = 0f };
   IMutableValue<float> damage;
   // IValuedModifier<float,float> damage = Modifier.Minus(0f, "damage");
@@ -250,7 +250,7 @@ public class ImperialCoderTest {
     // We're using Linq here so we don't have to build up a list that we then
     // iterate through again to remove.
     foreach (var modifier in attr.modifiers
-             .Cast<ValuedModifier<T,T>>()
+             .Cast<Modifier.ContextModifier<T,T>>()
              .Where(m => m.name.Contains("curable"))
              .ToList())
         attr.modifiers.Remove(modifier);

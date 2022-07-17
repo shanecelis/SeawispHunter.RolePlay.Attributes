@@ -27,5 +27,11 @@ public static class ValueExtensions {
     return w;
   }
 
-  // public static IModifier<S,T> Select<S,T>(this IModifier<S,T> m, Func<
+  public static IModifier<Y> Cast<X,Y>(this IModifier<X> m)
+#if NET6_0_OR_GREATER
+    where X : INumber<X> where Y : INumber<Y>
+#endif
+  {
+    return new Modifier.CastingModifier<X,Y>(m);
+  }
 }
