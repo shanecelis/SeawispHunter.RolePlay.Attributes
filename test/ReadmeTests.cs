@@ -51,7 +51,7 @@ public class ReadmeTest {
     int notificationCount = 0;
     var maxHealth = new ModifiableValue<float> { baseValue = 100f };
     var health = ModifiableValue.FromValue(maxHealth);
-    var damage = Modifier.Subtract(0f);
+    var damage = Modifier.Minus(0f);
 
     // health.PropertyChanged += (_, _) => Console.WriteLine($"Health is {health.value}.");
     health.PropertyChanged += (_, _) => notificationCount++;

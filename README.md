@@ -24,7 +24,7 @@ attributes ought to respect the following requirements.
 
 ``` c#
 var health = new ModifiableValue<float> { baseValue = 100f };
-health.modifiers.Add(Modifier.Times(1.10f));
+health.modifiers.Add(Modifier.Times(1.10f, "+10% health")); 
 Console.WriteLine($"Health is {health.value}."); // Prints: Health is 110.
 health.modifiers.Add(Modifier.Plus(5f, "+5 health"));
 Console.WriteLine($"Health is {health.value}."); // Prints: Health is 115.

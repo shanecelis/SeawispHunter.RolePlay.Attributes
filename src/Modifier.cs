@@ -87,19 +87,19 @@ public static class Modifier {
   public static IValuedModifier<T,T> Plus<T>(T v, string name = null) where T : INumber<T> => Plus<T,T>(v, name);
   public static IValuedModifier<T,T> Plus<T>(this IValue<T> v, string name = null) where T : INumber<T> => Plus<T,T>(v, name);
 
-  // Subtract
-  public static IValuedModifier<S,T> Subtract<S,T>(S v, string name = null)
+  // Minus
+  public static IValuedModifier<S,T> Minus<S,T>(S v, string name = null)
     where T : INumber<T>
     where S : INumber<S>
     => new ValuedModifier<S,T> { value = v, op = (given, v) => T.Create(S.Create(given) - v), name = name, symbol = '-' };
   //                                                                    (T) ((S) given + v)
   //                                                                  ^ How to write typecasts in INumber.
-  public static IValuedModifier<S,T> Subtract<S,T>(IValue<S> v, string name = null)
+  public static IValuedModifier<S,T> Minus<S,T>(IValue<S> v, string name = null)
     where T : INumber<T>
     where S : INumber<S>
     => new ValuedModifierReference<S,T>(v) { op = (given, v) => T.Create(S.Create(given) - v), name = name, symbol = '-' };
-  public static IValuedModifier<T,T> Subtract<T>(T v, string name = null) where T : INumber<T> => Subtract<T,T>(v, name);
-  public static IValuedModifier<T,T> Subtract<T>(this IValue<T> v, string name = null) where T : INumber<T> => Subtract<T,T>(v, name);
+  public static IValuedModifier<T,T> Minus<T>(T v, string name = null) where T : INumber<T> => Minus<T,T>(v, name);
+  public static IValuedModifier<T,T> Minus<T>(this IValue<T> v, string name = null) where T : INumber<T> => Minus<T,T>(v, name);
 
   // Times
   public static IValuedModifier<S,T> Times<S,T>(S v, string name = null)
@@ -190,18 +190,18 @@ public static class Modifier {
   public static IValuedModifier<T,T> Plus<T>(this IValue<T> v, string name = null) => Plus<T,T>(v, name);
 
   // Plus
-  public static IValuedModifier<S,T> Subtract<S,T>(S v, string name = null) {
+  public static IValuedModifier<S,T> Minus<S,T>(S v, string name = null) {
     var s = GetOp<S>();
     var t = GetOp<T>();
     return new ValuedModifier<S,T> { value = v, op = (given, v) => t.Create(s.Sum(s.Create(given), s.Negate(v))), name = name, symbol = '-' };
   }
-  public static IValuedModifier<S,T> Subtract<S,T>(IValue<S> v, string name = null) {
+  public static IValuedModifier<S,T> Minus<S,T>(IValue<S> v, string name = null) {
     var s = GetOp<S>();
     var t = GetOp<T>();
     return new ValuedModifierReference<S,T>(v) { op = (given, v) => t.Create(s.Sum(s.Create(given), s.Negate(v))), name = name, symbol = '-' };
   }
-  public static IValuedModifier<T,T> Subtract<T>(T v, string name = null) => Subtract<T,T>(v, name);
-  public static IValuedModifier<T,T> Subtract<T>(this IValue<T> v, string name = null) => Subtract<T,T>(v, name);
+  public static IValuedModifier<T,T> Minus<T>(T v, string name = null) => Minus<T,T>(v, name);
+  public static IValuedModifier<T,T> Minus<T>(this IValue<T> v, string name = null) => Minus<T,T>(v, name);
 
   // Times
   public static IValuedModifier<S,T> Times<S,T>(S v, string name = null) {

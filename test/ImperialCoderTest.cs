@@ -111,7 +111,7 @@ public class ImperialCoderTest {
   IValuedModifier<float,float> boost20 = Modifier.Times(1.2f, "20% boost");
   // IModifier<float> damage = new ModifierFloat { name = "damage", plus = 0f };
   IMutableValue<float> damage;
-  // IValuedModifier<float,float> damage = Modifier.Subtract(0f, "damage");
+  // IValuedModifier<float,float> damage = Modifier.Minus(0f, "damage");
 
   [Flags]
   internal enum DamageType {
@@ -135,7 +135,7 @@ public class ImperialCoderTest {
     // health.modifiers.Add(damage.Select(d => d < 0f ? 0f : d));
     // fix 2: Add `setter` and clamp the damage value to [0, \inf)
     damage = new Value<float> { setter = (float d) => d < 0f ? 0f : d };
-    health.modifiers.Add(Modifier.Subtract((IValue<float>)damage));
+    health.modifiers.Add(Modifier.Minus((IValue<float>)damage));
     health.modifiers.Add(Modifier.FromFunc((float x) => Math.Clamp(x, 0f, maxHealth.value)));
   }
 
@@ -234,7 +234,7 @@ public class ImperialCoderTest {
 
   [Fact] public void SlowMovementSpeed() {
     var speed = new ModifiableValue<int> { baseValue = 10 };
-    var ailment = Modifier.Subtract(2, "ailment (curable)");
+    var ailment = Modifier.Minus(2, "ailment (curable)");
     Assert.Equal(10, speed.value);
     speed.modifiers.Add(ailment);
     Assert.Equal(8, speed.value);
@@ -246,7 +246,7 @@ public class ImperialCoderTest {
       actually do it in practice. You'd want some thing better than string
       comparison, but that's what IModifier<T> is an interface. Add your own
       implementation with an `isCurable` property. */
-  public void Cure<T>(IModifiableValue<T> attr) {
+  void Cure<T>(IModifiableValue<T> attr) {
     // We're using Linq here so we don't have to build up a list that we then
     // iterate through again to remove.
     foreach (var modifier in attr.modifiers
