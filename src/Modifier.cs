@@ -297,7 +297,7 @@ public static class Modifier {
       }
     }
     private readonly IValue<S> reference;
-    public IValue<S> context => reference;
+    public IMutableValue<S> context => (IMutableValue<S>) reference;
     public S value {
       get => reference.value;
       set {

@@ -91,7 +91,7 @@ public class ModifiableValueTest {
   public void TestNotification() {
     Assert.Equal(100f, health.baseValue);
     Assert.Equal(110f, health.value);
-    damage.value = 10f;
+    damage.context.value = 10f;
     Assert.Equal(0, healthNotifications);
     Assert.Equal(1, currentHealthNotifications);
     Assert.Equal(1, damageNotifications);

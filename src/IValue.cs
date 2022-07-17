@@ -59,7 +59,7 @@ public interface IModifier<S,T> : IModifier<T> {
 }
 
 // Having a big is-a IValue or has-a IValue problem here.
-public interface IValuedModifier<S,T> : IModifier<IValue<S>,T>, IMutableValue<S> {
+public interface IValuedModifier<S,T> : IModifier<IMutableValue<S>,T> {
   /* We want this to be settable. */
   // S value { get; set; }
 }

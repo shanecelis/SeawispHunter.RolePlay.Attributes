@@ -14,7 +14,7 @@ using System.Text;
 
 namespace SeawispHunter.RolePlay.Attributes {
 
-public class ValuedModifier<S,T> : IValuedModifier<S,T> {
+  public class ValuedModifier<S,T> : IValuedModifier<S,T>, IMutableValue<S> {
   public string name { get; init; }
   public char symbol { get; init; } = '?';
   private bool _enabled = true;
@@ -27,7 +27,7 @@ public class ValuedModifier<S,T> : IValuedModifier<S,T> {
       OnChange(nameof(enabled));
     }
   }
-  public IValue<S> context => this;
+  public IMutableValue<S> context => this;
 
   private S _value;
   public S value {
