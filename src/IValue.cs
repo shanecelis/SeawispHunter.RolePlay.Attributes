@@ -45,4 +45,23 @@ public interface IPriorityCollection<T> : ICollection<T> {
   void Add(int priority, T modifier);
 }
 
+/** A IModifier<T> modifies an IModifiableValue<T>'s value. */
+public interface IModifier<T> : INotifyPropertyChanged {
+  // string name { get; }
+  bool enabled { get; set; }
+  T Modify(T given);
+  // event PropertyChangedEventHandler PropertyChanged;
+}
+
+// What good is this?
+public interface IModifier<S,T> : IModifier<T> {
+  S context { get; }
+}
+
+// Having a big is-a IValue or has-a IValue problem here.
+public interface IValuedModifier<S,T> : IModifier<IValue<S>,T>, IMutableValue<S> {
+  /* We want this to be settable. */
+  // S value { get; set; }
+}
+
 }

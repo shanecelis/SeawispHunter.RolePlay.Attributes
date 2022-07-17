@@ -19,25 +19,6 @@ using System.Numerics;
 
 namespace SeawispHunter.RolePlay.Attributes {
 
-/** A IModifier<T> modifies an IModifiableValue<T>'s value. */
-public interface IModifier<T> : INotifyPropertyChanged {
-  // string name { get; }
-  bool enabled { get; set; }
-  T Modify(T given);
-  // event PropertyChangedEventHandler PropertyChanged;
-}
-
-// What good is this?
-public interface IModifier<S,T> : IModifier<T> {
-  S context { get; }
-}
-
-// Having a big is-a IValue or has-a IValue problem here.
-public interface IValuedModifier<S,T> : IModifier<IValue<S>,T>, IMutableValue<S> {
-  /* We want this to be settable. */
-  // S value { get; set; }
-}
-
 public static class Modifier {
   public static IModifier<T> FromFunc<T>(Func<T,T> func) => new FuncModifier<T>(func);
 
@@ -278,7 +259,7 @@ public static class Modifier {
         OnChange(nameof(enabled));
       }
     }
-    public S context { get; init; }
+    public S context { get; }
 
     public event PropertyChangedEventHandler PropertyChanged;
 
@@ -294,8 +275,7 @@ public static class Modifier {
 
     internal void Chain(object sender, PropertyChangedEventArgs args) => OnChange(nameof(context));
 
-    public T Modify(T given) => Modify(given, context);
-    public abstract T Modify(T given, S context);
+    public abstract T Modify(T given);
 
     public void Dispose() {
       if (context is INotifyPropertyChanged notify)
