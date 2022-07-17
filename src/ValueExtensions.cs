@@ -21,8 +21,8 @@ public static class ValueExtensions {
   }
 
   /* I don't know. This seems overly complicated. It's no longer projection, it's projection and an inverse/coalesce action. */
-  public static IMutableValue<T> Select<S,T>(this IMutableValue<S> v, Func<S,T> func, Action<IMutableValue<S>,T> @set) {
-    var w = Value.FromFunc(() => func(v.value), x => @set(v, x), out var callOnChange);
+  public static IMutableValue<T> Select<S,T>(this IMutableValue<S> v, Func<S,T> @get, Action<IMutableValue<S>,T> @set) {
+    var w = Value.FromFunc(() => @get(v.value), x => @set(v, x), out var callOnChange);
     v.PropertyChanged += (_, _) => callOnChange();
     return w;
   }
