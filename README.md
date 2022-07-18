@@ -85,6 +85,10 @@ understand. The actual code includes some abstractions like `IValue<T>` and
 `IMutableValue<T>` which are used to make attributes reuseable as modifiers
 for instance.
 
+Indeed this README has outright
+[lies](https://twitter.com/shanecelis/status/1547104967110139905)
+and is better for it.
+
 ## Further Examples
 
 ### Using Notifications
