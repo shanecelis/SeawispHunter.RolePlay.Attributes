@@ -105,13 +105,9 @@ namespace SeawispHunter.RolePlay.Attributes.Test {
 public class ImperialCoderTest {
 
   ModifiableValue<float> maxHealth = new ModifiableValue<float> { baseValue = 100f };
-  IModifiableValue<float> health;
-  IModifier<float,float> boost = Modifier.Times(1.10f, "10% boost");// { name = "10% boost", multiply = 1.10f };
-  // IModifier<float> boost20 = new ModifierFloat { name = "20% boost", multiply = 1.20f };
+  IMutableValue<float> health;
+  IModifier<float,float> boost = Modifier.Times(1.10f, "10% boost");
   IModifier<float,float> boost20 = Modifier.Times(1.2f, "20% boost");
-  // IModifier<float> damage = new ModifierFloat { name = "damage", plus = 0f };
-  IMutableValue<float> damage;
-  // IValuedModifier<float,float> damage = Modifier.Minus(0f, "damage");
 
   [Flags]
   internal enum DamageType {
@@ -128,41 +124,27 @@ public class ImperialCoderTest {
   }
 
   public ImperialCoderTest() {
-    health = ModifiableValue.FromValue(maxHealth);
-    // Unrestricted damage interacts badly when we try to heal.
-    // health.modifiers.Add(damage);
-    // fix 1: Doesn't work. Healing `damage.value -= x` can still overheal.
-    // health.modifiers.Add(damage.Select(d => d < 0f ? 0f : d));
-    // fix 2: Add `setter` and clamp the damage value to [0, \inf)
-    damage = new Value<float> { setter = (float d) => d < 0f ? 0f : d };
-    health.modifiers.Add(Modifier.Minus((IValue<float>)damage));
-    health.modifiers.Add(Modifier.FromFunc((float x) => Math.Clamp(x, 0f, maxHealth.value)));
+    health = Value.WithBounds(maxHealth.value, 0, maxHealth);
   }
 
   [Fact] public void TestMinusHP() {
     Assert.Equal(100f, health.value);
-    damage.value += 15f;
+    health.value -= 15f;
     Assert.Equal(85f, health.value);
   }
 
   [Fact] public void TestPlusMaxHP() {
-    damage.value = 50f;
+    health.value = 50f;
     Assert.Equal(50f, health.value);
-    // This is a little weird. But you can consider it as healing removes damage.
-    damage.value -= 0.25f * maxHealth.value;
+    health.value += 0.25f * maxHealth.value;
     Assert.Equal(75f, health.value);
   }
 
   [Fact] public void TestPlusMaxHPOverHeal() {
     Assert.Equal(100f, health.value);
-    // This is a little weird. But you can consider it as healing removes damage.
-    damage.value -= 0.25f * maxHealth.value;
-    // Do the dumb thing that we don't want to do every time.
-    // if (damage.value < 0f)
-    //   damage.value = 0f;
-    // Obviated by using the setter Func<T,T> on damage.
+    health.value += 0.25f * maxHealth.value;
     Assert.Equal(100f, health.value);
-    damage.value += 15f;
+    health.value -= 15f;
     Assert.Equal(85f, health.value);
   }
 
@@ -202,7 +184,7 @@ public class ImperialCoderTest {
 
     Assert.Equal(100f, health.value);
     for (int i = 0; i < 8 && ! token.IsCancellationRequested; i++) {
-      damage.value += typedDamage.value;
+      health.value -= typedDamage.value;
       // For unit test purposes, let's wait just 2ms not 2s.
       // await Task.Delay(TimeSpan.FromSeconds(2f), token);
       await Task.Delay(TimeSpan.FromMilliseconds(2f), token);
@@ -223,7 +205,7 @@ public class ImperialCoderTest {
 
     Assert.Equal(100f, health.value);
     for (int i = 0; i < 8 && ! token.IsCancellationRequested; i++) {
-      damage.value += typedDamage.value;
+      health.value -= typedDamage.value;
       // For unit test purposes, let's wait just 2ms not 2s.
       // await Task.Delay(TimeSpan.FromSeconds(2f), token);
       await Task.Delay(TimeSpan.FromMilliseconds(2f), token);
