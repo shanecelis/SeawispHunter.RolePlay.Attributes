@@ -20,6 +20,13 @@ public static class ValueExtensions {
     return w;
   }
 
+  public static IValue<U> Zip<S,T,U>(this IValue<S> v, IValue<T> w, Func<S,T,U> func) {
+    var u = Value.FromFunc(() => func(v.value, w.value), out var callOnChange);
+    v.PropertyChanged += (_, _) => callOnChange();
+    w.PropertyChanged += (_, _) => callOnChange();
+    return u;
+  }
+
   /* I don't know. This seems overly complicated. It's no longer projection, it's projection and an inverse/coalesce action. */
   public static IMutableValue<T> Select<S,T>(this IMutableValue<S> v, Func<S,T> @get, Action<IMutableValue<S>,T> @set) {
     var w = Value.FromFunc(() => @get(v.value), x => @set(v, x), out var callOnChange);
