@@ -88,6 +88,7 @@ public class ModifiableValue<T> : IModifiableValue<T> {
   private static PropertyChangedEventArgs modifiersEventArgs
     = new PropertyChangedEventArgs(nameof(modifiers));
   public ModifiableValue() => _modifiers = new ModifiersSortedList(this);
+  public ModifiableValue(T baseValue) : this() => _baseValue = baseValue;
 
   protected void Chain(object sender, PropertyChangedEventArgs args) => OnChange(nameof(value));
 

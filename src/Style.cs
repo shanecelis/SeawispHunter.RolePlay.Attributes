@@ -30,17 +30,12 @@ public class SidhionStat<T> : ModifiableValue<T>
 #endif
 {
   public readonly IModifiableValue<T> rawBonusesPlus = new ModifiableValue<T>();
-  public readonly IModifiableValue<T> rawBonusesTimes = new ModifiableValue<T>() {
-    baseValue = one
-  };
+  public readonly IModifiableValue<T> rawBonusesTimes = new ModifiableValue<T>(one);
   public readonly IModifiableValue<T> finalBonusesPlus = new ModifiableValue<T>();
-  public readonly IModifiableValue<T> finalBonusesTimes = new ModifiableValue<T>() {
-    baseValue = one
-  };
-
+  public readonly IModifiableValue<T> finalBonusesTimes = new ModifiableValue<T>(one);
   public SidhionStat() {
     // value = ((baseValue + rawBonusesPlus) * rawBonusesTimes + finalBonusesPlus) * finalBonusesTimes
-    modifiers.Add(100, Modifier.Plus<T>(rawBonusesPlus));
+    modifiers.Add(100, Modifier.Plus(rawBonusesPlus));
     modifiers.Add(200, Modifier.Times<T>(rawBonusesTimes));
     modifiers.Add(300, Modifier.Plus<T>(finalBonusesPlus));
     modifiers.Add(400, Modifier.Times<T>(finalBonusesTimes));
@@ -65,12 +60,8 @@ public class KryzarelStat<T> : ModifiableValue<T>
   };
 
   public readonly IModifiableValue<T> flat = new ModifiableValue<T>();
-  public readonly IModifiableValue<T> percentAdd = new ModifiableValue<T>() {
-    baseValue = one
-  };
-  public readonly IModifiableValue<T> percentTimes = new ModifiableValue<T>() {
-    baseValue = one
-  };
+  public readonly IModifiableValue<T> percentAdd = new ModifiableValue<T>(one);
+  public readonly IModifiableValue<T> percentTimes = new ModifiableValue<T>(one);
   public KryzarelStat() {
     modifiers.Add((int) Priority.Flat, Modifier.Plus<T>(flat));
     modifiers.Add((int) Priority.PercentAdd, Modifier.Times<T>(percentAdd));
@@ -90,13 +81,9 @@ public class PennerStat<T> : ModifiableValue<T>
 #endif
 {
   public readonly IModifiableValue<T> baseValuePlus = new ModifiableValue<T>();
-  public readonly IModifiableValue<T> baseValueTimes = new ModifiableValue<T>() {
-    baseValue = one
-  };
+  public readonly IModifiableValue<T> baseValueTimes = new ModifiableValue<T>(one);
   public readonly IModifiableValue<T> totalValuePlus = new ModifiableValue<T>();
-  public readonly IModifiableValue<T> totalValueTimes = new ModifiableValue<T>() {
-    baseValue = one
-  };
+  public readonly IModifiableValue<T> totalValueTimes = new ModifiableValue<T>(one);
 
   public PennerStat() {
     // This class looks similar to Sidhion, but it is different.

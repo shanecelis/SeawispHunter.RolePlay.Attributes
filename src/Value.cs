@@ -29,6 +29,8 @@ public class Value<T> : IMutableValue<T> {
       OnChange(nameof(value));
     }
   }
+  public Value() {}
+  public Value(T value) => _value = value;
 
   public event PropertyChangedEventHandler PropertyChanged;
 
