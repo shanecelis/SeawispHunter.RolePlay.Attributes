@@ -125,8 +125,9 @@ Suppose "max health" is affected by "constitution" like this.
 
 ``` c#
 var constitution = new ModifiableValue<int>(10);
+int level = 10;
 // We can project values, with some limited LINQ-like extension methods.
-var hpAdjustment = constitution.Select(con => (float) Math.Round((con - 10f) / 3f) * 10);
+var hpAdjustment = constitution.Select(con => (float) Math.Round((con - 10f) / 3f) * level);
 var maxHealth = new ModifiableValue<float>(100f);
 
 maxHealth.PropertyChanged += (_, _) => Console.WriteLine($"Max health is {maxHealth.value}.");
@@ -184,6 +185,32 @@ powerUp.DisableAfter(TimeSpan.FromSeconds(20f));
 // ... 
 // [Wait 20 seconds.]
 // Prints: Armor is 10.
+```
+
+## Advanced Examples
+
+### Synthesizing Multiple Values
+
+In the above constitution example, `level` is an `int` so `hpAdjustment` does
+not update when it's changed. Instead, we can take another page out of LINQ and
+use a `Zip()` extension method to synthesize two values. This way a change to
+either `level` or `constitution` will notify `hpAdjustment` and therefore
+`maxHealth`.
+
+``` c#
+var constitution = new ModifiableValue<int>(10);
+var level = new Value<int>(10);
+// We can project values, with some limited LINQ-like extension methods.
+var hpAdjustment = constitution.Zip(level, (con, lev) => (float) Math.Round((con - 10f) / 3f) * lev);
+var maxHealth = new ModifiableValue<float>(100f);
+
+maxHealth.PropertyChanged += (_, _) => Console.WriteLine($"Max health is {maxHealth.value}.");
+maxHealth.modifiers.Add(Modifier.Plus(hpAdjustment));
+// Prints: Max health is 100. (unchanged)
+constitution.baseValue = 15;
+// Prints: Max health is 120.
+level.value = 15;
+// Prints: Max health is 130.
 ```
 
 ## Writing Your Own Attribute Class
