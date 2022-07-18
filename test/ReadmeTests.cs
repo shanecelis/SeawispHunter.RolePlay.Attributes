@@ -47,11 +47,95 @@ public class ReadmeTest {
   }
 
   [Fact]
+  public void TestBounds() {
+    int notificationCount = 0;
+    var maxHealth = new ModifiableValue<float>(100f);
+    var health = Value.WithBounds(maxHealth.value, 0f, maxHealth);
+
+    // health.PropertyChanged += (_, _) => Console.WriteLine($"Health is {health.value}/{maxHealth.value}.");
+    health.PropertyChanged += (_, _) => notificationCount++;
+    Assert.Equal(0, notificationCount);
+    Assert.Equal(100f, health.value);
+    Assert.Equal(100f, maxHealth.value);
+    maxHealth.baseValue = 90f;
+    Assert.Equal(90f, health.value);
+    Assert.Equal(90f, maxHealth.value);
+  }
+
+  [Fact]
+  public void TestBounded() {
+
+    int notificationCount = 0;
+    var maxHealth = new ModifiableValue<float>(100f);
+    var health = Value.WithBounds(maxHealth.value, 0f, maxHealth);
+
+    // health.PropertyChanged += (_, _) => Console.WriteLine($"Health is {health.value}/{maxHealth.value}.");
+    health.PropertyChanged += (_, _) => notificationCount++;
+    Assert.Equal(0, notificationCount);
+    Assert.Equal(100f, health.value);
+    Assert.Equal(100f, maxHealth.value);
+    // Prints: Health is 100/100.
+    health.value -= 10f;
+    Assert.Equal(1, notificationCount);
+    Assert.Equal(90f, health.value);
+    Assert.Equal(100f, maxHealth.value);
+    // Prints: Health is 90/100.
+    maxHealth.modifiers.Add(Modifier.Plus(20f, "+20 level gain"));
+    // Prints: Health is 110/120.
+    Assert.Equal(2, notificationCount);
+    // Assert.Equal(110f, health.value);
+    Assert.Equal(90f, health.value);
+    Assert.Equal(120f, maxHealth.value);
+
+    health.value -= 1000f;
+    Assert.Equal(3, notificationCount);
+    Assert.Equal(0f, health.value);
+    Assert.Equal(120f, maxHealth.value);
+  }
+
+  [Fact]
+  public void TestConstitution() {
+
+    var constitution = new ModifiableValue<int>(10);
+    var hpAdjustment = constitution.Select(con => (float) Math.Round((con - 10f) / 3f) * 10);
+    var maxHealth = new ModifiableValue<float>(100f);
+
+    // maxHealth.PropertyChanged += (_, _) => Console.WriteLine($"Max health is {maxHealth.value}.");
+    Assert.Equal(100f, maxHealth.value);
+    maxHealth.modifiers.Add(Modifier.Plus(hpAdjustment));
+    Assert.Equal(100f, maxHealth.value);
+    // Prints: Max health is 100.
+    constitution.baseValue = 15;
+    // Prints: Health is 90/100.
+    Assert.Equal(120f, maxHealth.value);
+  }
+
+  [Fact]
+  public void TestConstitutionWithZip() {
+
+    var constitution = new ModifiableValue<int>(10);
+    var level = new Value<int>(10);
+    var hpAdjustment = constitution.Zip(level, (con, lev) => (float) Math.Round((con - 10f) / 3f) * lev);
+    var maxHealth = new ModifiableValue<float>(100f);
+
+    // maxHealth.PropertyChanged += (_, _) => Console.WriteLine($"Max health is {maxHealth.value}.");
+    Assert.Equal(100f, maxHealth.value);
+    maxHealth.modifiers.Add(Modifier.Plus(hpAdjustment));
+    Assert.Equal(100f, maxHealth.value);
+    // Prints: Max health is 100.
+    constitution.baseValue = 15;
+    // Prints: Health is 90/100.
+    Assert.Equal(120f, maxHealth.value);
+    level.value = 15;
+    Assert.Equal(130f, maxHealth.value);
+  }
+
+  [Fact]
   public void TestExample3() {
     int notificationCount = 0;
     var maxHealth = new ModifiableValue<float> { baseValue = 100f };
     var health = ModifiableValue.FromValue(maxHealth);
-    var damage = Modifier.Minus<float>(new Value<float>());
+    var damage = new Value<float>(0f);
 
     // health.PropertyChanged += (_, _) => Console.WriteLine($"Health is {health.value}.");
     health.PropertyChanged += (_, _) => notificationCount++;
@@ -59,7 +143,7 @@ public class ReadmeTest {
     Assert.Equal(100f, health.value);
     Assert.Equal(100f, maxHealth.value);
 
-    health.modifiers.Add(damage);
+    health.modifiers.Add(Modifier.Minus(damage));
     // Nothing has changed to the value, but we still receive a notification.
     Assert.Equal(1, notificationCount);
     Assert.Equal(100f, health.value);
@@ -67,7 +151,7 @@ public class ReadmeTest {
     health.modifiers.Add(priority: 100, Modifier.FromFunc((float x) => Math.Clamp(x, 0, maxHealth.value)));
     Assert.Equal(2, notificationCount);
     // Prints: Health is 100.
-    damage.context.value = 10f;
+    damage.value = 10f;
     // Prints: Health is 90.
     Assert.Equal(3, notificationCount);
     Assert.Equal(90f, health.value);
@@ -79,7 +163,7 @@ public class ReadmeTest {
     Assert.Equal(110f, health.value);
     Assert.Equal(120f, maxHealth.value);
 
-    damage.context.value = 1000f;
+    damage.value = 1000f;
     Assert.Equal(5, notificationCount);
     Assert.Equal(0f, health.value);
     Assert.Equal(120f, maxHealth.value);
