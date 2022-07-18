@@ -166,10 +166,7 @@ public static class Value {
     }
 
     protected void BoundChanged(object sender, PropertyChangedEventArgs e) {
-      var oldValue = _value;
-      var newValue = value;
-      if (! oldValue.Equals(newValue))
-        OnChange();
+      this.value = _value;
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
