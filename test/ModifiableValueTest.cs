@@ -24,7 +24,7 @@ public class ModifiableValueTest {
   // IModifier<float> boost20 = new ModifierFloat { name = "20% boost", multiply = 1.20f };
   IModifier<float,float> boost20 = Modifier.Times(1.2f, "20% boost");
   // IModifier<float> damage = new ModifierFloat { name = "damage", plus = 0f };
-  IModifier<IMutableValue<float>,float> damage = Modifier.Plus(new Value<float>(), "damage");
+  IModifier<IMutableValue<float>,float> damage = Modifier.Plus<float>(new Value<float>(), "damage");
   private int healthNotifications = 0;
   private int currentHealthNotifications = 0;
   private int damageNotifications = 0;
@@ -151,7 +151,7 @@ public class ModifiableValueTest {
     // var strength = new ModifiableValue<float> { name = "strength", baseValue = 10f };
     var strengthPercentageGain = new ModifiableValue<float> { baseValue = 1f };
     strengthPercentageGain.modifiers.Add(Modifier.Plus(0.1f));
-    strength.modifiers.Add(Modifier.Times(strengthPercentageGain).Cast<float,int>());
+    strength.modifiers.Add(Modifier.Times<float>(strengthPercentageGain).Cast<float,int>());
     Assert.Equal(11, strength.value);
   }
 

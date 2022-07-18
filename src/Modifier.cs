@@ -56,9 +56,6 @@ public static class Modifier {
   }
 
 #if NET6_0_OR_GREATER
-  /* Four variations per operator because we want to cover T and IValue<T>, and
-     we want to cover cases where the type T for the modifier and type S for the
-     value are distinct. */
 
   // Plus
   public static IModifier<S,S> Plus<S>(S v, string name = null) where S : INumber<S>
@@ -150,67 +147,55 @@ public static class Modifier {
   }
 
   // Plus
-  public static IValuedModifier<S,T> Plus<S,T>(S v, string name = null) {
-    var s = GetOp<S>();
-    var t = GetOp<T>();
-    return new ValuedModifier<S,T> { value = v, op = (given, v) => t.Create(s.Sum(s.Create(given), v)), name = name, symbol = '+' };
-  }
-  public static IValuedModifier<S,T> Plus<S,T>(IValue<S> v, string name = null) {
-    var s = GetOp<S>();
-    var t = GetOp<T>();
-    return new ValuedModifierReference<S,T>(v) { op = (given, v) => t.Create(s.Sum(s.Create(given), v)), name = name, symbol = '+' };
-  }
-  public static IValuedModifier<T,T> Plus<T>(T v, string name = null) => Plus<T,T>(v, name);
-  public static IValuedModifier<T,T> Plus<T>(this IValue<T> v, string name = null) => Plus<T,T>(v, name);
+  public static IModifier<S,S> Plus<S>(S v, string name = null)
+    => new NumericalModifier<S,S>(v) { name = name, symbol = '+' };
 
-  // Plus
-  public static IValuedModifier<S,T> Minus<S,T>(S v, string name = null) {
-    var s = GetOp<S>();
-    var t = GetOp<T>();
-    return new ValuedModifier<S,T> { value = v, op = (given, v) => t.Create(s.Sum(s.Create(given), s.Negate(v))), name = name, symbol = '-' };
-  }
-  public static IValuedModifier<S,T> Minus<S,T>(IValue<S> v, string name = null) {
-    var s = GetOp<S>();
-    var t = GetOp<T>();
-    return new ValuedModifierReference<S,T>(v) { op = (given, v) => t.Create(s.Sum(s.Create(given), s.Negate(v))), name = name, symbol = '-' };
-  }
-  public static IValuedModifier<T,T> Minus<T>(T v, string name = null) => Minus<T,T>(v, name);
-  public static IValuedModifier<T,T> Minus<T>(this IValue<T> v, string name = null) => Minus<T,T>(v, name);
+  public static IModifier<IValue<S>,S> Plus<S>(IValue<S> v, string name = null)
+    => new NumericalModifier<IValue<S>,S>(v) { name = name, symbol = '+' };
+
+  public static IModifier<IMutableValue<S>,S> Plus<S>(IMutableValue<S> v, string name = null)
+    => new NumericalModifier<IMutableValue<S>,S>(v) { name = name, symbol = '+' };
 
   // Times
-  public static IValuedModifier<S,T> Times<S,T>(S v, string name = null) {
-    var s = GetOp<S>();
-    var t = GetOp<T>();
-    return new ValuedModifier<S,T> { value = v, op = (given, v) => t.Create(s.Times(s.Create(given), v)), name = name, symbol = '*' };
-  }
-  public static IValuedModifier<S,T> Times<S,T>(IValue<S> v, string name = null) {
-    var s = GetOp<S>();
-    var t = GetOp<T>();
-    return new ValuedModifierReference<S,T>(v) { op = (given, v) => t.Create(s.Times(s.Create(given), v)), name = name, symbol = '*' };
-  }
-  public static IValuedModifier<T,T> Times<T>(T v, string name = null) => Times<T,T>(v, name);
-  public static IValuedModifier<T,T> Times<T>(IValue<T> v, string name = null) => Times<T,T>(v, name);
+  public static IModifier<S,S> Times<S>(S v, string name = null)
+    => new NumericalModifier<S,S>(v) { name = name, symbol = '*' };
 
-  public static IValuedModifier<S,T> Divide<S,T>(S v, string name = null) {
-    var s = GetOp<S>();
-    var t = GetOp<T>();
-    return new ValuedModifier<S,T> { value = v, op = (given, v) => t.Create(s.Divide(s.Create(given), v)), name = name, symbol = '/' };
-  }
-  public static IValuedModifier<S,T> Divide<S,T>(IValue<S> v, string name = null) {
-    var s = GetOp<S>();
-    var t = GetOp<T>();
-    return new ValuedModifierReference<S,T>(v) { op = (given, v) => t.Create(s.Divide(s.Create(given), v)), name = name, symbol = '/' };
-  }
-  public static IValuedModifier<T,T> Divide<T>(T v, string name = null) => Divide<T,T>(v, name);
-  public static IValuedModifier<T,T> Divide<T>(IValue<T> v, string name = null) => Divide<T,T>(v, name);
+  public static IModifier<IValue<S>,S> Times<S>(IValue<S> v, string name = null)
+    => new NumericalModifier<IValue<S>,S>(v) { name = name, symbol = '*' };
+
+  public static IModifier<IMutableValue<S>,S> Times<S>(IMutableValue<S> v, string name = null)
+    => new NumericalModifier<IMutableValue<S>,S>(v) { name = name, symbol = '*' };
+
+  // Minus
+  public static IModifier<S,S> Minus<S>(S v, string name = null)
+    => new NumericalModifier<S,S>(v) { name = name, symbol = '-' };
+
+  public static IModifier<IValue<S>,S> Minus<S>(IValue<S> v, string name = null)
+    => new NumericalModifier<IValue<S>,S>(v) { name = name, symbol = '-' };
+
+  public static IModifier<IMutableValue<S>,S> Minus<S>(IMutableValue<S> v, string name = null)
+    => new NumericalModifier<IMutableValue<S>,S>(v) { name = name, symbol = '-' };
+
+
+  // Divide
+  public static IModifier<S,S> Divide<S>(S v, string name = null)
+    => new NumericalModifier<S,S>(v) { name = name, symbol = '/' };
+
+  public static IModifier<IValue<S>,S> Divide<S>(IValue<S> v, string name = null)
+    => new NumericalModifier<IValue<S>,S>(v) { name = name, symbol = '/' };
+
+  public static IModifier<IMutableValue<S>,S> Divide<S>(IMutableValue<S> v, string name = null)
+    => new NumericalModifier<IMutableValue<S>,S>(v) { name = name, symbol = '/' };
 
   // Substitute
-  public static IValuedModifier<S,T> Substitute<S,T>(S v, string name = null)
-    => new ValuedModifier<S,T> { value = v, op = (given, v) => (T) (object) v, name = name, symbol = '=' };
-  public static IValuedModifier<S,T> Substitute<S,T>(IValue<S> v, string name = null)
-    => new ValuedModifierReference<S,T>(v) { op = (given, v) => (T) (object) v, name = name, symbol = '=' };
-  public static IValuedModifier<T,T> Substitute<T>(T v, string name = null) => Substitute<T,T>(v, name);
-  public static IValuedModifier<T,T> Substitute<T>(IValue<T> v, string name = null) => Substitute<T,T>(v, name);
+  public static IModifier<S,S> Substitute<S>(S v, string name = null)
+    => new NumericalModifier<S,S>(v) { name = name, symbol = '=' };
+
+  public static IModifier<IValue<S>,S> Substitute<S>(IValue<S> v, string name = null)
+    => new NumericalModifier<IValue<S>,S>(v) { name = name, symbol = '=' };
+
+  public static IModifier<IMutableValue<S>,S> Substitute<S>(IMutableValue<S> v, string name = null)
+    => new NumericalModifier<IMutableValue<S>,S>(v) { name = name, symbol = '=' };
 
   /* Not quite zero cost since this boxes the struct. */
   public static IOperator<S> GetOp<S>() {
@@ -342,7 +327,28 @@ public static class Modifier {
     }
 #else
     public override T Modify(T given) {
-      throw new NotImplementedException();
+      var t = GetOp<T>();
+      T v;
+      if (context is T r)
+        v = r;
+      else if (context is IValue<T> ivalue)
+        v = ivalue.value;
+      else
+        throw new InvalidOperationException();
+      switch (symbol) {
+        case '+':
+          return t.Sum(given, v);
+        case '-':
+          return t.Sum(given, t.Negate(v));
+        case '*':
+          return t.Times(given, v);
+        case '/':
+          return t.Divide(given, v);
+        case '=':
+          return v;
+        default:
+          throw new NotImplementedException();
+      }
     }
 #endif
 
@@ -355,8 +361,7 @@ public static class Modifier {
         builder.Append('"');
         builder.Append(' ');
       }
-      if (symbol != null)
-        builder.Append(symbol);
+      builder.Append(symbol);
 
       builder.Append(context);
       return builder.ToString();
