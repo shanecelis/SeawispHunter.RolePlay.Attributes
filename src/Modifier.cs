@@ -241,57 +241,6 @@ public static class Modifier {
 #endif
   }
 
-  public abstract class ContextModifier<S,T> : IModifier<S,T>, IDisposable {
-    public string name { get; init; }
-    private bool _enabled = true;
-    public bool enabled {
-      get => _enabled;
-      set {
-        if (_enabled == value)
-          return;
-        _enabled = value;
-        OnChange(nameof(enabled));
-      }
-    }
-    public S context { get; }
-
-    public event PropertyChangedEventHandler PropertyChanged;
-
-    public ContextModifier(S context) {
-      if (context is INotifyPropertyChanged notify)
-        notify.PropertyChanged += Chain;
-      this.context = context;
-    }
-
-    protected void OnChange(string name) {
-      PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-    }
-
-    internal void Chain(object sender, PropertyChangedEventArgs args) => OnChange(nameof(context));
-
-    public abstract T Modify(T given);
-
-    public void Dispose() {
-      if (context is INotifyPropertyChanged notify)
-        notify.PropertyChanged -= Chain;
-    }
-
-    public override string ToString() {
-      var builder = new StringBuilder();
-      // builder.Append("ref ");
-      if (name != null) {
-        builder.Append('"');
-        builder.Append(name);
-        builder.Append('"');
-        builder.Append(' ');
-      }
-      // if (symbol != null)
-        // builder.Append(symbol);
-
-      builder.Append(context);
-      return builder.ToString();
-    }
-  }
 
   internal class NumericalModifier<S,T> : ContextModifier<S,T>
 #if NET6_0_OR_GREATER
@@ -368,69 +317,62 @@ public static class Modifier {
     }
   }
 
-  internal class ValuedModifierReference<S,T> : IValuedModifier<S,T>, IDisposable {
-    public string name { get; init; }
-    public char symbol { get; init; } = '?';
-    private bool _enabled = true;
-    public bool enabled {
-      get => _enabled;
-      set {
-        if (_enabled == value)
-          return;
-        _enabled = value;
-        OnChange(nameof(enabled));
-      }
+}
+
+/** An abstract modifier that keeps a particular context about it.
+
+    If that context implements a `INotifyPropertyChanged`, its events will
+    provoke this modifier's events.
+  */
+public abstract class ContextModifier<S,T> : IModifier<S,T>, IDisposable {
+  public string name { get; init; }
+  private bool _enabled = true;
+  public bool enabled {
+    get => _enabled;
+    set {
+      if (_enabled == value)
+        return;
+      _enabled = value;
+      OnChange(nameof(enabled));
     }
-    private readonly IValue<S> reference;
-    public IMutableValue<S> context => (IMutableValue<S>) reference;
-    public S value {
-      get => reference.value;
-      set {
-        if (reference.value != null && reference.value.Equals(value))
-          return;
-        if (reference is IMutableValue<S> mutable)
-          mutable.value = value;
-        else
-          throw new InvalidOperationException("Cannot mutate an IValue<S>. Consider providing an IMutableValue<S> instead.");
-        // Don't need to signify change because `reference` changes will already be propogated.
-        // OnChange(nameof(value));
-      }
+  }
+  public S context { get; }
+
+  public event PropertyChangedEventHandler PropertyChanged;
+
+  public ContextModifier(S context) {
+    if (context is INotifyPropertyChanged notify)
+      notify.PropertyChanged += Chain;
+    this.context = context;
+  }
+
+  protected void OnChange(string name) {
+    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+  }
+
+  internal void Chain(object sender, PropertyChangedEventArgs args) => OnChange(nameof(context));
+
+  public abstract T Modify(T given);
+
+  public void Dispose() {
+    if (context is INotifyPropertyChanged notify)
+      notify.PropertyChanged -= Chain;
+  }
+
+  public override string ToString() {
+    var builder = new StringBuilder();
+    // builder.Append("ref ");
+    if (name != null) {
+      builder.Append('"');
+      builder.Append(name);
+      builder.Append('"');
+      builder.Append(' ');
     }
-    
-    /** The `op` or "operator" is what coalesces the value and attribute. */
-    public Func<T,S,T> op { get; init; }
+    // if (symbol != null)
+      // builder.Append(symbol);
 
-    public event PropertyChangedEventHandler PropertyChanged;
-
-    public ValuedModifierReference(IValue<S> value) {
-      reference = value;
-      value.PropertyChanged += Chain;
-    }
-    protected void OnChange(string name) {
-      PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-    }
-
-    internal void Chain(object sender, PropertyChangedEventArgs args) => OnChange(nameof(value));
-
-    public T Modify(T given) => op(given, value);
-
-    public void Dispose() => reference.PropertyChanged -= Chain;
-
-    public override string ToString() {
-      var builder = new StringBuilder();
-      builder.Append("ref ");
-      if (name != null) {
-        builder.Append('"');
-        builder.Append(name);
-        builder.Append('"');
-        builder.Append(' ');
-      }
-      // if (symbol != null)
-        builder.Append(symbol);
-
-      builder.Append(value);
-      return builder.ToString();
-    }
+    builder.Append(context);
+    return builder.ToString();
   }
 }
 

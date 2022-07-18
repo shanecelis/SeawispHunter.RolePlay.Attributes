@@ -250,7 +250,8 @@ public class ImperialCoderTest {
     // We're using Linq here so we don't have to build up a list that we then
     // iterate through again to remove.
     foreach (var modifier in attr.modifiers
-             .Cast<Modifier.ContextModifier<T,T>>()
+             // HACK: We shouldn't need to know this.
+             .Cast<ContextModifier<T,T>>()
              .Where(m => m.name.Contains("curable"))
              .ToList())
         attr.modifiers.Remove(modifier);
