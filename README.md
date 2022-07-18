@@ -121,7 +121,7 @@ one can also create dynamic modifiers based on other values or attributes.
 
 Suppose "max health" is affected by "constitution" like this. 
 
-![HP Adjustment vs Constitution](hp-adjustment.png)
+![HP Adjustment vs Constitution](doc/hp-adjustment.png)
 
 ``` c#
 var constitution = new ModifiableValue<int>(10);
