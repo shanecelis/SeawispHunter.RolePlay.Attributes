@@ -147,7 +147,7 @@ public static class Modifier {
   }
 
   // Plus
-  public static IModifier<S,S> Plus<S>(S v, string name = null)
+  public static IModifier<S,S> Plus<S>(S v, string name = null) where S : struct
     => new NumericalModifier<S,S>(v) { name = name, symbol = '+' };
 
   public static IModifier<IValue<S>,S> Plus<S>(IValue<S> v, string name = null)
@@ -157,7 +157,7 @@ public static class Modifier {
     => new NumericalModifier<IMutableValue<S>,S>(v) { name = name, symbol = '+' };
 
   // Times
-  public static IModifier<S,S> Times<S>(S v, string name = null)
+  public static IModifier<S,S> Times<S>(S v, string name = null) where S : struct
     => new NumericalModifier<S,S>(v) { name = name, symbol = '*' };
 
   public static IModifier<IValue<S>,S> Times<S>(IValue<S> v, string name = null)
@@ -167,7 +167,7 @@ public static class Modifier {
     => new NumericalModifier<IMutableValue<S>,S>(v) { name = name, symbol = '*' };
 
   // Minus
-  public static IModifier<S,S> Minus<S>(S v, string name = null)
+  public static IModifier<S,S> Minus<S>(S v, string name = null) where S : struct
     => new NumericalModifier<S,S>(v) { name = name, symbol = '-' };
 
   public static IModifier<IValue<S>,S> Minus<S>(IValue<S> v, string name = null)
@@ -178,7 +178,7 @@ public static class Modifier {
 
 
   // Divide
-  public static IModifier<S,S> Divide<S>(S v, string name = null)
+  public static IModifier<S,S> Divide<S>(S v, string name = null) where S : struct
     => new NumericalModifier<S,S>(v) { name = name, symbol = '/' };
 
   public static IModifier<IValue<S>,S> Divide<S>(IValue<S> v, string name = null)
@@ -188,7 +188,7 @@ public static class Modifier {
     => new NumericalModifier<IMutableValue<S>,S>(v) { name = name, symbol = '/' };
 
   // Substitute
-  public static IModifier<S,S> Substitute<S>(S v, string name = null)
+  public static IModifier<S,S> Substitute<S>(S v, string name = null) where S : struct
     => new NumericalModifier<S,S>(v) { name = name, symbol = '=' };
 
   public static IModifier<IValue<S>,S> Substitute<S>(IValue<S> v, string name = null)
