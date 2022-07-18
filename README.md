@@ -63,16 +63,12 @@ multiple a value, or substitute a value so these are made convenient for `int`
 and `float` types.
 
 ``` c#
-public interface IValuedModifier<T> : IModifier<T> {
-  T value { get; set; }
-}
-
 public static class Modifier {
-  public static IValuedModifier<T> Plus(T value);
-  public static IValuedModifier<T> Subtract(T value);
-  public static IValuedModifier<T> Times(T value);
-  public static IValuedModifier<T> Divide(T value);
-  public static IValuedModifier<T> Substitute(T value);
+  public static IModifier<T> Plus(T value);
+  public static IModifier<T> Minus(T value);
+  public static IModifier<T> Times(T value);
+  public static IModifier<T> Divide(T value);
+  public static IModifier<T> Substitute(T value);
 }
 ```
 
@@ -94,32 +90,53 @@ for instance.
 ### Using Notifications
 
 ``` c#
-var health = new ModifiableValue<float> { baseValue = 100f };
+var health = new ModifiableValue<float>(100f);
 health.PropertyChanged += (_, _) => Console.WriteLine($"Health is {health.value}.");
-health.modifiers.Add(Modifier.Times(1.10f));
+health.modifiers.Add(Modifier.Times(1.10f, "+10% health"));
 // Prints: Health is 110.
 health.modifiers.Add(Modifier.Plus(5f, "+5 health"));
 // Prints: Health is 115.
 ```
 
-### Using an Attribute as a Modifier
+### Modeling a Consumable Attribute
 
-Let's create a max health attribute and we'll create a current health attribute,
-which uses the max health as its `baseValue`.
+Let's create a current health value to pair with our max health attribute.
 
 ``` c#
-var maxHealth = new ModifiableValue<float> { baseValue = 100f };
-var health = ModifiableValue.FromValue(maxHealth);
-var damage = Modifier.Subtract(0f);
+var maxHealth = new ModifiableValue<float>(100f);
+var health = Value.WithBounds(maxHealth.value, 0f, maxHealth);
 
 health.PropertyChanged += (_, _) => Console.WriteLine($"Health is {health.value}/{maxHealth.value}.");
-health.modifiers.Add(damage);
 // Prints: Health is 100/100.
-damage.value = 10f;
+health.value -= 10f;
 // Prints: Health is 90/100.
-maxHealth.modifier.Add(Modifier.Plus(20f, "+20 level gain"));
-// Prints: Health is 110/120.
+maxHealth.modifiers.Add(Modifier.Plus(20f, "+20 level gain"));
+// Prints: Health is 90/120.
 ```
+
+### Using an Attribute as a Modifier
+
+In addition to creating modifiers with a static value like `Modifier.Plus(20f)`,
+one can also create dynamic modifiers based on other values or attributes. 
+
+Suppose "max health" is affected by "constitution" like this. 
+
+![HP Adjustment vs Constitution](hp-adjustment.png)
+
+``` c#
+var constitution = new ModifiableValue<int>(10);
+// We can project values, with some limited LINQ-like extension methods.
+var hpAdjustment = constitution.Select(con => (float) Math.Round((con - 10f) / 3f) * 10);
+var maxHealth = new ModifiableValue<float>(100f);
+
+maxHealth.PropertyChanged += (_, _) => Console.WriteLine($"Max health is {maxHealth.value}.");
+maxHealth.modifiers.Add(Modifier.Plus(hpAdjustment));
+// Prints: Max health is 100.
+constitution.baseValue = 15;
+// Prints: Max health is 120.
+```
+
+Note: they can be different data types.
 
 ### Creating New Modifiers
 
@@ -127,7 +144,7 @@ New modifiers can be created by implementing the `IModifier<T>` interface or by
 using the convenience methods in `Modifier` like `FromFunc()` shown below.
 
 ``` c#
-var moonArmor = new ModifiableValue<float> { baseValue = 20f };
+var moonArmor = new ModifiableValue<float>(20f);
 moonArmor.modifiers.Add(Modifier.FromFunc((float x) => DateTime.Now.IsFullMoon() ? 2 * x : x));
 ```
 
@@ -142,9 +159,9 @@ priority apply in the order of they were inserted. This also demonstrates how we
 can clamp a value by creating an ad hoc modifier with a `Func<float,float>`.
 
 ``` c#
-var maxMana = new ModifiableValue<float> { baseValue = 50f };
+var maxMana = new ModifiableValue<float>(50f);
 var mana = ModifiableValue.FromValue(maxMana);
-var manaCost = Modifier.Subtract(0f);
+var manaCost = Modifier.Minus(0f);
 mana.modifiers.Add(manaCost);
 mana.PropertyChanged += (_, _) => Console.WriteLine($"Mana is {mana.value}/{maxMana.value}.");
 mana.modifiers.Add(priority: 100, Modifier.FromFunc((float x) => Math.Clamp(x, 0, maxMana.value));
@@ -158,7 +175,7 @@ manaCost.value = 1000f;
 There are `EnableAfter()` and `DisableAfter()` extension methods for `IModifier<T>`.
 
 ``` c#
-var armor = new ModifiableValue<int> { baseValue = 10 };
+var armor = new ModifiableValue<int>(10);
 var powerUp = Modifier.Plus(5);
 armor.modifiers.Add(powerUp);
 health.PropertyChanged += (_, _) => Console.WriteLine($"Armor is {armor.value}.");
@@ -184,13 +201,9 @@ Penner](https://jkpenner.wordpress.com/2015/06/09/rpgsystems-stat-system-02-modi
 ``` c#
 public class PennerStat<T> : ModifiableValue<T> {
   public readonly IModifiableValue<T> baseValuePlus = new ModifiableValue<T>();
-  public readonly IModifiableValue<T> baseValueTimes = new ModifiableValue<T>() {
-    baseValue = one
-  };
+  public readonly IModifiableValue<T> baseValueTimes = new ModifiableValue<T>(one);
   public readonly IModifiableValue<T> totalValuePlus = new ModifiableValue<T>();
-  public readonly IModifiableValue<T> totalValueTimes = new ModifiableValue<T>() {
-    baseValue = one
-  };
+  public readonly IModifiableValue<T> totalValueTimes = new ModifiableValue<T>(one);
 
   public PennerStat() {
     // value = (baseValue * baseValueTimes + baseValuePlus) * totalValueTimes + totalValuePlus
@@ -218,12 +231,8 @@ public class KryzarelStat<T> : ModifiableValue<T> {
   };
 
   public readonly IModifiableValue<T> flat = new ModifiableValue<T>();
-  public readonly IModifiableValue<T> percentAdd = new ModifiableValue<T>() {
-    baseValue = one
-  };
-  public readonly IModifiableValue<T> percentTimes = new ModifiableValue<T>() {
-    baseValue = one
-  };
+  public readonly IModifiableValue<T> percentAdd = new ModifiableValue<T>(one);
+  public readonly IModifiableValue<T> percentTimes = new ModifiableValue<T>(one);
 
   public KryzarelStat() {
     // value = (baseValue + flat) * percentAdd * percentTimes
@@ -256,7 +265,7 @@ See the
 [Style.cs](https://github.com/shanecelis/SeawispHunter.RolePlay.Attributes/blob/master/src/Style.cs)
 file for more examples.
 
-And Please feel free to share any that you develop with me
+And please feel free to share any that you develop with me
 [@shanecelis](https://twitter.com/shanecelis).
 
 ## Notes
