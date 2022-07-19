@@ -93,7 +93,7 @@ namespace SeawispHunter.RolePlay.Attributes.Test {
     public interface ICharacter {
       IModifiableValue<float> maxHealth { get; }
       IModifiableValue<float> health { get; }
-      IMutableValue<float> damage { get; }
+      IValue<float> damage { get; }
       DamageType vulnerable;
       DamageType attacking;
     }

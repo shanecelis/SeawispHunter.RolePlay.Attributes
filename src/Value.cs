@@ -38,12 +38,12 @@ public class Value<T> : IValue<T> {
 }
 
 public static class Value {
-  public static IReadOnlyValue<T> FromFunc<T>(Func<T> f, out Action callOnChange) => new DerivedValue<T>(f, out callOnChange);
+  public static IReadOnlyValue<T> FromFunc<T>(Func<T> f, out Action callOnChange) => new DerivedReadOnlyValue<T>(f, out callOnChange);
 
-  public static IReadOnlyValue<T> FromFunc<T>(Func<T> f) => new DerivedValue<T>(f, out var callOnChange);
+  public static IReadOnlyValue<T> FromFunc<T>(Func<T> f) => new DerivedReadOnlyValue<T>(f, out var callOnChange);
 
   public static IValue<T> FromFunc<T>(Func<T> f, Action<T> @set, out Action callOnChange)
-    => new DerivedMutableValue<T>(f, @set, out callOnChange);
+    => new DerivedValue<T>(f, @set, out callOnChange);
 
   public static IValue<T> WithBounds<T>(T value, T lowerBound, T upperBound)
 #if NET6_0_OR_GREATER
@@ -85,10 +85,10 @@ public static class Value {
                            lowerBound,
                            upperBound);
 
-  internal class DerivedValue<T> : IReadOnlyValue<T> {
+  internal class DerivedReadOnlyValue<T> : IReadOnlyValue<T> {
     private Func<T> func;
 
-    public DerivedValue(Func<T> func, out Action callOnChange) {
+    public DerivedReadOnlyValue(Func<T> func, out Action callOnChange) {
       this.func = func;
       callOnChange = OnChange;
     }
@@ -101,11 +101,11 @@ public static class Value {
     protected void OnChange() => PropertyChanged?.Invoke(this, eventArgs);
   }
 
-  internal class DerivedMutableValue<T> : IValue<T> {
+  internal class DerivedValue<T> : IValue<T> {
     private readonly Func<T> @get;
     private readonly Action<T> @set;
 
-    public DerivedMutableValue(Func<T> @get, Action<T> @set, out Action callOnChange) {
+    public DerivedValue(Func<T> @get, Action<T> @set, out Action callOnChange) {
       this.@get = @get;
       this.@set = @set;
       callOnChange = OnChange;
@@ -175,10 +175,15 @@ public class ReadOnlyValue<T> : IReadOnlyValue<T> {
   public T value { get; private init; }
   public ReadOnlyValue(T value) => this.value = value;
 
+  // HACK: Although this optimization is tempting, it
+  // may not work for class values.
+
   // We don't ever call this because we don't change.
   // This isn't strictly true unless T is a struct.
-  public event PropertyChangedEventHandler PropertyChanged {
-    add { }
-    remove { }
-  }
+  // public event PropertyChangedEventHandler PropertyChanged {
+  //   add { }
+  //   remove { }
+  // }
+
+  public event PropertyChangedEventHandler PropertyChanged;
 }

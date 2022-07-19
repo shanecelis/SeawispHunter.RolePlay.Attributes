@@ -115,7 +115,7 @@ will notify any of its listeners. No need to poll for changes to an attribute.
 
 The API shown above is abridged to make its most salient points easy to
 understand. The actual code includes some abstractions like `IValue<T>` and
-`IMutableValue<T>` which are used to make attributes reuseable as modifiers
+`IReadOnlyValue<T>` which are used to make attributes reuseable as modifiers
 for instance.
 
 Indeed this README has outright
