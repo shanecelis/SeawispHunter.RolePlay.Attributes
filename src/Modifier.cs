@@ -107,7 +107,6 @@ public static class Modifier {
 
   public static IModifier<IValue<S>,S> Substitute<S>(IValue<S> v, string name = null) where S : INumber<S>
     => new NumericalModifier<IValue<S>,S>(v) { name = name, symbol = '=' };
-
 #else
   /* Here is the alternative to having a nice INumber<T> type like .NET7 will have. */
   public interface IOperator<X> {
@@ -134,6 +133,18 @@ public static class Modifier {
     public float one => 1f;
   }
 
+  internal struct OpDouble : IOperator<double> {
+    public double Create<T>(T other) => Convert.ToDouble(other);
+    public double Sum(double a, double b) => a + b;
+    public double Times(double a, double b) => a * b;
+    public double Divide(double a, double b) => a / b;
+    public double Negate(double a) => -a;
+    public double Max(double a, double b) => Math.Max(a, b);
+    public double Min(double a, double b) => Math.Min(a, b);
+    public double zero => 0.0;
+    public double one => 1.0;
+  }
+
   internal struct OpInt : IOperator<int> {
     public int Create<T>(T other) => Convert.ToInt32(other);
     public int Sum(int a, int b) => a + b;
@@ -144,6 +155,20 @@ public static class Modifier {
     public int Min(int a, int b) => Math.Min(a, b);
     public int zero => 0;
     public int one => 1;
+  }
+
+  /* Not quite zero cost since this boxes the struct. */
+  public static IOperator<S> GetOp<S>() {
+    switch (Type.GetTypeCode(typeof(S))) {
+      case TypeCode.Double:
+        return (IOperator<S>) (object) default(OpDouble);
+      case TypeCode.Single:
+        return (IOperator<S>) (object) default(OpFloat);
+      case TypeCode.Int32:
+        return (IOperator<S>) (object) default(OpInt);
+      default:
+            throw new NotImplementedException($"No handler for second type {typeof(S)}.");
+    }
   }
 
   // Plus
@@ -196,18 +221,6 @@ public static class Modifier {
 
   public static IModifier<IValue<S>,S> Substitute<S>(IValue<S> v, string name = null)
     => new NumericalModifier<IValue<S>,S>(v) { name = name, symbol = '=' };
-
-  /* Not quite zero cost since this boxes the struct. */
-  public static IOperator<S> GetOp<S>() {
-    switch (Type.GetTypeCode(typeof(S))) {
-      case TypeCode.Single:
-        return (IOperator<S>) (object) default(OpFloat);
-      case TypeCode.Int32:
-        return (IOperator<S>) (object) default(OpInt);
-      default:
-            throw new NotImplementedException($"No handler for second type {typeof(S)}.");
-    }
-  }
 
 #endif
 /** Cast a numerical type into something else. */

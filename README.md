@@ -20,6 +20,15 @@ attributes ought to respect the following requirements.
 * An attribute's value shall be altered non-destructively. 
 * Because so many things may alter an attribute, it shall notify us when changed.
 
+## Features
+
+* Uses generics throughout
+
+Too many libraries decide for you, if you're going to use `float` or `int` for
+your attributes.
+
+* Flexible modifiers
+
 ## Barebones Example
 
 ``` c#
@@ -46,6 +55,10 @@ public interface IModifiableValue<T> {
   event PropertyChangedEventHandler PropertyChanged;
 }
 ```
+
+So a modifiable value $a$ with three modifiers $m1, m2, m3$ would have a value:
+
+$$ a.value = m3(m2(m1(a.initial.value))) $$
 
 ## Modifier
 
