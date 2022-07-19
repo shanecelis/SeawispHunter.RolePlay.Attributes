@@ -45,8 +45,8 @@ it possible to use the same API for netstandard2.0.
 
 Sure, one can add, minus, multiply, and divide their stats, but what about
 clamping the value? Is it easy to add that feature? With this library can
-implement their own `IModifier<T>` or create an ad hoc one like this:
-`Modifier.FromFunc((float x) => Math.Clamp(x, 0f, 100f))`.
+implement their own modifier or create [ad hoc](#ordering-modifiers) ones
+easily.
 
 ## Barebones Example
 

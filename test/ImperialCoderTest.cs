@@ -226,10 +226,10 @@ public class ImperialCoderTest {
 
   /** Remove ailments that have "curable" in their name. Not how one would
       actually do it in practice. You'd want some thing better than string
-      comparison, but that's what IModifier<T> is an interface. Add your own
+      comparison, but that's why IModifier<T> is an interface. Add your own
       implementation with an `isCurable` property. */
   void Cure<T>(IModifiableValue<T> attr) {
-    // We're using Linq here so we don't have to build up a list that we then
+    // We're using LINQ here so we don't have to build up a list that we then
     // iterate through again to remove.
     foreach (var modifier in attr.modifiers
              // HACK: We shouldn't need to know this.
