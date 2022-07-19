@@ -22,12 +22,22 @@ attributes ought to respect the following requirements.
 
 ## Features
 
-* Uses generics throughout
+* Interfaces >> Implementations 
 
-Too many libraries decide for you, if you're going to use `float` or `int` for
-your attributes.
+The heart of this library is defined by a few interfaces. So you can substitute
+your own implementations. Helpful if you want to use say a `MonoBehaviour` as a
+modifier so you can edit modifiers in Unity's editor.
+
+* Uses generics and generic math
+
+Too many libraries decide you're going to use `float` or `int` for your
+attributes, and then you have to stick to it. No, here you pick, and you can
+choose differently depending on the attribute.
 
 * Flexible modifiers
+
+Sure, you can add, minus, multiply, and divide your stats, but what about
+clamping the value? Is it easy to add that feature? 
 
 ## Barebones Example
 
@@ -62,7 +72,7 @@ $$ a.value = m3(m2(m1(a.initial.value))) $$
 
 ## Modifier
 
-A modifier can accept a value and change it arbitrarily. 
+A modifier accepts a value and can change it arbitrarily. 
 
 ``` c#
 public interface IModifier<T> {
@@ -73,8 +83,8 @@ public interface IModifier<T> {
 ```
 
 However, often times the changes one wants to make are simple: add a value,
-multiple a value, or substitute a value so these are made convenient for `int`
-and `float` types.
+multiple a value, or substitute a value so these are made convenient for `int`,
+`float`, and `double` types.
 
 ``` c#
 public static class Modifier {
