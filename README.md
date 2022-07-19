@@ -23,7 +23,8 @@ attributes ought to respect the following requirements.
 ## Barebones Example
 
 ``` c#
-var health = new ModifiableValue<float> { baseValue = 100f };
+var health = new ModifiableValue<float>(100f);
+Console.WriteLine($"Health is {health.value}."); // Prints: Health is 100.
 health.modifiers.Add(Modifier.Times(1.10f, "+10% health")); 
 Console.WriteLine($"Health is {health.value}."); // Prints: Health is 110.
 health.modifiers.Add(Modifier.Plus(5f, "+5 health"));
@@ -32,13 +33,13 @@ Console.WriteLine($"Health is {health.value}."); // Prints: Health is 115.
 
 ## Attribute
 
-At its root, an attribute has a `baseValue`. With no modifiers present, its
-`value` equals its `baseValue`; its `value` is altered by modifiers starting
-from its `baseValue`.
+At its root, an attribute has an `initial.value`. With no modifiers present, its
+`value` equals its `initial.value`; its `value` is altered by modifiers starting
+from its `initial.value`.
 
 ``` c#
 public interface IModifiableValue<T> {
-  T baseValue { get; set; }
+  T initial.value { get; set; }
   T value { get; }
   /** The list implementation sets up property change events automatically. */
   ICollection<IModifier<T>> modifiers { get; }
@@ -137,7 +138,7 @@ var maxHealth = new ModifiableValue<float>(100f);
 maxHealth.PropertyChanged += (_, _) => Console.WriteLine($"Max health is {maxHealth.value}.");
 maxHealth.modifiers.Add(Modifier.Plus(hpAdjustment));
 // Prints: Max health is 100.
-constitution.baseValue = 15;
+constitution.initial.value = 15;
 // Prints: Max health is 120.
 ```
 
@@ -211,7 +212,7 @@ var maxHealth = new ModifiableValue<float>(100f);
 maxHealth.PropertyChanged += (_, _) => Console.WriteLine($"Max health is {maxHealth.value}.");
 maxHealth.modifiers.Add(Modifier.Plus(hpAdjustment));
 // Prints: Max health is 100. (unchanged)
-constitution.baseValue = 15;
+constitution.initial.value = 15;
 // Prints: Max health is 120.
 level.value = 15;
 // Prints: Max health is 130.
@@ -280,7 +281,7 @@ Some care might need to be taken when adding modifiers to preserve the
 original's behavior.
 
 ``` c#
-var stat = new KryzarelStat { baseValue = 30f };
+var stat = new KryzarelStat(30f);
 stat.flat.modifiers.Add(Modifier.Plus(10f)); // flat expects plus modifiers (or subtract).
 stat.percentAdd.modifiers.Add(Modifier.Plus(10f)); // percentAdd expects plus modifiers (or subtract).
 stat.percentTimes.modifiers.Add(Modifier.Times(1.2f, "+20%")); // percentTimes expects times modifiers (or divide but who does that?).
