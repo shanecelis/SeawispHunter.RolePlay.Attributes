@@ -24,7 +24,7 @@ public class ModifiableValueTest {
   // IModifier<float> boost20 = new ModifierFloat { name = "20% boost", multiply = 1.20f };
   IModifier<float,float> boost20 = Modifier.Times(1.2f, "20% boost");
   // IModifier<float> damage = new ModifierFloat { name = "damage", plus = 0f };
-  IModifier<IMutableValue<float>,float> damage = Modifier.Plus<float>(new Value<float>(), "damage");
+  IModifier<IValue<float>,float> damage = Modifier.Plus<float>(new Value<float>(), "damage");
   private int healthNotifications = 0;
   private int currentHealthNotifications = 0;
   private int damageNotifications = 0;
@@ -47,7 +47,7 @@ public class ModifiableValueTest {
   public void TestValue() {
     var v = new Value<int> { value = 1 };
     Assert.Equal(1, v.value);
-    var iv = (IValue<int>) v;
+    var iv = (IReadOnlyValue<int>) v;
     Assert.Equal(1, iv.value);
     v.value = 2;
     Assert.Equal(2, v.value);
@@ -165,8 +165,8 @@ public class ModifiableValueTest {
     var rawBonusesTimes = new ModifiableValue<float>() { baseValue = 1f };
     var finalBonusesPlus = new ModifiableValue<float>();
     var finalBonusesMultiply = new ModifiableValue<float>() { baseValue = 1f };
-    Assert.True(stat is IValue<float>);
-    Assert.True(rawBonusesPlus is IValue<float>);
+    Assert.True(stat is IReadOnlyValue<float>);
+    Assert.True(rawBonusesPlus is IReadOnlyValue<float>);
     stat.modifiers.Add(Modifier.Plus<float>(rawBonusesPlus));
     stat.modifiers.Add(Modifier.Times<float>(rawBonusesTimes));
     stat.modifiers.Add(Modifier.Plus<float>(finalBonusesPlus));
@@ -182,9 +182,9 @@ public class ModifiableValueTest {
   public void TestWaysToAdd() {
     var stat = new ModifiableValue<float> { baseValue = 10f };
     var rawBonusesPlus = new ModifiableValue<float>();
-    Assert.True(stat is IValue<float>);
-    Assert.True(rawBonusesPlus is IValue<float>);
-    var m = Modifier.Plus((IValue<float>)rawBonusesPlus);
+    Assert.True(stat is IReadOnlyValue<float>);
+    Assert.True(rawBonusesPlus is IReadOnlyValue<float>);
+    var m = Modifier.Plus((IReadOnlyValue<float>)rawBonusesPlus);
     stat.modifiers.Add(m);
     // stat.modifiers.Add(rawBonusesPlus.Plus());
     // XXX: This line does not work.

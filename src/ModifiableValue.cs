@@ -24,7 +24,7 @@ public static class ModifiableValue {
   public static IModifiableValue<T> FromFunc<T>(Func<T> f, out Action callOnChange) => new DerivedModifiableValue<T>(f, out callOnChange);
   public static IModifiableValue<T> FromFunc<T>(Func<T> f) => new DerivedModifiableValue<T>(f, out var callOnChange);
 
-  public static IModifiableValue<T> FromValue<T>(IValue<T> v) => new DerivedModifiableValue<T>(v);
+  public static IModifiableValue<T> FromValue<T>(IReadOnlyValue<T> v) => new DerivedModifiableValue<T>(v);
   // public static IModifiableValue<T> FromValue<T>(T v) => new ModifiableValue<T> { baseValue = v };
   // public static IModifiableValue<T> FromValue<T>(IValue<T> v, string name) => new DerivedModifiableValue<T>(v) { };
 
@@ -43,7 +43,7 @@ public static class ModifiableValue {
       this.func = func;
     }
 
-    public DerivedModifiableValue(IValue<T> value) : this(() => value.value) {
+    public DerivedModifiableValue(IReadOnlyValue<T> value) : this(() => value.value) {
       value.PropertyChanged -= BaseChanged;
       value.PropertyChanged += BaseChanged;
       onDispose = () => value.PropertyChanged -= BaseChanged;

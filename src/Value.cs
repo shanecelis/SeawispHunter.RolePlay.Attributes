@@ -13,7 +13,7 @@ using System.ComponentModel;
 
 namespace SeawispHunter.RolePlay.Attributes;
 
-public class Value<T> : IMutableValue<T> {
+public class Value<T> : IValue<T> {
   // HACK: This just seems like it's too much.
   /** When value is set, pass through `setter()` first. */
   public Func<T,T> setter;
@@ -44,14 +44,14 @@ public class Value<T> : IMutableValue<T> {
 }
 
 public static class Value {
-  public static IValue<T> FromFunc<T>(Func<T> f, out Action callOnChange) => new DerivedValue<T>(f, out callOnChange);
+  public static IReadOnlyValue<T> FromFunc<T>(Func<T> f, out Action callOnChange) => new DerivedValue<T>(f, out callOnChange);
 
-  public static IValue<T> FromFunc<T>(Func<T> f) => new DerivedValue<T>(f, out var callOnChange);
+  public static IReadOnlyValue<T> FromFunc<T>(Func<T> f) => new DerivedValue<T>(f, out var callOnChange);
 
-  public static IMutableValue<T> FromFunc<T>(Func<T> f, Action<T> @set, out Action callOnChange)
+  public static IValue<T> FromFunc<T>(Func<T> f, Action<T> @set, out Action callOnChange)
     => new DerivedMutableValue<T>(f, @set, out callOnChange);
 
-  public static IMutableValue<T> WithBounds<T>(T value, T lowerBound, T upperBound)
+  public static IValue<T> WithBounds<T>(T value, T lowerBound, T upperBound)
 #if NET6_0_OR_GREATER
     where T : INumber<T>
 #else
@@ -61,7 +61,7 @@ public static class Value {
                            new ReadOnlyValue<T> { value = lowerBound },
                            new ReadOnlyValue<T> { value = upperBound });
 
-  public static IMutableValue<T> WithBounds<T>(T value, T lowerBound, IValue<T> upperBound)
+  public static IValue<T> WithBounds<T>(T value, T lowerBound, IReadOnlyValue<T> upperBound)
 #if NET6_0_OR_GREATER
     where T : INumber<T>
 #else
@@ -71,7 +71,7 @@ public static class Value {
                            new ReadOnlyValue<T> { value = lowerBound },
                            upperBound);
 
-  public static IMutableValue<T> WithBounds<T>(T value, IValue<T> lowerBound, T upperBound)
+  public static IValue<T> WithBounds<T>(T value, IReadOnlyValue<T> lowerBound, T upperBound)
 #if NET6_0_OR_GREATER
     where T : INumber<T>
 #else
@@ -81,7 +81,7 @@ public static class Value {
                            lowerBound,
                            new ReadOnlyValue<T> { value = upperBound });
 
-  public static IMutableValue<T> WithBounds<T>(T value, IValue<T> lowerBound, IValue<T> upperBound)
+  public static IValue<T> WithBounds<T>(T value, IReadOnlyValue<T> lowerBound, IReadOnlyValue<T> upperBound)
 #if NET6_0_OR_GREATER
     where T : INumber<T>
 #else
@@ -91,7 +91,7 @@ public static class Value {
                            lowerBound,
                            upperBound);
 
-  internal class DerivedValue<T> : IValue<T> {
+  internal class DerivedValue<T> : IReadOnlyValue<T> {
     private Func<T> func;
 
     public DerivedValue(Func<T> func, out Action callOnChange) {
@@ -106,7 +106,7 @@ public static class Value {
     protected void OnChange() => PropertyChanged?.Invoke(this, eventArgs);
   }
 
-  internal class DerivedMutableValue<T> : IMutableValue<T> {
+  internal class DerivedMutableValue<T> : IValue<T> {
     private readonly Func<T> @get;
     private readonly Action<T> @set;
 
@@ -127,15 +127,15 @@ public static class Value {
     protected void OnChange() => PropertyChanged?.Invoke(this, eventArgs);
   }
 
-  internal class BoundedValue<T> : IMutableValue<T>
+  internal class BoundedValue<T> : IValue<T>
 #if NET6_0_OR_GREATER
     where T : INumber<T>
 #else
     where T : IEquatable<T>
 #endif
   {
-    public readonly IValue<T> lowerBound;
-    public readonly IValue<T> upperBound;
+    public readonly IReadOnlyValue<T> lowerBound;
+    public readonly IReadOnlyValue<T> upperBound;
     private T _value;
 
     public T value {
@@ -155,7 +155,7 @@ public static class Value {
       }
     }
 
-    public BoundedValue(T value, IValue<T> lowerBound, IValue<T> upperBound) {
+    public BoundedValue(T value, IReadOnlyValue<T> lowerBound, IReadOnlyValue<T> upperBound) {
       _value = value;
       this.lowerBound = lowerBound;
       // this.lowerBound.PropertyChanged -= BoundChanged;
@@ -175,7 +175,7 @@ public static class Value {
     protected void OnChange() => PropertyChanged?.Invoke(this, eventArgs);
   }
 
-  internal class ReadOnlyValue<T> : IValue<T> {
+  internal class ReadOnlyValue<T> : IReadOnlyValue<T> {
     public T value { get; init; }
 
     // We don't ever call this because we don't change.

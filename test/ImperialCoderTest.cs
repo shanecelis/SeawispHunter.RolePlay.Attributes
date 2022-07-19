@@ -105,7 +105,7 @@ namespace SeawispHunter.RolePlay.Attributes.Test {
 public class ImperialCoderTest {
 
   ModifiableValue<float> maxHealth = new ModifiableValue<float> { baseValue = 100f };
-  IMutableValue<float> health;
+  IValue<float> health;
   IModifier<float,float> boost = Modifier.Times(1.10f, "10% boost");
   IModifier<float,float> boost20 = Modifier.Times(1.2f, "20% boost");
 

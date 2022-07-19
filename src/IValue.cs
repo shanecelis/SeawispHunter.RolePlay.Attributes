@@ -13,8 +13,12 @@ using System.Collections.Generic;
 
 namespace SeawispHunter.RolePlay.Attributes {
 
-/** IValue<T> notifies listeners when changed. That's it. */
-public interface IValue<T> : INotifyPropertyChanged {
+/** IReadOnlyValue<T> notifies listeners when changed. That's it.
+
+    You can only read this value but that doesn't mean it's immutable. It may be
+    there are other things that change it.
+*/
+public interface IReadOnlyValue<T> : INotifyPropertyChanged {
   /** NOTE: This might seem weird to not have a setter since it will notify you
       when it changes. However, if you consider a value that is not provided by
       a field but by some other thing like a `Func<T>` then it makes more sense.
@@ -24,18 +28,18 @@ public interface IValue<T> : INotifyPropertyChanged {
 }
 
 // XXX: Consider renaming IValue to IReadOnlyValue and IMutableValue to IValue.
-/* IMutableValue<T> is an IValue<T> that can be directly changed. */
-public interface IMutableValue<T> : IValue<T> {
+/* IValue<T> is an IReadOnlyValue<T> that can be directly changed. */
+public interface IValue<T> : IReadOnlyValue<T> {
   /* We want this to be settable. */
   new T value { get; set; }
 }
 
 /** This IModifiableValue<T> class is meant to capture values in games like health,
     strength, etc. that can be modified by various, sometimes distal, effects. */
-public interface IModifiableValue<T> : IValue<T>, INotifyPropertyChanged {
+public interface IModifiableValue<T> : IReadOnlyValue<T>, INotifyPropertyChanged {
   T baseValue { get; set; }
   // T value { get; }
-  /** The list implementation will handle chaining property change events. */
+  /** The list implementation will handle property change events properly. */
   IPriorityCollection<IModifier<T>> modifiers { get; }
   // event PropertyChangedEventHandler PropertyChanged;
 }
