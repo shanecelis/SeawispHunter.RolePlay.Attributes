@@ -163,7 +163,7 @@ Suppose "max health" is affected by "constitution" like this.
 ``` c#
 var constitution = new ModifiableValue<int>(10);
 int level = 10;
-// We can project values, with some limited LINQ-like extension methods.
+// We can project values with some limited LINQ-like extension methods.
 var hpAdjustment = constitution.Select(con => (float) Math.Round((con - 10f) / 3f) * level);
 var maxHealth = new ModifiableValue<float>(100f);
 
@@ -174,7 +174,14 @@ constitution.initial.value = 15;
 // Prints: Max health is 120.
 ```
 
-Note: they can be different data types.
+Note: the attributes are different data types: constitution is an `int`,
+maxHealth is a `float`.
+
+One might notice that `hpAdjustment` depends on the value of `level`. One would
+hope that a change to `level` would notify `hpAdjustment` and ultimately
+`maxHealth`; however, because `level` is an `int` that won't happen. See the
+[Advanced Examples](#advanced-examples) for how to include `level` changes
+elegantly.
 
 ### Creating New Modifiers
 
