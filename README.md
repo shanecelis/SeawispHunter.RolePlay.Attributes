@@ -38,8 +38,8 @@ interact with one another.
 
 Many a library probably shied away from generics because .NET has not had
 generic math support. The release of .NET 7 will have that support, which this
-library uses. In addition a workaround makes it possible to use the same API for
-netstandard2.0.
+library uses. In addition [a workaround](#dealing-with-math-in-generics) makes
+it possible to use the same API for netstandard2.0.
 
 * Flexible modifiers
 
