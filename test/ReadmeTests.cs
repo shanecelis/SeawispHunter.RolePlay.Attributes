@@ -19,7 +19,7 @@ public class ReadmeTest {
 
   [Fact]
   public void TestExample1() {
-    var health = new ModifiableValue<float> { baseValue = 100f };
+    var health = new ModifiableValue<float>(100f);
     Assert.Equal(100f, health.value);
     health.modifiers.Add(Modifier.Times(1.10f));
     // Console.WriteLine($"Health is {health.value}."); // Prints: Health is 110.
@@ -32,7 +32,7 @@ public class ReadmeTest {
   [Fact]
   public void TestExample2() {
     int notificationCount = 0;
-    var health = new ModifiableValue<float> { baseValue = 100f };
+    var health = new ModifiableValue<float>(100f);
     // health.PropertyChanged += (_, _) => Console.WriteLine($"Health is {health.value}.");
     health.PropertyChanged += (_, _) => notificationCount++;
     Assert.Equal(0, notificationCount);
@@ -57,7 +57,7 @@ public class ReadmeTest {
     Assert.Equal(0, notificationCount);
     Assert.Equal(100f, health.value);
     Assert.Equal(100f, maxHealth.value);
-    maxHealth.baseValue = 90f;
+    maxHealth.initial.value = 90f;
     Assert.Equal(90f, health.value);
     Assert.Equal(90f, maxHealth.value);
   }
@@ -105,7 +105,7 @@ public class ReadmeTest {
     maxHealth.modifiers.Add(Modifier.Plus(hpAdjustment));
     Assert.Equal(100f, maxHealth.value);
     // Prints: Max health is 100.
-    constitution.baseValue = 15;
+    constitution.initial.value = 15;
     // Prints: Health is 90/100.
     Assert.Equal(120f, maxHealth.value);
   }
@@ -123,7 +123,7 @@ public class ReadmeTest {
     maxHealth.modifiers.Add(Modifier.Plus(hpAdjustment));
     Assert.Equal(100f, maxHealth.value);
     // Prints: Max health is 100.
-    constitution.baseValue = 15;
+    constitution.initial.value = 15;
     // Prints: Health is 90/100.
     Assert.Equal(120f, maxHealth.value);
     level.value = 15;
@@ -133,7 +133,7 @@ public class ReadmeTest {
   [Fact]
   public void TestExample3() {
     int notificationCount = 0;
-    var maxHealth = new ModifiableValue<float> { baseValue = 100f };
+    var maxHealth = new ModifiableValue<float>(100f);
     var health = ModifiableValue.FromValue(maxHealth);
     var damage = new Value<float>(0f);
 
@@ -171,7 +171,7 @@ public class ReadmeTest {
 
   [Fact]
   public void TestExampleMoon() {
-    var moonArmor = new ModifiableValue<float> { baseValue = 20f };
+    var moonArmor = new ModifiableValue<float>(20f);
     moonArmor.modifiers.Add(Modifier.FromFunc((float x) => DateTime.Now.IsFullMoon() ? 2 * x : x));
     Assert.Equal(20f, moonArmor.value);
     try {

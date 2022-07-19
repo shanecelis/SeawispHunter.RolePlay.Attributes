@@ -209,15 +209,6 @@ public static class Modifier {
     }
   }
 
-// https://pvs-studio.com/en/blog/posts/csharp/0878/
-// void SomeProcessing<T, TOperation>(...)
-//     where TOperation : struct, IOperator<T>
-// {
-//     T var1 = ...;
-//     T var2 = ...;
-//     T sum = default(TOperation).Sum(var1, var2);  // This is zero cost!
-// }
-
 #endif
 /** Cast a numerical type into something else. */
   internal class CastingModifier<S,T> : ContextModifier<IModifier<S>,T>
@@ -361,15 +352,12 @@ public abstract class ContextModifier<S,T> : IModifier<S,T>, IDisposable {
 
   public override string ToString() {
     var builder = new StringBuilder();
-    // builder.Append("ref ");
     if (name != null) {
       builder.Append('"');
       builder.Append(name);
       builder.Append('"');
       builder.Append(' ');
     }
-    // if (symbol != null)
-      // builder.Append(symbol);
 
     builder.Append(context);
     return builder.ToString();

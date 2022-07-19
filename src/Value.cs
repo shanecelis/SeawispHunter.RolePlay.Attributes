@@ -14,18 +14,12 @@ using System.ComponentModel;
 namespace SeawispHunter.RolePlay.Attributes;
 
 public class Value<T> : IValue<T> {
-  // HACK: This just seems like it's too much.
-  /** When value is set, pass through `setter()` first. */
-  public Func<T,T> setter;
 
   protected T _value;
   public virtual T value {
     get => _value;
     set {
-      if (setter == null)
-        _value = value;
-      else
-        _value = setter(value);
+      _value = value;
       OnChange(nameof(value));
     }
   }
@@ -58,8 +52,8 @@ public static class Value {
     where T : IEquatable<T>
 #endif
     => new BoundedValue<T>(value,
-                           new ReadOnlyValue<T> { value = lowerBound },
-                           new ReadOnlyValue<T> { value = upperBound });
+                           new ReadOnlyValue<T>(lowerBound),
+                           new ReadOnlyValue<T>(upperBound));
 
   public static IValue<T> WithBounds<T>(T value, T lowerBound, IReadOnlyValue<T> upperBound)
 #if NET6_0_OR_GREATER
@@ -68,7 +62,7 @@ public static class Value {
     where T : IEquatable<T>
 #endif
     => new BoundedValue<T>(value,
-                           new ReadOnlyValue<T> { value = lowerBound },
+                           new ReadOnlyValue<T>(lowerBound),
                            upperBound);
 
   public static IValue<T> WithBounds<T>(T value, IReadOnlyValue<T> lowerBound, T upperBound)
@@ -79,7 +73,7 @@ public static class Value {
 #endif
     => new BoundedValue<T>(value,
                            lowerBound,
-                           new ReadOnlyValue<T> { value = upperBound });
+                           new ReadOnlyValue<T>(upperBound));
 
   public static IValue<T> WithBounds<T>(T value, IReadOnlyValue<T> lowerBound, IReadOnlyValue<T> upperBound)
 #if NET6_0_OR_GREATER
@@ -100,6 +94,7 @@ public static class Value {
     }
 
     public T value => func();
+
     public event PropertyChangedEventHandler PropertyChanged;
     private static PropertyChangedEventArgs eventArgs = new PropertyChangedEventArgs(nameof(value));
 
@@ -175,14 +170,15 @@ public static class Value {
     protected void OnChange() => PropertyChanged?.Invoke(this, eventArgs);
   }
 
-  internal class ReadOnlyValue<T> : IReadOnlyValue<T> {
-    public T value { get; init; }
+}
+public class ReadOnlyValue<T> : IReadOnlyValue<T> {
+  public T value { get; private init; }
+  public ReadOnlyValue(T value) => this.value = value;
 
-    // We don't ever call this because we don't change.
-    public event PropertyChangedEventHandler PropertyChanged {
-      add { }
-      remove { }
-    }
+  // We don't ever call this because we don't change.
+  // This isn't strictly true unless T is a struct.
+  public event PropertyChangedEventHandler PropertyChanged {
+    add { }
+    remove { }
   }
-
 }

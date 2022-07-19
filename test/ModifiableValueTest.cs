@@ -18,8 +18,8 @@ using SeawispHunter.RolePlay.Attributes;
 namespace SeawispHunter.RolePlay.Attributes.Test {
 
 public class ModifiableValueTest {
-  ModifiableValue<float> health = new ModifiableValue<float> { baseValue = 100f };
-  IModifiableValue<float> currentHealth;
+  ModifiableValue<float> health = new ModifiableValue<float>(100f);
+  IModifiableValue<IReadOnlyValue<float>,float> currentHealth;
   IModifier<float,float> boost = Modifier.Times(1.10f, "10% boost");// { name = "10% boost", multiply = 1.10f };
   // IModifier<float> boost20 = new ModifierFloat { name = "20% boost", multiply = 1.20f };
   IModifier<float,float> boost20 = Modifier.Times(1.2f, "20% boost");
@@ -57,7 +57,7 @@ public class ModifiableValueTest {
   [Fact]
   public void TestUnmodified() {
     health.modifiers.Clear(); // XXX: This doesn't clear notifications.
-    Assert.Equal(100f, health.baseValue);
+    Assert.Equal(100f, health.initial.value);
     Assert.Equal(100f, health.value);
     Assert.Equal(1, healthNotifications);
     Assert.Equal(1, currentHealthNotifications);
@@ -67,7 +67,7 @@ public class ModifiableValueTest {
 
   [Fact]
   public void TestModified() {
-    Assert.Equal(100f, health.baseValue);
+    Assert.Equal(100f, health.initial.value);
     Assert.Equal(110f, health.value);
     Assert.Equal(0, healthNotifications);
     Assert.Equal(0, currentHealthNotifications);
@@ -77,7 +77,7 @@ public class ModifiableValueTest {
 
   [Fact]
   public void TestDisabled() {
-    Assert.Equal(100f, health.baseValue);
+    Assert.Equal(100f, health.initial.value);
     Assert.Equal(110f, health.value);
     boost.enabled = false;
     Assert.Equal(100f, health.value);
@@ -89,7 +89,7 @@ public class ModifiableValueTest {
 
   [Fact]
   public void TestNotification() {
-    Assert.Equal(100f, health.baseValue);
+    Assert.Equal(100f, health.initial.value);
     Assert.Equal(110f, health.value);
     damage.context.value = 10f;
     Assert.Equal(0, healthNotifications);
@@ -104,7 +104,7 @@ public class ModifiableValueTest {
     Assert.Equal(0, currentHealthNotifications);
     Assert.Equal(0, damageNotifications);
     Assert.Equal(0, boostNotifications);
-    Assert.Equal(100f, health.baseValue);
+    Assert.Equal(100f, health.initial.value);
     Assert.Equal(110f, health.value);
     health.modifiers.Add(boost20);
     Assert.Equal(132f, health.value);
@@ -137,8 +137,8 @@ public class ModifiableValueTest {
 
     // I can't do this with an int.
     // var strength = new ModifiableValue<int> { name = "strength", baseValue = 10 };
-    var strength = new ModifiableValue<float> { baseValue = 10f };
-    var strengthPercentageGain = new ModifiableValue<float> { baseValue = 1f };
+    var strength = new ModifiableValue<float>(10f);
+    var strengthPercentageGain = new ModifiableValue<float>(1f);
     strengthPercentageGain.modifiers.Add(Modifier.Plus(0.10f));
     strength.modifiers.Add(Modifier.Times<float>(strengthPercentageGain));
     Assert.Equal(11f, strength.value);
@@ -147,9 +147,9 @@ public class ModifiableValueTest {
   [Fact]
   public void TestDifferentAccumulationStyleMixedTypes() {
 
-    var strength = new ModifiableValue<int> { baseValue = 10 };
+    var strength = new ModifiableValue<int>(10);
     // var strength = new ModifiableValue<float> { name = "strength", baseValue = 10f };
-    var strengthPercentageGain = new ModifiableValue<float> { baseValue = 1f };
+    var strengthPercentageGain = new ModifiableValue<float>(1f);
     strengthPercentageGain.modifiers.Add(Modifier.Plus(0.1f));
     strength.modifiers.Add(Modifier.Times<float>(strengthPercentageGain).Cast<float,int>());
     Assert.Equal(11, strength.value);
@@ -160,11 +160,11 @@ public class ModifiableValueTest {
       https://gamedevelopment.tutsplus.com/tutorials/using-the-composite-design-pattern-for-an-rpg-attributes-system--gamedev-243
   */
   public void TestSidhionAccumulationStyle() {
-    var stat = new ModifiableValue<float> { baseValue = 10f };
+    var stat = new ModifiableValue<float>(10f);
     var rawBonusesPlus = new ModifiableValue<float>();
-    var rawBonusesTimes = new ModifiableValue<float>() { baseValue = 1f };
+    var rawBonusesTimes = new ModifiableValue<float>(1f);
     var finalBonusesPlus = new ModifiableValue<float>();
-    var finalBonusesMultiply = new ModifiableValue<float>() { baseValue = 1f };
+    var finalBonusesMultiply = new ModifiableValue<float>(1f);
     Assert.True(stat is IReadOnlyValue<float>);
     Assert.True(rawBonusesPlus is IReadOnlyValue<float>);
     stat.modifiers.Add(Modifier.Plus<float>(rawBonusesPlus));
@@ -180,7 +180,7 @@ public class ModifiableValueTest {
 
   [Fact]
   public void TestWaysToAdd() {
-    var stat = new ModifiableValue<float> { baseValue = 10f };
+    var stat = new ModifiableValue<float>(10f);
     var rawBonusesPlus = new ModifiableValue<float>();
     Assert.True(stat is IReadOnlyValue<float>);
     Assert.True(rawBonusesPlus is IReadOnlyValue<float>);
@@ -195,7 +195,7 @@ public class ModifiableValueTest {
 
   [Fact]
   public void TestWaysToAddLiterals() {
-    var stat = new ModifiableValue<float> { baseValue = 10f };
+    var stat = new ModifiableValue<float>(10f);
     var m = Modifier.Plus(1f);
     stat.modifiers.Add(m);
     stat.modifiers.Add(Modifier.Plus(1f));
@@ -208,7 +208,7 @@ public class ModifiableValueTest {
   public void TestSidhionStyle() {
     int notifications = 0;
     int notifications2 = 0;
-    var stat = new SidhionStat<float> { baseValue = 10f };
+    var stat = new SidhionStat<float>(10f);
     stat.PropertyChanged += (_, _) => notifications++;
     stat.rawBonusesPlus.PropertyChanged += (_, _) => notifications2++;
 

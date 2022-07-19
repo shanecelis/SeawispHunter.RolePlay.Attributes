@@ -33,7 +33,7 @@ public class SidhionStat<T> : ModifiableValue<T>
   public readonly IModifiableValue<T> rawBonusesTimes = new ModifiableValue<T>(one);
   public readonly IModifiableValue<T> finalBonusesPlus = new ModifiableValue<T>();
   public readonly IModifiableValue<T> finalBonusesTimes = new ModifiableValue<T>(one);
-  public SidhionStat() {
+  public SidhionStat(T initialValue) : base(initialValue) {
     // value = ((baseValue + rawBonusesPlus) * rawBonusesTimes + finalBonusesPlus) * finalBonusesTimes
     modifiers.Add(100, Modifier.Plus(rawBonusesPlus));
     modifiers.Add(200, Modifier.Times<T>(rawBonusesTimes));
@@ -62,7 +62,7 @@ public class KryzarelStat<T> : ModifiableValue<T>
   public readonly IModifiableValue<T> flat = new ModifiableValue<T>();
   public readonly IModifiableValue<T> percentAdd = new ModifiableValue<T>(one);
   public readonly IModifiableValue<T> percentTimes = new ModifiableValue<T>(one);
-  public KryzarelStat() {
+  public KryzarelStat(T initialValue) : base(initialValue) {
     modifiers.Add((int) Priority.Flat, Modifier.Plus<T>(flat));
     modifiers.Add((int) Priority.PercentAdd, Modifier.Times<T>(percentAdd));
     modifiers.Add((int) Priority.PercentTimes, Modifier.Times<T>(percentTimes));
@@ -85,7 +85,7 @@ public class PennerStat<T> : ModifiableValue<T>
   public readonly IModifiableValue<T> totalValuePlus = new ModifiableValue<T>();
   public readonly IModifiableValue<T> totalValueTimes = new ModifiableValue<T>(one);
 
-  public PennerStat() {
+  public PennerStat(T initialValue) : base(initialValue) {
     // This class looks similar to Sidhion, but it is different.
     // value = (baseValue * baseValueTimes + baseValuePlus) * totalValueTimes + totalValuePlus
     modifiers.Add(100, Modifier.Times<T>(baseValueTimes));

@@ -104,7 +104,7 @@ namespace SeawispHunter.RolePlay.Attributes.Test {
    */
 public class ImperialCoderTest {
 
-  ModifiableValue<float> maxHealth = new ModifiableValue<float> { baseValue = 100f };
+  ModifiableValue<float> maxHealth = new ModifiableValue<float>(100f);
   IValue<float> health;
   IModifier<float,float> boost = Modifier.Times(1.10f, "10% boost");
   IModifier<float,float> boost20 = Modifier.Times(1.2f, "20% boost");
@@ -152,7 +152,7 @@ public class ImperialCoderTest {
     var typedDamage = new ModifiableValue<float>();
     var fightContext = new FightContext();
     typedDamage.modifiers.Add(Modifier.FromFunc((float x) => (fightContext.vulnerable & fightContext.incoming) == 0 ? x : 2f * x));
-    typedDamage.baseValue = 10f;
+    typedDamage.initial.value = 10f;
     Assert.Equal(10f, typedDamage.value);
     fightContext.incoming = DamageType.Fire;
     Assert.Equal(10f, typedDamage.value);
@@ -166,7 +166,7 @@ public class ImperialCoderTest {
     var typedDamage = new ModifiableValue<float>();
     var fightContext = new FightContext();
     typedDamage.modifiers.Add(Modifier.FromFunc((float x) => fightContext.targetIsUndead ? 1.1f * x : x));
-    typedDamage.baseValue = 10f;
+    typedDamage.initial.value = 10f;
     Assert.Equal(10f, typedDamage.value);
     fightContext.targetIsUndead = true;
     Assert.Equal(11f, typedDamage.value);
@@ -180,7 +180,7 @@ public class ImperialCoderTest {
     fightContext.incoming = DamageType.Fire;
     fightContext.vulnerable = DamageType.None;
     typedDamage.modifiers.Add(Modifier.FromFunc((float x) => (fightContext.vulnerable & fightContext.incoming) == 0 ? x : 2f * x));
-    typedDamage.baseValue = 2f;
+    typedDamage.initial.value = 2f;
 
     Assert.Equal(100f, health.value);
     for (int i = 0; i < 8 && ! token.IsCancellationRequested; i++) {
@@ -201,7 +201,7 @@ public class ImperialCoderTest {
     fightContext.incoming = DamageType.Fire;
     fightContext.vulnerable = DamageType.All;
     typedDamage.modifiers.Add(Modifier.FromFunc((float x) => (fightContext.vulnerable & fightContext.incoming) == 0 ? x : 2f * x));
-    typedDamage.baseValue = 2f;
+    typedDamage.initial.value = 2f;
 
     Assert.Equal(100f, health.value);
     for (int i = 0; i < 8 && ! token.IsCancellationRequested; i++) {
@@ -215,7 +215,7 @@ public class ImperialCoderTest {
   }
 
   [Fact] public void SlowMovementSpeed() {
-    var speed = new ModifiableValue<int> { baseValue = 10 };
+    var speed = new ModifiableValue<int>(10);
     var ailment = Modifier.Minus(2, "ailment (curable)");
     Assert.Equal(10, speed.value);
     speed.modifiers.Add(ailment);

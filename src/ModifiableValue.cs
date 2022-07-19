@@ -18,66 +18,32 @@ using System.Collections.Generic;
 using System.Numerics;
 #endif
 namespace SeawispHunter.RolePlay.Attributes {
-  // XXX: Can IValue<T> work like a single value IEnumerable?
 
 public static class ModifiableValue {
-  public static IModifiableValue<T> FromFunc<T>(Func<T> f, out Action callOnChange) => new DerivedModifiableValue<T>(f, out callOnChange);
-  public static IModifiableValue<T> FromFunc<T>(Func<T> f) => new DerivedModifiableValue<T>(f, out var callOnChange);
 
-  public static IModifiableValue<T> FromValue<T>(IReadOnlyValue<T> v) => new DerivedModifiableValue<T>(v);
-  // public static IModifiableValue<T> FromValue<T>(T v) => new ModifiableValue<T> { baseValue = v };
-  // public static IModifiableValue<T> FromValue<T>(IValue<T> v, string name) => new DerivedModifiableValue<T>(v) { };
-
-  /* This stat's base value is given by a Func<T> or another stat's value. */
-  internal class DerivedModifiableValue<T> : ModifiableValue<T>, IDisposable {
-    public readonly Func<T> func;
-    public override T baseValue => func();
-    private Action onDispose = null;
-
-    public DerivedModifiableValue(Func<T> func, out Action callOnChange) {
-      this.func = func;
-      callOnChange = () => OnChange(nameof(baseValue));
-    }
-
-    public DerivedModifiableValue(Func<T> func) {
-      this.func = func;
-    }
-
-    public DerivedModifiableValue(IReadOnlyValue<T> value) : this(() => value.value) {
-      value.PropertyChanged -= BaseChanged;
-      value.PropertyChanged += BaseChanged;
-      onDispose = () => value.PropertyChanged -= BaseChanged;
-    }
-
-    protected void BaseChanged(object sender, PropertyChangedEventArgs e) {
-      OnChange(nameof(baseValue));
-    }
-
-    public void Dispose() {
-      onDispose?.Invoke();
-    }
-  }
+  public static IModifiableValue<IValue<T>,T> FromValue<T>(T v) where T : struct => new ModifiableValue<T>(new Value<T>(v));
+  public static IModifiableValue<IReadOnlyValue<T>,T> FromValue<T>(IReadOnlyValue<T> v) => new ModifiableValue<IReadOnlyValue<T>, T>(v);
+  public static IModifiableValue<IValue<T>,T> FromValue<T>(IValue<T> v) => new ModifiableValue<IValue<T>, T>(v);
 }
 
-public class ModifiableValue<T> : IModifiableValue<T> {
+public class ModifiableValue<T> : ModifiableValue<IValue<T>, T>, IModifiableValue<T> {
+
+  public ModifiableValue(IValue<T> initial) : base(initial) { }
+  public ModifiableValue(T initialValue) : base(new Value<T>(initialValue)) { }
+  public ModifiableValue() : this(default(T)) { }
+}
+
+public class ModifiableValue<S,T> : IModifiableValue<S,T> where S : IReadOnlyValue<T> {
 
   protected ModifiersSortedList _modifiers;
   public IPriorityCollection<IModifier<T>> modifiers => _modifiers;
 
-  protected T _baseValue;
-  public virtual T baseValue {
-    get => _baseValue;
-    set {
-      if (_baseValue != null && _baseValue.Equals(value))
-        return;
-      _baseValue = value;
-      OnChange(nameof(baseValue));
-    }
-  }
+  protected S _initial;
+  public virtual S initial => _initial;
   // XXX: Consider caching?
   public T value {
     get {
-      T v = baseValue;
+      T v = initial.value;
       foreach (var modifier in modifiers)
         if (modifier.enabled)
           v = modifier.Modify(v);
@@ -87,8 +53,11 @@ public class ModifiableValue<T> : IModifiableValue<T> {
   public event PropertyChangedEventHandler PropertyChanged;
   private static PropertyChangedEventArgs modifiersEventArgs
     = new PropertyChangedEventArgs(nameof(modifiers));
-  public ModifiableValue() => _modifiers = new ModifiersSortedList(this);
-  public ModifiableValue(T baseValue) : this() => _baseValue = baseValue;
+  public ModifiableValue(S initial) {
+    _initial = initial;
+    _initial.PropertyChanged += Chain;
+    _modifiers = new ModifiersSortedList(this);
+  }
 
   protected void Chain(object sender, PropertyChangedEventArgs args) => OnChange(nameof(value));
 
@@ -108,7 +77,7 @@ public class ModifiableValue<T> : IModifiableValue<T> {
       return ToString();
     var builder = new StringBuilder();
     builder.Append(" \"base\" ");
-    builder.Append(baseValue);
+    builder.Append(initial);
     builder.Append(' ');
     foreach (var modifier in modifiers) {
       builder.Append(modifier);
@@ -126,10 +95,10 @@ public class ModifiableValue<T> : IModifiableValue<T> {
       have a unique age which ensures the keys will be unique.
    */
   protected class ModifiersSortedList : IPriorityCollection<IModifier<T>>, IComparer<(int priority, int age)> {
-    private readonly ModifiableValue<T> parent;
+    private readonly ModifiableValue<S,T> parent;
     private readonly SortedList<(int, int), IModifier<T>> modifiers = new();
     private int addCount = 0;
-    public ModifiersSortedList(ModifiableValue<T> parent) => this.parent = parent;
+    public ModifiersSortedList(ModifiableValue<S,T> parent) => this.parent = parent;
 
     public IEnumerator<IModifier<T>> GetEnumerator() => modifiers.Values.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

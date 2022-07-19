@@ -13,7 +13,7 @@ using System.Collections.Generic;
 
 namespace SeawispHunter.RolePlay.Attributes {
 
-/** IReadOnlyValue<T> notifies listeners when changed. That's it.
+/** IReadOnlyValue<T> notifies listeners when it changes. That's it.
 
     You can only read this value but that doesn't mean it's immutable. It may be
     there are other things that change it.
@@ -27,22 +27,27 @@ public interface IReadOnlyValue<T> : INotifyPropertyChanged {
   // event PropertyChangedEventHandler PropertyChanged;
 }
 
-// XXX: Consider renaming IValue to IReadOnlyValue and IMutableValue to IValue.
 /* IValue<T> is an IReadOnlyValue<T> that can be directly changed. */
 public interface IValue<T> : IReadOnlyValue<T> {
   /* We want this to be settable. */
   new T value { get; set; }
 }
 
-/** This IModifiableValue<T> class is meant to capture values in games like health,
-    strength, etc. that can be modified by various, sometimes distal, effects. */
-public interface IModifiableValue<T> : IReadOnlyValue<T>, INotifyPropertyChanged {
-  T baseValue { get; set; }
+/** The initial value type S can be an IReadOnlyValue<T> or IValue<T>.
+    Generally, it's an IValue<T> but if it was derived from some other
+    attribute, the initial value may be read only. */
+public interface IModifiableValue<S,T> : IReadOnlyValue<T>, INotifyPropertyChanged
+  where S : IReadOnlyValue<T> {
+  S initial { get; }
   // T value { get; }
   /** The list implementation will handle property change events properly. */
   IPriorityCollection<IModifier<T>> modifiers { get; }
   // event PropertyChangedEventHandler PropertyChanged;
 }
+
+/** This IModifiableValue<T> interface is meant to capture values in games like health,
+    strength, etc. that can be modified by various, sometimes distal, effects. */
+public interface IModifiableValue<T> : IModifiableValue<IValue<T>,T> { }
 
 /** We want to be able to specify a priority. */
 public interface IPriorityCollection<T> : ICollection<T> {
@@ -57,7 +62,8 @@ public interface IModifier<T> : INotifyPropertyChanged {
   // event PropertyChangedEventHandler PropertyChanged;
 }
 
-// What good is this?
+/** A modifier that also provides a context. Good for exposing
+    I(ReadOnly)Values for instance. */
 public interface IModifier<S,T> : IModifier<T> {
   S context { get; }
 }
