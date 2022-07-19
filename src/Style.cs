@@ -36,9 +36,9 @@ public class SidhionStat<T> : ModifiableValue<T>
   public SidhionStat(T initialValue) : base(initialValue) {
     // value = ((baseValue + rawBonusesPlus) * rawBonusesTimes + finalBonusesPlus) * finalBonusesTimes
     modifiers.Add(100, Modifier.Plus(rawBonusesPlus));
-    modifiers.Add(200, Modifier.Times<T>(rawBonusesTimes));
-    modifiers.Add(300, Modifier.Plus<T>(finalBonusesPlus));
-    modifiers.Add(400, Modifier.Times<T>(finalBonusesTimes));
+    modifiers.Add(200, Modifier.Times(rawBonusesTimes));
+    modifiers.Add(300, Modifier.Plus(finalBonusesPlus));
+    modifiers.Add(400, Modifier.Times(finalBonusesTimes));
   }
 
 #if NET6_0_OR_GREATER
@@ -63,9 +63,9 @@ public class KryzarelStat<T> : ModifiableValue<T>
   public readonly IModifiableValue<T> percentAdd = new ModifiableValue<T>(one);
   public readonly IModifiableValue<T> percentTimes = new ModifiableValue<T>(one);
   public KryzarelStat(T initialValue) : base(initialValue) {
-    modifiers.Add((int) Priority.Flat, Modifier.Plus<T>(flat));
-    modifiers.Add((int) Priority.PercentAdd, Modifier.Times<T>(percentAdd));
-    modifiers.Add((int) Priority.PercentTimes, Modifier.Times<T>(percentTimes));
+    modifiers.Add((int) Priority.Flat, Modifier.Plus(flat));
+    modifiers.Add((int) Priority.PercentAdd, Modifier.Times(percentAdd));
+    modifiers.Add((int) Priority.PercentTimes, Modifier.Times(percentTimes));
   }
 
 #if NET6_0_OR_GREATER
@@ -88,10 +88,10 @@ public class PennerStat<T> : ModifiableValue<T>
   public PennerStat(T initialValue) : base(initialValue) {
     // This class looks similar to Sidhion, but it is different.
     // value = (baseValue * baseValueTimes + baseValuePlus) * totalValueTimes + totalValuePlus
-    modifiers.Add(100, Modifier.Times<T>(baseValueTimes));
-    modifiers.Add(200, Modifier.Plus<T>(baseValuePlus));
-    modifiers.Add(300, Modifier.Times<T>(totalValueTimes));
-    modifiers.Add(400, Modifier.Plus<T>(totalValuePlus));
+    modifiers.Add(100, Modifier.Times(baseValueTimes));
+    modifiers.Add(200, Modifier.Plus(baseValuePlus));
+    modifiers.Add(300, Modifier.Times(totalValueTimes));
+    modifiers.Add(400, Modifier.Plus(totalValuePlus));
   }
 
 #if NET6_0_OR_GREATER
