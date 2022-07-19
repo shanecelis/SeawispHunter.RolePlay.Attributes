@@ -75,9 +75,9 @@ public interface IModifiableValue<T> {
 }
 ```
 
-So a modifiable value $a$ with three modifiers $m1, m2, m3$ would have a value:
+So a modifiable value $a$ with three modifiers $m_1, m_2, m_3$ would have a value:
 
-$$ a.value = m3(m2(m1(a.initial.value))) $$
+$$ \text{a.value} = m_3(m_2(m_1(a.initial.value))) $$
 
 ## Modifier
 
