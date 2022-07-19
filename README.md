@@ -22,7 +22,7 @@ attributes ought to respect the following requirements.
 
 ## Features
 
-* Interface based
+* Interface Based
 
 The heart of this library is defined by a few interfaces. So one can substitute
 their own implementations. Especially helpful if one wants to define modifiers
@@ -34,14 +34,16 @@ Too many libraries decide all attributes must be a `float` or an `int`. With
 this library one can choose which type suits an attribute, and they may still
 interact with one another.
 
-* Generic math
+* Generic Math
 
 Many a library probably shied away from generics because .NET has not had
-generic math support. The release of .NET 7 will have that support, which this
-library uses. In addition [a workaround](#dealing-with-math-in-generics) makes
-it possible to use the same API for netstandard2.0.
+generic math support, i.e., it was not possible to write `T Plus<T>(T a, T b) =>
+a + b`. The release of .NET 7 will have that support, which this library makes
+use of. In addition [a workaround](#dealing-with-math-in-generics) makes it
+possible to present the same API with netstandard2.0, which is important if one
+wants to use this library with Unity3D.
 
-* Flexible modifiers
+* Flexible Modifiers
 
 Sure, one can add, minus, multiply, and divide their stats, but what about
 clamping the value? Is it easy to add that feature? With this library can
@@ -187,13 +189,15 @@ elegantly.
 
 New modifiers can be created by implementing the `IModifier<T>` interface or by
 using the convenience methods in `Modifier` like `FromFunc()` shown below.
+Perhaps one has armor that bestows different affects depending on the phase of
+the moon[^2].
 
 ``` c#
 var moonArmor = new ModifiableValue<float>(20f);
 moonArmor.modifiers.Add(Modifier.FromFunc((float x) => DateTime.Now.IsFullMoon() ? 2 * x : x));
 ```
 
-Unfortunately there is no such extension method `IsFullMoon()` for DateTime by
+[^2]: Unfortunately there is no such extension method `IsFullMoon()` for DateTime by
 default but one can [add it](https://khalidabuhakmeh.com/calculate-moon-phase-with-csharp).
 
 ### Ordering Modifiers
