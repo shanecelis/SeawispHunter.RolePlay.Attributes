@@ -106,8 +106,8 @@ public class ImperialCoderTest {
 
   ModifiableValue<float> maxHealth = new ModifiableValue<float>(100f);
   IValue<float> health;
-  IModifier<float,float> boost = Modifier.Times(1.10f, "10% boost");
-  IModifier<float,float> boost20 = Modifier.Times(1.2f, "20% boost");
+  IModifier<float> boost = Modifier.Times(1.10f, "10% boost");
+  IModifier<float> boost20 = Modifier.Times(1.2f, "20% boost");
 
   [Flags]
   internal enum DamageType {
@@ -233,8 +233,10 @@ public class ImperialCoderTest {
     // iterate through again to remove.
     foreach (var modifier in attr.modifiers
              // HACK: We shouldn't need to know this.
-             .Cast<ContextModifier<T,T>>()
-             .Where(m => m.name.Contains("curable"))
+             // .Cast<ContextModifier<T,T>>()
+             // .Where(m => m.name.Contains("curable"))
+             // The ToString() includes the name.
+             .Where(m => m.ToString().Contains("curable"))
              .ToList())
         attr.modifiers.Remove(modifier);
   }

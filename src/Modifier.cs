@@ -57,8 +57,8 @@ public static class Modifier {
 #if NET6_0_OR_GREATER
 
   // Plus
-  public static IModifier<S,S> Plus<S>(S v, string name = null) where S : INumber<S>
-    => new NumericalModifier<S,S>(v) { name = name, symbol = '+' };
+  public static IModifier<IReadOnlyValue<S>,S> Plus<S>(S v, string name = null) where S : INumber<S>
+    => Plus(new ReadOnlyValue<S>(v), name);
 
   public static IModifier<IReadOnlyValue<S>,S> Plus<S>(IReadOnlyValue<S> v, string name = null) where S : INumber<S>
     => new NumericalModifier<IReadOnlyValue<S>,S>(v) { name = name, symbol = '+' };
@@ -67,8 +67,8 @@ public static class Modifier {
     => new NumericalModifier<IValue<S>,S>(v) { name = name, symbol = '+' };
 
   // Times
-  public static IModifier<S,S> Times<S>(S v, string name = null) where S : INumber<S>
-    => new NumericalModifier<S,S>(v) { name = name, symbol = '*' };
+  public static IModifier<IReadOnlyValue<S>,S> Times<S>(S v, string name = null) where S : INumber<S>
+    => Times(new ReadOnlyValue<S>(v), name);
 
   public static IModifier<IReadOnlyValue<S>,S> Times<S>(IReadOnlyValue<S> v, string name = null) where S : INumber<S>
     => new NumericalModifier<IReadOnlyValue<S>,S>(v) { name = name, symbol = '*' };
@@ -77,8 +77,8 @@ public static class Modifier {
     => new NumericalModifier<IValue<S>,S>(v) { name = name, symbol = '*' };
 
   // Minus
-  public static IModifier<S,S> Minus<S>(S v, string name = null) where S : INumber<S>
-    => new NumericalModifier<S,S>(v) { name = name, symbol = '-' };
+  public static IModifier<IReadOnlyValue<S>,S> Minus<S>(S v, string name = null) where S : INumber<S>
+    => Minus(new ReadOnlyValue<S>(v), name);
 
   public static IModifier<IReadOnlyValue<S>,S> Minus<S>(IReadOnlyValue<S> v, string name = null) where S : INumber<S>
     => new NumericalModifier<IReadOnlyValue<S>,S>(v) { name = name, symbol = '-' };
@@ -88,8 +88,8 @@ public static class Modifier {
 
 
   // Divide
-  public static IModifier<S,S> Divide<S>(S v, string name = null) where S : INumber<S>
-    => new NumericalModifier<S,S>(v) { name = name, symbol = '/' };
+  public static IModifier<IReadOnlyValue<S>,S> Divide<S>(S v, string name = null) where S : INumber<S>
+    => Divide(new ReadOnlyValue<S>(v), name);
 
   public static IModifier<IReadOnlyValue<S>,S> Divide<S>(IReadOnlyValue<S> v, string name = null) where S : INumber<S>
     => new NumericalModifier<IReadOnlyValue<S>,S>(v) { name = name, symbol = '/' };
@@ -98,8 +98,8 @@ public static class Modifier {
     => new NumericalModifier<IValue<S>,S>(v) { name = name, symbol = '/' };
 
   // Substitute
-  public static IModifier<S,S> Substitute<S>(S v, string name = null) where S : INumber<S>
-    => new NumericalModifier<S,S>(v) { name = name, symbol = '=' };
+  public static IModifier<IReadOnlyValue<S>,S> Substitute<S>(S v, string name = null) where S : INumber<S>
+    => Substitute(new ReadOnlyValue<S>(v), name);
 
   public static IModifier<IReadOnlyValue<S>,S> Substitute<S>(IReadOnlyValue<S> v, string name = null) where S : INumber<S>
     => new NumericalModifier<IReadOnlyValue<S>,S>(v) { name = name, symbol = '=' };
@@ -171,8 +171,8 @@ public static class Modifier {
   }
 
   // Plus
-  public static IModifier<S,S> Plus<S>(S v, string name = null) where S : struct
-    => new NumericalModifier<S,S>(v) { name = name, symbol = '+' };
+  public static IModifier<IReadOnlyValue<S>,S> Plus<S>(S v, string name = null) where S : struct
+    => Plus(new ReadOnlyValue<S>(v), name);
 
   public static IModifier<IReadOnlyValue<S>,S> Plus<S>(IReadOnlyValue<S> v, string name = null)
     => new NumericalModifier<IReadOnlyValue<S>,S>(v) { name = name, symbol = '+' };
@@ -181,8 +181,8 @@ public static class Modifier {
     => new NumericalModifier<IValue<S>,S>(v) { name = name, symbol = '+' };
 
   // Times
-  public static IModifier<S,S> Times<S>(S v, string name = null) where S : struct
-    => new NumericalModifier<S,S>(v) { name = name, symbol = '*' };
+  public static IModifier<IReadOnlyValue<S>,S> Times<S>(S v, string name = null) where S : struct
+    => Times(new ReadOnlyValue<S>(v), name);
 
   public static IModifier<IReadOnlyValue<S>,S> Times<S>(IReadOnlyValue<S> v, string name = null)
     => new NumericalModifier<IReadOnlyValue<S>,S>(v) { name = name, symbol = '*' };
@@ -191,8 +191,8 @@ public static class Modifier {
     => new NumericalModifier<IValue<S>,S>(v) { name = name, symbol = '*' };
 
   // Minus
-  public static IModifier<S,S> Minus<S>(S v, string name = null) where S : struct
-    => new NumericalModifier<S,S>(v) { name = name, symbol = '-' };
+  public static IModifier<IReadOnlyValue<S>,S> Minus<S>(S v, string name = null) where S : struct
+    => Minus(new ReadOnlyValue<S>(v), name);
 
   public static IModifier<IReadOnlyValue<S>,S> Minus<S>(IReadOnlyValue<S> v, string name = null)
     => new NumericalModifier<IReadOnlyValue<S>,S>(v) { name = name, symbol = '-' };
@@ -202,8 +202,8 @@ public static class Modifier {
 
 
   // Divide
-  public static IModifier<S,S> Divide<S>(S v, string name = null) where S : struct
-    => new NumericalModifier<S,S>(v) { name = name, symbol = '/' };
+  public static IModifier<IReadOnlyValue<S>,S> Divide<S>(S v, string name = null) where S : struct
+    => Divide(new ReadOnlyValue<S>(v), name);
 
   public static IModifier<IReadOnlyValue<S>,S> Divide<S>(IReadOnlyValue<S> v, string name = null)
     => new NumericalModifier<IReadOnlyValue<S>,S>(v) { name = name, symbol = '/' };
@@ -212,8 +212,8 @@ public static class Modifier {
     => new NumericalModifier<IValue<S>,S>(v) { name = name, symbol = '/' };
 
   // Substitute
-  public static IModifier<S,S> Substitute<S>(S v, string name = null) where S : struct
-    => new NumericalModifier<S,S>(v) { name = name, symbol = '=' };
+  public static IModifier<IReadOnlyValue<S>,S> Substitute<S>(S v, string name = null) where S : struct
+    => Substitute(new ReadOnlyValue<S>(v), name);
 
   public static IModifier<IReadOnlyValue<S>,S> Substitute<S>(IReadOnlyValue<S> v, string name = null)
     => new NumericalModifier<IReadOnlyValue<S>,S>(v) { name = name, symbol = '=' };
@@ -224,7 +224,6 @@ public static class Modifier {
 #endif
 /** Cast a numerical type into something else. */
   internal class CastingModifier<S,T> : ContextModifier<IModifier<S>,T>
-
 #if NET6_0_OR_GREATER
     where S : INumber<S>
     where T : INumber<T>
@@ -246,6 +245,7 @@ public static class Modifier {
 
 
   internal class NumericalModifier<S,T> : ContextModifier<S,T>
+    where S : IReadOnlyValue<T>
 #if NET6_0_OR_GREATER
     where T : INumber<T>
 #endif
@@ -255,13 +255,7 @@ public static class Modifier {
 
 #if NET6_0_OR_GREATER
     public override T Modify(T given) {
-      T v;
-      if (context is T r)
-        v = r;
-      else if (context is IReadOnlyValue<T> ivalue)
-        v = ivalue.value;
-      else
-        throw new InvalidOperationException();
+      T v = context.value;
       switch (symbol) {
         case '+':
           return given + v;
@@ -280,13 +274,7 @@ public static class Modifier {
 #else
     public override T Modify(T given) {
       var t = GetOp<T>();
-      T v;
-      if (context is T r)
-        v = r;
-      else if (context is IReadOnlyValue<T> ivalue)
-        v = ivalue.value;
-      else
-        throw new InvalidOperationException();
+      T v = context.value;
       switch (symbol) {
         case '+':
           return t.Sum(given, v);

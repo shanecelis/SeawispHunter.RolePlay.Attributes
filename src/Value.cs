@@ -186,4 +186,6 @@ public class ReadOnlyValue<T> : IReadOnlyValue<T> {
   // }
 
   public event PropertyChangedEventHandler PropertyChanged;
+  public override string ToString() => value.ToString();
+
 }

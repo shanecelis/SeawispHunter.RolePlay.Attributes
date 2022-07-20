@@ -77,8 +77,8 @@ public interface IModifiableValue<T> {
 }
 ```
 
-So a modifiable value $v$ with an initial value $i$ three modifiers $m_1, m_2, m_3$ 
-would have a value:
+Just to be explicit, an attribute's value $v$ that had an initial value $i$ and three
+modifiers $m_1, m_2, m_3$ would be computed like this:
 
 $$ v = m_3(m_2(m_1(i))) $$
 
