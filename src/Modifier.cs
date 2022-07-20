@@ -13,6 +13,7 @@ using System;
 using System.Text;
 using System.ComponentModel;
 using System.Threading;
+using System.Runtime.CompilerServices;
 #if NET6_0_OR_GREATER
 using System.Numerics;
 #endif
@@ -20,29 +21,27 @@ using System.Numerics;
 namespace SeawispHunter.RolePlay.Attributes {
 
 public static class Modifier {
-  public static IModifier<T> FromFunc<T>(Func<T,T> func) => new FuncModifier<T>(func);
+  public static IModifier<T> FromFunc<T>(Func<T,T> func, out Action callOnChange, [CallerArgumentExpression("func")] string funcExpression = null)
+    => new FuncModifier<T>(func, out callOnChange) { name = funcExpression };
 
-  internal class FuncModifier<T> : IModifier<T> {
-    private readonly Func<T,T> func;
-    private bool _enabled = true;
-    public bool enabled {
-      get => _enabled;
-      set {
-        if (_enabled == value)
-          return;
-        _enabled = value;
-        OnChange(nameof(enabled));
-      }
-    }
+  /** Create a modifier from the given function.
 
-    public FuncModifier(Func<T,T> func) => this.func = func;
-    
-    public event PropertyChangedEventHandler PropertyChanged;
-    protected void OnChange(string name) {
-      PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+      var m = Modifier.FromFunc((int x) => x + 1);
+      Console.WriteLine($"m = {m}"); // Prints: m = (int x) => x + 1
+    */
+  public static IModifier<T> FromFunc<T>(Func<T,T> func,
+                                         [CallerArgumentExpression("func")]
+                                         string funcExpression = null)
+    => new FuncModifier<T>(func) { name = funcExpression };
+
+  internal class FuncModifier<T> : ContextModifier<Func<T,T>, T> {
+    public FuncModifier(Func<T,T> func, out Action callOnChange) : this(func) {
+      callOnChange = () => OnChange(nameof(context));
     }
-    
-    public T Modify(T given) => func(given);
+    public FuncModifier(Func<T,T> func) : base(func) {}
+
+    public override T Modify(T given) => context(given);
+    public override string ToString() => name ?? "?f()";
   }
 
   public static void EnableAfter<T>(this IModifier<T> modifier, TimeSpan timeSpan) {

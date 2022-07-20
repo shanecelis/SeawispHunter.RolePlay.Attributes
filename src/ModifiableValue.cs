@@ -145,10 +145,3 @@ public class ModifiableValue<S,T> : IModifiableValue<S,T> where S : IReadOnlyVal
 }
 
 }
-#if NETSTANDARD
-// https://stackoverflow.com/a/62656145
-namespace System.Runtime.CompilerServices {
-  [EditorBrowsable(EditorBrowsableState.Never)]
-  internal class IsExternalInit{}
-}
-#endif
