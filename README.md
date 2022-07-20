@@ -77,8 +77,8 @@ public interface IModifiableValue<T> {
 }
 ```
 
-So a modifiable value $v$ with an initial value $i$ three modifiers $m_1, m_2,
-m_3$ would have a value:
+So a modifiable value $v$ with an initial value $i$ three modifiers $m_1, m_2, m_3$ 
+would have a value:
 
 $$ v = m_3(m_2(m_1(i))) $$
 
