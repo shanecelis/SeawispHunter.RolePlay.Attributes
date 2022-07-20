@@ -18,7 +18,7 @@ namespace SeawispHunter.RolePlay.Attributes {
     You can only read this value but that doesn't mean it's immutable. It may be
     there are other things that change it.
 */
-public interface IReadOnlyValue<T> : INotifyPropertyChanged {
+public interface IReadOnlyValue<out T> : INotifyPropertyChanged {
   /** NOTE: This might seem weird to not have a setter since it will notify you
       when it changes. However, if you consider a value that is not provided by
       a field but by some other thing like a `Func<T>` then it makes more sense.
@@ -36,7 +36,7 @@ public interface IValue<T> : IReadOnlyValue<T> {
 /** The initial value type S can be an IReadOnlyValue<T> or IValue<T>.
     Generally, it's an IValue<T> but if it was derived from some other
     attribute, the initial value may be read only. */
-public interface IModifiableValue<S,T> : IReadOnlyValue<T>, INotifyPropertyChanged
+public interface IModifiableValue<out S,T> : IReadOnlyValue<T>, INotifyPropertyChanged
   where S : IReadOnlyValue<T> {
   S initial { get; }
   // T value { get; }
@@ -56,6 +56,7 @@ public interface IPriorityCollection<T> : ICollection<T> {
 
 /** A IModifier<T> modifies an IModifiableValue<T>'s value. */
 public interface IModifier<T> : INotifyPropertyChanged {
+
   // string name { get; }
   bool enabled { get; set; }
   T Modify(T given);
@@ -64,7 +65,7 @@ public interface IModifier<T> : INotifyPropertyChanged {
 
 /** A modifier that also provides a context. Good for exposing
     I(ReadOnly)Values for instance. */
-public interface IModifier<S,T> : IModifier<T> {
+public interface IModifier<out S,T> : IModifier<T> {
   S context { get; }
 }
 

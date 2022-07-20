@@ -25,5 +25,13 @@ public class ModifierTest {
     Assert.Equal("(int x) => x + 1", m.ToString());
   }
 
+  [Fact] public void TestCovariance() {
+    IModifier<IValue<int>,int> m = Modifier.Plus(new Value<int>(1));
+    Assert.True(m is IModifier<IValue<int>, int>);
+    Assert.True(m is IModifier<IReadOnlyValue<int>, int>);
+    IModifier<IReadOnlyValue<int>, int> n = (IModifier<IReadOnlyValue<int>, int>) m;
+    Assert.True(n is IModifier<IReadOnlyValue<int>, int>);
+  }
+
 }
 }
