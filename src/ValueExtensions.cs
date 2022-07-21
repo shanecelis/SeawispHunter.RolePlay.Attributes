@@ -10,7 +10,7 @@
 */
 using System;
 
-namespace SeawispHunter.RolePlay.Attributes;
+namespace SeawispHunter.RolePlay.Attributes {
 
 public static class ValueExtensions {
   /** Give ourselves a little projection, as a treat. */
@@ -41,4 +41,5 @@ public static class ValueExtensions {
   {
     return new Modifier.CastingModifier<X,Y>(m);
   }
+}
 }

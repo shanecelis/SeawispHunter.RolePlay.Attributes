@@ -11,8 +11,9 @@
 using System;
 using System.ComponentModel;
 
-namespace SeawispHunter.RolePlay.Attributes;
+namespace SeawispHunter.RolePlay.Attributes {
 
+[Serializable]
 public class Value<T> : IValue<T> {
 
   protected T _value;
@@ -188,4 +189,5 @@ public class ReadOnlyValue<T> : IReadOnlyValue<T> {
   public event PropertyChangedEventHandler PropertyChanged;
   public override string ToString() => value.ToString();
 
+}
 }
