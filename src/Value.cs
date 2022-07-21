@@ -16,6 +16,7 @@ namespace SeawispHunter.RolePlay.Attributes {
 [Serializable]
 public class Value<T> : IValue<T> {
 
+  [SerializeField]
   protected T _value;
   public virtual T value {
     get => _value;
