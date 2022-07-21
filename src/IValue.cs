@@ -56,8 +56,6 @@ public interface IPriorityCollection<T> : ICollection<T> {
 
 /** A IModifier<T> modifies an IModifiableValue<T>'s value. */
 public interface IModifier<T> : INotifyPropertyChanged {
-
-  // string name { get; }
   bool enabled { get; set; }
   T Modify(T given);
   // event PropertyChangedEventHandler PropertyChanged;
