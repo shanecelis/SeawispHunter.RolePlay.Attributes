@@ -166,7 +166,7 @@ public static class Modifier {
       case TypeCode.Int32:
         return (IOperator<S>) (object) default(OpInt);
       default:
-            throw new NotImplementedException($"No handler for second type {typeof(S)}.");
+            throw new NotImplementedException($"No IOperator<T> implementation for type {typeof(S)}.");
     }
   }
 
