@@ -1,6 +1,6 @@
 using System.ComponentModel;
 // https://weblogs.asp.net/dixin/csharp-10-new-feature-callerargumentexpression-argument-check-and-more
-#if !NET5_0 && !NET6_0
+#if UNITY_5_3_OR_NEWER || (!NET5_0 && !NET6_0)
 namespace System.Runtime.CompilerServices {
 
 /// <summary>
@@ -26,7 +26,7 @@ internal sealed class CallerArgumentExpressionAttribute : Attribute
 }
 #endif
 
-#if NETSTANDARD
+#if NETSTANDARD || UNITY_5_3_OR_NEWER
 // https://stackoverflow.com/a/62656145
 namespace System.Runtime.CompilerServices {
   [EditorBrowsable(EditorBrowsableState.Never)]

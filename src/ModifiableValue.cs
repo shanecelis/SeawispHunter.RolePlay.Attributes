@@ -25,19 +25,31 @@ public static class ModifiableValue {
   public static IModifiableValue<IReadOnlyValue<T>,T> FromValue<T>(IReadOnlyValue<T> v) => new ModifiableValue<IReadOnlyValue<T>, T>(v);
   public static IModifiableValue<IValue<T>,T> FromValue<T>(IValue<T> v) => new ModifiableValue<IValue<T>, T>(v);
 }
+#if UNITY_5_3_OR_NEWER
+[Serializable]
+public class ModifiableValue<T> : ModifiableValue<Value<T>, T>, IModifiableValue<T> {
 
+  public ModifiableValue(Value<T> initial) : base(initial) { }
+  public ModifiableValue(T initialValue) : base(new Value<T>(initialValue)) { }
+  public ModifiableValue() : this(default(T)) { }
+}
+#else
+[Serializable]
 public class ModifiableValue<T> : ModifiableValue<IValue<T>, T>, IModifiableValue<T> {
 
   public ModifiableValue(IValue<T> initial) : base(initial) { }
   public ModifiableValue(T initialValue) : base(new Value<T>(initialValue)) { }
   public ModifiableValue() : this(default(T)) { }
 }
+#endif
 
+[Serializable]
 public class ModifiableValue<S,T> : IModifiableValue<S,T> where S : IReadOnlyValue<T> {
 
   protected ModifiersSortedList _modifiers;
   public IPriorityCollection<IModifier<T>> modifiers => _modifiers;
 
+  [UnityEngine.SerializeField]
   protected S _initial;
   public virtual S initial => _initial;
   // XXX: Consider caching?
@@ -50,6 +62,7 @@ public class ModifiableValue<S,T> : IModifiableValue<S,T> where S : IReadOnlyVal
       return v;
     }
   }
+  [field: NonSerialized]
   public event PropertyChangedEventHandler PropertyChanged;
   private static PropertyChangedEventArgs modifiersEventArgs
     = new PropertyChangedEventArgs(nameof(modifiers));

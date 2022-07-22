@@ -47,7 +47,11 @@ public interface IModifiableValue<out S,T> : IReadOnlyValue<T>, INotifyPropertyC
 
 /** This IModifiableValue<T> interface is meant to capture values in games like health,
     strength, etc. that can be modified by various, sometimes distal, effects. */
+#if UNITY_5_3_OR_NEWER
+public interface IModifiableValue<T> : IModifiableValue<Value<T>,T> { }
+#else
 public interface IModifiableValue<T> : IModifiableValue<IValue<T>,T> { }
+#endif
 
 /** We want to be able to specify a priority. */
 public interface IPriorityCollection<T> : ICollection<T> {
