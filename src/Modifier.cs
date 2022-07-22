@@ -244,69 +244,6 @@ public static class Modifier {
   }
 
 
-  internal class NumericalModifier<S,T> : ContextModifier<S,T>
-    where S : IReadOnlyValue<T>
-#if NET6_0_OR_GREATER
-    where T : INumber<T>
-#endif
-  {
-    public char symbol { get; init; } = '?';
-    public NumericalModifier(S context) : base(context) { }
-
-#if NET6_0_OR_GREATER
-    public override T Modify(T given) {
-      T v = context.value;
-      switch (symbol) {
-        case '+':
-          return given + v;
-        case '-':
-          return given - v;
-        case '*':
-          return given * v;
-        case '/':
-          return given / v;
-        case '=':
-          return v;
-        default:
-          throw new NotImplementedException();
-      }
-    }
-#else
-    public override T Modify(T given) {
-      var t = GetOp<T>();
-      T v = context.value;
-      switch (symbol) {
-        case '+':
-          return t.Sum(given, v);
-        case '-':
-          return t.Sum(given, t.Negate(v));
-        case '*':
-          return t.Times(given, v);
-        case '/':
-          return t.Divide(given, v);
-        case '=':
-          return v;
-        default:
-          throw new NotImplementedException();
-      }
-    }
-#endif
-
-    public override string ToString() {
-      var builder = new StringBuilder();
-      // builder.Append("ref ");
-      if (name != null) {
-        builder.Append('"');
-        builder.Append(name);
-        builder.Append('"');
-        builder.Append(' ');
-      }
-      builder.Append(symbol);
-
-      builder.Append(context);
-      return builder.ToString();
-    }
-  }
 
 }
 
@@ -364,4 +301,67 @@ public abstract class ContextModifier<S,T> : IModifier<S,T>, IDisposable {
   }
 }
 
+  public class NumericalModifier<S,T> : ContextModifier<S,T>
+    where S : IReadOnlyValue<T>
+#if NET6_0_OR_GREATER
+    where T : INumber<T>
+#endif
+  {
+    public char symbol { get; init; } = '?';
+    public NumericalModifier(S context) : base(context) { }
+
+#if NET6_0_OR_GREATER
+    public override T Modify(T given) {
+      T v = context.value;
+      switch (symbol) {
+        case '+':
+          return given + v;
+        case '-':
+          return given - v;
+        case '*':
+          return given * v;
+        case '/':
+          return given / v;
+        case '=':
+          return v;
+        default:
+          throw new NotImplementedException();
+      }
+    }
+#else
+    public override T Modify(T given) {
+      var t = Modifier.GetOp<T>();
+      T v = context.value;
+      switch (symbol) {
+        case '+':
+          return t.Sum(given, v);
+        case '-':
+          return t.Sum(given, t.Negate(v));
+        case '*':
+          return t.Times(given, v);
+        case '/':
+          return t.Divide(given, v);
+        case '=':
+          return v;
+        default:
+          throw new NotImplementedException();
+      }
+    }
+#endif
+
+    public override string ToString() {
+      var builder = new StringBuilder();
+      // builder.Append("ref ");
+      if (name != null) {
+        builder.Append('"');
+        builder.Append(name);
+        builder.Append('"');
+        builder.Append(' ');
+      }
+      builder.Append(symbol);
+
+      builder.Append(context);
+      return builder.ToString();
+    }
+  }
 }
