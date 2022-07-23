@@ -26,12 +26,16 @@ public static class ModifiableValue {
   public static IModifiableValue<IValue<T>,T> FromValue<T>(IValue<T> v) => new ModifiableValue<IValue<T>, T>(v);
 }
 #if UNITY_5_3_OR_NEWER
+/* In order to make Unity's serialization work properly we need to have a
+   concrete rather than interface as its initial value. */
 [Serializable]
 public class ModifiableValue<T> : ModifiableValue<Value<T>, T>, IModifiableValue<T> {
 
   public ModifiableValue(Value<T> initial) : base(initial) { }
   public ModifiableValue(T initialValue) : base(new Value<T>(initialValue)) { }
   public ModifiableValue() : this(default(T)) { }
+
+  IValue<T> IModifiableValue<IValue<T>,T>.initial => _initial;
 }
 #else
 [Serializable]
@@ -48,8 +52,9 @@ public class ModifiableValue<S,T> : IModifiableValue<S,T> where S : IReadOnlyVal
 
   protected ModifiersSortedList _modifiers;
   public IPriorityCollection<IModifier<T>> modifiers => _modifiers;
-
+#if UNITY_5_3_OR_NEWER
   [UnityEngine.SerializeField]
+#endif
   protected S _initial;
   public virtual S initial => _initial;
   // XXX: Consider caching?

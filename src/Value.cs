@@ -16,7 +16,9 @@ namespace SeawispHunter.RolePlay.Attributes {
 [Serializable]
 public class Value<T> : IValue<T> {
 
+#if UNITY_5_3_OR_NEWER
   [UnityEngine.SerializeField]
+#endif
   protected T _value;
   public virtual T value {
     get => _value;
@@ -177,7 +179,7 @@ public static class Value {
 public class ReadOnlyValue<T> : IReadOnlyValue<T> {
 #if UNITY_5_3_OR_NEWER
   [UnityEngine.SerializeField]
-#endif // UNITY_5_3_OR_NEWER
+#endif
   private T _value;
   public T value => _value;
   public ReadOnlyValue(T value) => _value = value;
