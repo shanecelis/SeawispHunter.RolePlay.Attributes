@@ -175,6 +175,9 @@ public static class Value {
 }
 [Serializable]
 public class ReadOnlyValue<T> : IReadOnlyValue<T> {
+#if UNITY_5_3_OR_NEWER
+  [UnityEngine.SerializeField]
+#endif // UNITY_5_3_OR_NEWER
   private T _value;
   public T value => _value;
   public ReadOnlyValue(T value) => _value = value;
