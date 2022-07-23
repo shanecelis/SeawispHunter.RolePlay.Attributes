@@ -9,6 +9,8 @@
    [4]: https://github.com/shanecelis/code-cite
 */
 using System;
+using System.ComponentModel;
+using System.Collections;
 
 namespace SeawispHunter.RolePlay.Attributes {
 
@@ -34,6 +36,22 @@ public static class ValueExtensions {
     return w;
   }
 
+  internal class ActionDisposable : IDisposable {
+    private Action action;
+    public ActionDisposable(Action action) => this.action = action;
+    public void Dispose() {
+      action();
+    }
+  }
+
+  /** Convenience method to connect to the property change events. */
+  public static IDisposable OnChange<T>(this T v, Action<T> action) where T : INotifyPropertyChanged {
+    v.PropertyChanged += PropertyChange;
+    return new ActionDisposable(() => v.PropertyChanged -= PropertyChange);
+
+    void PropertyChange(object source, PropertyChangedEventArgs args) => action(v);
+  }
+
   public static IModifier<Y> Cast<X,Y>(this IModifier<X> m)
 #if NET6_0_OR_GREATER
     where X : INumber<X> where Y : INumber<Y>
@@ -41,5 +59,36 @@ public static class ValueExtensions {
   {
     return new Modifier.CastingModifier<X,Y>(m);
   }
+
+#if UNITY_5_3_OR_NEWER
+  public static IEnumerator LerpTo(this IValue<float> v, float targetValue, float duration, float? period = null) {
+    float startValue = v.value;
+    float start = UnityEngine.Time.time;
+    float t = 0f;
+    var wait = period.HasValue ? new UnityEngine.WaitForSeconds(period.Value)
+      : null;
+    do {
+      t = (UnityEngine.Time.time - start) / duration;
+      v.value = UnityEngine.Mathf.Lerp(startValue, targetValue, t);
+      yield return wait;
+    } while (t <= 1f);
+    v.value = targetValue;
+  }
+
+  /** When value v changes, the returned value will update over time. Good for
+      displaying changing values. */
+  public static IReadOnlyValue<float> LerpOnChange(this IReadOnlyValue<float> v, UnityEngine.MonoBehaviour component, float duration, float? period = null) {
+    var w = new Value<float>(v.value);
+    v.PropertyChanged += OnChange;
+    return w;
+    // var timer = new Timer(Enable, modifier, timeSpan, Timeout.InfiniteTimeSpan);
+    // void OnTimer(object modifier) {
+    // }
+    void OnChange(object sender, PropertyChangedEventArgs args) {
+      component.StartCoroutine(w.LerpTo(v.value, duration, period));
+    }
+  }
+
+#endif
 }
 }
