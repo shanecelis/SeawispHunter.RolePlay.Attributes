@@ -15,8 +15,8 @@ namespace SeawispHunter.RolePlay.Attributes {
 
 /** IReadOnlyValue<T> notifies listeners when it changes. That's it.
 
-    You can only read this value but that doesn't mean it's immutable. It may be
-    there are other things that change it.
+    You can only read this value but that doesn't mean it's immutable or const.
+    It may be there are other things that change it.
 */
 public interface IReadOnlyValue<out T> : INotifyPropertyChanged {
   /** NOTE: This might seem weird to not have a setter since it will notify you
@@ -27,7 +27,7 @@ public interface IReadOnlyValue<out T> : INotifyPropertyChanged {
   // event PropertyChangedEventHandler PropertyChanged;
 }
 
-/* IValue<T> is an IReadOnlyValue<T> that can be directly changed. */
+/** IValue<T> is an IReadOnlyValue<T> that can be directly changed. */
 public interface IValue<T> : IReadOnlyValue<T> {
   /* We want this to be settable. */
   new T value { get; set; }
@@ -40,18 +40,14 @@ public interface IModifiableValue<out S,T> : IReadOnlyValue<T>, INotifyPropertyC
   where S : IReadOnlyValue<T> {
   S initial { get; }
   // T value { get; }
-  /** The list implementation will handle property change events properly. */
+  /** The list implementation handles property change events properly. */
   IPriorityCollection<IModifier<T>> modifiers { get; }
   // event PropertyChangedEventHandler PropertyChanged;
 }
 
 /** This IModifiableValue<T> interface is meant to capture values in games like health,
     strength, etc. that can be modified by various, sometimes distal, effects. */
-#if UNITY_5_3_OR_NEWER
-public interface IModifiableValue<T> : IModifiableValue<Value<T>,T> { }
-#else
 public interface IModifiableValue<T> : IModifiableValue<IValue<T>,T> { }
-#endif
 
 /** We want to be able to specify a priority. */
 public interface IPriorityCollection<T> : ICollection<T> {
