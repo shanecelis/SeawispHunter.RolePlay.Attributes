@@ -102,10 +102,10 @@ public class ModifiableValue<S,T> : IModifiableValue<S,T> where S : IReadOnlyVal
   }
 
   /** A sorted list for modifiers. It uses a tuple (int priority, int age)
-      because SortedList<K,V> can only store one value for one key. We may have
-      many modifiers with the same priority (default priority is 0). So
-      modifiers are ordered by priority first and age second. Each modifier will
-      have a unique age which ensures the keys will be unique.
+      because SortedList<K,V> can only store one value per key. We may have many
+      modifiers with the same priority (default priority is 0). So modifiers are
+      ordered by priority first and age second. Each modifier will have a unique
+      age ensuring that the keys will be unique.
    */
   protected class ModifiersSortedList : IPriorityCollection<IModifier<T>>, IComparer<(int priority, int age)> {
     private readonly ModifiableValue<S,T> parent;
