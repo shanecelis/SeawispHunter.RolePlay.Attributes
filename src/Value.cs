@@ -173,9 +173,12 @@ public static class Value {
   }
 
 }
+[Serializable]
 public class ReadOnlyValue<T> : IReadOnlyValue<T> {
-  public T value { get; private init; }
-  public ReadOnlyValue(T value) => this.value = value;
+  private T _value;
+  public T value => _value;
+  public ReadOnlyValue(T value) => _value = value;
+  public ReadOnlyValue(T value, Action callOnChange) : this(value) => callOnChange = OnChange;
 
   // HACK: Although this optimization is tempting, it
   // may not work for class values.
