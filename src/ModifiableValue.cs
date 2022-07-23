@@ -14,9 +14,6 @@ using System.ComponentModel;
 using System.Collections;
 using System.Collections.Generic;
 
-#if NET6_0_OR_GREATER
-using System.Numerics;
-#endif
 namespace SeawispHunter.RolePlay.Attributes {
 
 public static class ModifiableValue {
