@@ -191,6 +191,9 @@ public class ReadOnlyValue<T> : IReadOnlyValue<T> {
   // }
 
   public event PropertyChangedEventHandler PropertyChanged;
+  private static PropertyChangedEventArgs eventArgs = new PropertyChangedEventArgs(nameof(value));
+
+  protected void OnChange() => PropertyChanged?.Invoke(this, eventArgs);
   public override string ToString() => value.ToString();
 
 }
