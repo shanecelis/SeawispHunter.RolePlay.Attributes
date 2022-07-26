@@ -24,7 +24,10 @@ public class Value<T> : IValue<T> {
     get => _value;
     set {
       _value = value;
-      OnChange(nameof(value));
+      // This is more costly.
+      // OnChange(nameof(value))
+      // So let's just do this.
+      PropertyChanged?.Invoke(this, valueEventArgs);
     }
   }
   public Value() {}
@@ -35,9 +38,7 @@ public class Value<T> : IValue<T> {
   private static PropertyChangedEventArgs valueEventArgs = new PropertyChangedEventArgs(nameof(value));
 
   protected void OnChange(string name) {
-    PropertyChanged?.Invoke(this, name == nameof(value)
-                                    ? valueEventArgs
-                                    : new PropertyChangedEventArgs(name));
+    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
   }
 }
 

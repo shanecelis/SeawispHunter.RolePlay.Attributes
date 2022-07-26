@@ -74,12 +74,12 @@ public class ModifiableValue<S,T> : IModifiableValue<S,T> where S : IReadOnlyVal
     _modifiers = new ModifiersSortedList(this);
   }
 
-  protected void Chain(object sender, PropertyChangedEventArgs args) => OnChange(nameof(value));
+  protected void Chain(object sender, PropertyChangedEventArgs args)
+    => OnChange(nameof(initial));
 
+  internal void OnChangeModifiers() => PropertyChanged?.Invoke(this, modifiersEventArgs);
   internal void OnChange(string name) {
-    PropertyChanged?.Invoke(this, name == nameof(modifiers)
-                            ? modifiersEventArgs
-                            : new PropertyChangedEventArgs(name));
+    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
   }
 
   internal void ModifiersChanged(object sender, PropertyChangedEventArgs e) {
@@ -123,14 +123,14 @@ public class ModifiableValue<S,T> : IModifiableValue<S,T> where S : IReadOnlyVal
       modifier.PropertyChanged -= parent.ModifiersChanged;
       modifier.PropertyChanged += parent.ModifiersChanged;
       modifiers.Add((priority, ++addCount), modifier);
-      parent.OnChange(nameof(modifiers));
+      parent.OnChangeModifiers();
     }
 
     public void Clear() {
       foreach (var modifier in modifiers.Values)
         modifier.PropertyChanged -= parent.ModifiersChanged;
       modifiers.Clear();
-      parent.OnChange(nameof(modifiers));
+      parent.OnChangeModifiers();
     }
 
     public bool Contains(IModifier<T> modifier) => modifiers.ContainsValue(modifier);
@@ -143,7 +143,7 @@ public class ModifiableValue<S,T> : IModifiableValue<S,T> where S : IReadOnlyVal
         return false;
       modifier.PropertyChanged -= parent.ModifiersChanged;
       modifiers.RemoveAt(i);
-      parent.OnChange(nameof(modifiers));
+      parent.OnChangeModifiers();
       return true;
     }
 
