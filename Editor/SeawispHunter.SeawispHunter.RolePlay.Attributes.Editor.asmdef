@@ -1,0 +1,16 @@
+{
+    "name": "SeawispHunter.SeawispHunter.RolePlay.Attributes.Editor",
+    "references": [
+        "SeawispHunter.SeawispHunter.RolePlay.Attributes"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
+}

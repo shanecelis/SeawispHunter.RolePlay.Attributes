@@ -1,0 +1,19 @@
+{
+    "name": "SeawispHunter.SeawispHunter.RolePlay.Attributes.Editor.Tests",
+    "references": [
+        "SeawispHunter.SeawispHunter.RolePlay.Attributes",
+        "SeawispHunter.SeawispHunter.RolePlay.Attributes.Editor"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
+}
