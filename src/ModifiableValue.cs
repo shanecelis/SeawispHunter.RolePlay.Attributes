@@ -114,7 +114,7 @@ public class ModifiableValue<S,T> : IModifiableValue<S,T> where S : IReadOnlyVal
    */
   protected class ModifiersSortedList : IPriorityCollection<IModifier<T>>, IComparer<(int priority, int age)> {
     private readonly ModifiableValue<S,T> parent;
-    private readonly SortedList<(int, int), IModifier<T>> modifiers = new();
+    private readonly SortedList<(int, int), IModifier<T>> modifiers = new SortedList<(int, int), IModifier<T>>();
     private int addCount = 0;
     public ModifiersSortedList(ModifiableValue<S,T> parent) => this.parent = parent;
 
