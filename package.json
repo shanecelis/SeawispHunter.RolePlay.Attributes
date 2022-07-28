@@ -1,17 +1,17 @@
 {
-  "name": "com.seawisphunter.seawisphunter.roleplay.attributes",
-  "version": "0.1.1-preview",
-  "displayName": "Seawisp Hunter SeawispHunter.RolePlay.Attributes",
-  "description": "Lorem ipsum description.",
-  "unity": "2018.3",
+  "name": "com.seawisphunter.roleplay.attributes",
+  "version": "0.1.0-preview",
+  "displayName": "Seawisp Hunter Role Playing Attributes",
+  "description": "Defines role playing attributes like \"health\" using generics that are modified non-destructively and notify on changes",
+  "unity": "2021.3",
   "type": "library",
   "author": {
-    "name": "John Smith",
+    "name": "Shane Celis",
     "email": "support@seawisphunter.com",
     "url": "https://seawisphunter.com"
   },
   "dependencies": { },
-  "license": "Undeclared",
+  "license": "MIT",
   "keywords": [
     "unity"
   ],
