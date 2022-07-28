@@ -46,9 +46,13 @@ wants to use this library with Unity3D.
 * Flexible Modifiers
 
 Sure, one can add, minus, multiply, and divide their stats, but what about
-clamping the value? Is it easy to add that feature? With this library can
+clamping the value? Is it easy to add that feature? With this library one can
 implement their own modifier or create [ad hoc](#ordering-modifiers) ones
 easily.
+
+## Supports
+
+* Unity 2021.3 and later
 
 ## Barebones Example
 
