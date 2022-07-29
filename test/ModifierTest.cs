@@ -23,6 +23,9 @@ public class ModifierTest {
   [Fact] public void TestModifierFuncName() {
     var m = Modifier.FromFunc((int x) => x + 1);
     Assert.Equal("(int x) => x + 1", m.ToString());
+
+    var n = Modifier.FromFunc((int x) => x + 1, "+1 strength");
+    Assert.Equal("+1 strength", n.ToString());
   }
 
   [Fact] public void TestCovariance() {
