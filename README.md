@@ -1,4 +1,4 @@
-# SeawispHunter.RolePlay.Attributes
+# SeawispHunter.RolePlay.Attributes README
 
 There comes a time when many a gamedev sets out for adventure but first must
 create their own stat class. That is to say a class which captures a game
@@ -409,3 +409,6 @@ This project was inspired and informed by the following sources:
 I am indebted to each of them for the generosity they showed in writing about
 the role playing attributes problem, both for their prose and code.
 
+This package was originally generated from [Shane
+Celis](https://twitter.com/shanecelis)'s
+[unity-package-template](https://github.com/shanecelis/unity-package-template).
