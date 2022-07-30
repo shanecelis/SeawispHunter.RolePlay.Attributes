@@ -392,6 +392,18 @@ void Caller() {
 }
 ```
 
+## Installing
+
+Find the `manifest.json` file in the `Packages` directory in your project and edit it as follows:
+```
+{
+  "dependencies": {
+    "com.seawisphunter.roleplay.attributes": "https://github.com/shanecelis/SeawispHunter.RolePlay.Attributes.git#unity3d",
+    ...
+  },
+}
+```
+
 ## License
 
 This project is released under the MIT license.
