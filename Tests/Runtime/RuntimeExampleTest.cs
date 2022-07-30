@@ -4,7 +4,7 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace SeawispHunter.SeawispHunter.RolePlay.Attributes.Tests
+namespace SeawispHunter.RolePlay.Attributes.Tests
 {
     public class RuntimeExampleTest
     {

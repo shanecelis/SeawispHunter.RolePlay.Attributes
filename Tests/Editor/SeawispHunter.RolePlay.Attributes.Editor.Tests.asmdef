@@ -1,8 +1,8 @@
 {
-    "name": "SeawispHunter.SeawispHunter.RolePlay.Attributes.Editor.Tests",
+    "name": "SeawispHunter.RolePlay.Attributes.Editor.Tests",
     "references": [
-        "SeawispHunter.SeawispHunter.RolePlay.Attributes",
-        "SeawispHunter.SeawispHunter.RolePlay.Attributes.Editor"
+        "SeawispHunter.RolePlay.Attributes",
+        "SeawispHunter.RolePlay.Attributes.Editor"
     ],
     "optionalUnityReferences": [
         "TestAssemblies"

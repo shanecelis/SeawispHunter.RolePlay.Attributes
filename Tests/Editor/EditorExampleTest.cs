@@ -3,26 +3,22 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
+using SeawispHunter.RolePlay.Attributes;
 
-namespace SeawispHunter.SeawispHunter.RolePlay.Attributes.Tests
-{
-    public class EditorExampleTest
-    {
-        // A Test behaves as an ordinary method
-        [Test]
-        public void NewTestScriptSimplePasses()
-        {
-            // Use the Assert class to test conditions
-        }
+namespace SeawispHunter.RolePlay.Attributes.Tests {
+  public class EditorExampleTest {
+    // A Test behaves as an ordinary method
+    //
+    [Test] public void TestModifierToString0() {
+      var modifier = Modifier.FromFunc((float x) => x + 1);
+      Assert.AreEqual("?f()", modifier.ToString());
 
-        // A UnityTest behaves like a coroutine in Play Mode. In Edit Mode you can use
-        // `yield return null;` to skip a frame.
-        [UnityTest]
-        public IEnumerator NewTestScriptWithEnumeratorPasses()
-        {
-            // Use the Assert class to test conditions.
-            // Use yield to skip a frame.
-            yield return null;
-        }
     }
+
+    [Test] public void TestModifierToString1() {
+      var modifier = Modifier.FromFunc((float x) => x + 1, "x + 1");
+      Assert.AreEqual("x + 1", modifier.ToString());
+
+    }
+  }
 }
