@@ -17,12 +17,8 @@
   ],
   "samples": [
     {
-      "displayName": "Sample 1",
-      "path": "Samples~/Sample 1"
-    },
-    {
-      "displayName": "Sample 2",
-      "path": "Samples~/Sample 2"
+      "displayName": "Generic RPG",
+      "path": "Samples~/Generic RPG"
     }
   ]
 }
