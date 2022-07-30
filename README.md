@@ -150,7 +150,8 @@ Let's create a current health value to pair with a max health attribute.
 var maxHealth = new ModifiableValue<float>(100f);
 var health = Value.WithBounds(maxHealth.value, 0f, maxHealth);
 
-health.PropertyChanged += (_, _) => Console.WriteLine($"Health is {health.value}/{maxHealth.value}.");
+health.PropertyChanged += (_, _) 
+  => Console.WriteLine($"Health is {health.value}/{maxHealth.value}.");
 // Prints: Health is 100/100.
 health.value -= 10f;
 // Prints: Health is 90/100.
@@ -165,16 +166,17 @@ one can also create dynamic modifiers based on other values or attributes.
 
 Suppose "max health" is affected by "constitution" like this. 
 
-![HP Adjustment vs Constitution](Documentation~/hp-adjustment.png)
 
 ``` c#
 var constitution = new ModifiableValue<int>(10);
 int level = 10;
 // We can project values with some limited LINQ-like extension methods.
-var hpAdjustment = constitution.Select(con => (float) Math.Round((con - 10f) / 3f) * level);
+var hpAdjustment = constitution
+  .Select(con => (float) Math.Round((con - 10f) / 3f) * level);
 var maxHealth = new ModifiableValue<float>(100f);
 
-maxHealth.PropertyChanged += (_, _) => Console.WriteLine($"Max health is {maxHealth.value}.");
+maxHealth.PropertyChanged += (_, _) 
+  => Console.WriteLine($"Max health is {maxHealth.value}.");
 maxHealth.modifiers.Add(Modifier.Plus(hpAdjustment));
 // Prints: Max health is 100.
 constitution.initial.value = 15;
@@ -199,7 +201,9 @@ the moon[^2].
 
 ``` c#
 var moonArmor = new ModifiableValue<float>(20f);
-moonArmor.modifiers.Add(Modifier.FromFunc((float x) => DateTime.Now.IsFullMoon() ? 2 * x : x));
+var fullMoonModifier 
+  = Modifier.FromFunc((float x) => DateTime.Now.IsFullMoon() ? 2 * x : x);
+moonArmor.modifiers.Add(fullMoonModifier);
 ```
 
 [^2]: Unfortunately there is no such extension method `IsFullMoon()` for DateTime by
@@ -217,8 +221,10 @@ var maxMana = new ModifiableValue<float>(50f);
 var mana = ModifiableValue.FromValue(maxMana);
 var manaCost = Modifier.Minus(0f);
 mana.modifiers.Add(manaCost);
-mana.PropertyChanged += (_, _) => Console.WriteLine($"Mana is {mana.value}/{maxMana.value}.");
-mana.modifiers.Add(priority: 100, Modifier.FromFunc((float x) => Math.Clamp(x, 0, maxMana.value));
+mana.PropertyChanged += (_, _) 
+  => Console.WriteLine($"Mana is {mana.value}/{maxMana.value}.");
+mana.modifiers.Add(priority: 100, 
+                   Modifier.FromFunc((float x) => Math.Clamp(x, 0, maxMana.value));
 // Prints: Mana is 50/50.
 manaCost.value = 1000f;
 // Prints: Mana is 0/50.
@@ -254,10 +260,12 @@ either `level` or `constitution` will notify `hpAdjustment` and therefore
 var constitution = new ModifiableValue<int>(10);
 var level = new Value<int>(10);
 // We can project values, with some limited LINQ-like extension methods.
-var hpAdjustment = constitution.Zip(level, (con, lev) => (float) Math.Round((con - 10f) / 3f) * lev);
+var hpAdjustment = constitution.Zip(level, 
+                     (con, lev) => (float) Math.Round((con - 10f) / 3f) * lev);
 var maxHealth = new ModifiableValue<float>(100f);
 
-maxHealth.PropertyChanged += (_, _) => Console.WriteLine($"Max health is {maxHealth.value}.");
+maxHealth.PropertyChanged += (_, _) 
+  => Console.WriteLine($"Max health is {maxHealth.value}.");
 maxHealth.modifiers.Add(Modifier.Plus(hpAdjustment));
 // Prints: Max health is 100. (unchanged)
 constitution.initial.value = 15;
@@ -291,7 +299,8 @@ public class PennerStat<T> : ModifiableValue<T> {
   public readonly IModifiableValue<T> totalValueTimes = new ModifiableValue<T>(one);
 
   public PennerStat() {
-    // value = (baseValue * baseValueTimes + baseValuePlus) * totalValueTimes + totalValuePlus
+    // value = (baseValue * baseValueTimes + baseValuePlus) 
+    //         * totalValueTimes + totalValuePlus
     modifiers.Add(100, Modifier.Times(baseValueTimes));
     modifiers.Add(200, Modifier.Plus(baseValuePlus));
     modifiers.Add(300, Modifier.Times(totalValueTimes));
@@ -335,9 +344,12 @@ original's behavior.
 
 ``` c#
 var stat = new KryzarelStat(30f);
-stat.flat.modifiers.Add(Modifier.Plus(10f)); // flat expects plus modifiers (or subtract).
-stat.percentAdd.modifiers.Add(Modifier.Plus(10f)); // percentAdd expects plus modifiers (or subtract).
-stat.percentTimes.modifiers.Add(Modifier.Times(1.2f, "+20%")); // percentTimes expects times modifiers (or divide but who does that?).
+// flat expects plus modifiers (or minus).
+stat.flat.modifiers.Add(Modifier.Plus(10f)); 
+// percentAdd expects plus modifiers (or minus).
+stat.percentAdd.modifiers.Add(Modifier.Plus(10f)); 
+// percentTimes expects times modifiers.
+stat.percentTimes.modifiers.Add(Modifier.Times(1.2f, "+20%"));
 ```
 
 But that's either a discipline you can adopt or a convenience method you can
@@ -398,7 +410,8 @@ Find the `manifest.json` file in the `Packages` directory in your project and ed
 ```
 {
   "dependencies": {
-    "com.seawisphunter.roleplay.attributes": "https://github.com/shanecelis/SeawispHunter.RolePlay.Attributes.git#unity3d",
+    "com.seawisphunter.roleplay.attributes": 
+      "https://github.com/shanecelis/SeawispHunter.RolePlay.Attributes.git#unity3d",
     ...
   },
 }
@@ -421,6 +434,13 @@ This project was inspired and informed by the following sources:
 I am indebted to each of them for the generosity they showed in writing about
 the role playing attributes problem, both for their prose and code.
 
-This package was originally generated from [Shane
-Celis](https://twitter.com/shanecelis)'s
+This package was originally generated from 
 [unity-package-template](https://github.com/shanecelis/unity-package-template).
+
+## Author
+
+This project was written by Shane Celis who
+can often be found on [twitter](https://twitter.com/shanecelis). Other assets are available at
+[seawisphunter.com](http://seawisphunter.com/#products) and the [asset
+store](https://assetstore.unity.com/publishers/10297) and other repositories on
+his [github](https://github.com/shanecelis).
