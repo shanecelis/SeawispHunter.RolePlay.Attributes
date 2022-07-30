@@ -8,8 +8,8 @@ using SeawispHunter.RolePlay.Attributes;
 using UnityEngine.UI;
 
 public enum AttributeKind {
-  Intelligence,
-  Strength,
+  Attack,
+  Defense,
   Agility,
   Magic
 };
@@ -17,10 +17,10 @@ public enum AttributeKind {
 public static class AttributeKindExtensions {
   public static string ToAbbreviatedString(this AttributeKind attr) {
     switch (attr) {
-      case AttributeKind.Intelligence:
-        return "INT";
-      case AttributeKind.Strength:
-        return "STR";
+      case AttributeKind.Attack:
+        return "ATK";
+      case AttributeKind.Defense:
+        return "DEF";
       case AttributeKind.Agility:
         return "AGI";
       case AttributeKind.Magic:
@@ -32,8 +32,8 @@ public static class AttributeKindExtensions {
 }
 
 public class Character : MonoBehaviour {
-  public ModifiableValue<float> strength;
-  public ModifiableValue<float> intelligence;
+  public ModifiableValue<float> attack;
+  public ModifiableValue<float> defense;
   public ModifiableValue<float> agility;
   public ModifiableValue<float> magic;
 
@@ -48,7 +48,7 @@ public class Character : MonoBehaviour {
 
   void Awake() {
     // Cursor.visible = true;
-    attributes = new [] { strength, intelligence, agility, magic };
+    attributes = new [] { attack, defense, agility, magic };
 
     for (int i = 0; i < attributes.Length; i++) {
       int j = i; // We need this for the closure.
