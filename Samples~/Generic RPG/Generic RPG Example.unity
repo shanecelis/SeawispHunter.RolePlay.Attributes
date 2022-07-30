@@ -139,13 +139,17 @@ PrefabInstance:
       propertyPath: tooltip
       value: 
       objectReference: {fileID: 378632354}
+    - target: {fileID: 944960092386531705, guid: ec4b42957c2dc4eed8710ff818648b61, type: 3}
+      propertyPath: m_Text
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 3029147479999661379, guid: ec4b42957c2dc4eed8710ff818648b61, type: 3}
       propertyPath: m_Name
       value: Row (1)
       objectReference: {fileID: 0}
     - target: {fileID: 5835192852541091358, guid: ec4b42957c2dc4eed8710ff818648b61, type: 3}
       propertyPath: m_Text
-      value: STR
+      value: DEF
       objectReference: {fileID: 0}
     - target: {fileID: 5927163718779116959, guid: ec4b42957c2dc4eed8710ff818648b61, type: 3}
       propertyPath: m_AnchorMax.y
@@ -473,7 +477,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1426769789142377454, guid: b5aa5ea383f644500a074214ecf3d45a, type: 3}
       propertyPath: additiveBonuses.Array.data[0].attribute
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2330201578494869923, guid: b5aa5ea383f644500a074214ecf3d45a, type: 3}
       propertyPath: message
@@ -485,7 +489,7 @@ PrefabInstance:
       objectReference: {fileID: 1540381066}
     - target: {fileID: 2330201578494869923, guid: b5aa5ea383f644500a074214ecf3d45a, type: 3}
       propertyPath: _message
-      value: 'Sword: +3 STR'
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 6759440352016276942, guid: b5aa5ea383f644500a074214ecf3d45a, type: 3}
       propertyPath: m_Sprite
@@ -767,6 +771,10 @@ PrefabInstance:
       propertyPath: tooltip
       value: 
       objectReference: {fileID: 378632354}
+    - target: {fileID: 944960092386531705, guid: ec4b42957c2dc4eed8710ff818648b61, type: 3}
+      propertyPath: m_Text
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3029147479999661379, guid: ec4b42957c2dc4eed8710ff818648b61, type: 3}
       propertyPath: m_Name
       value: Row (3)
@@ -995,11 +1003,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2906432352792447494, guid: 01ae5a924b66d47e8aad0441a5548c16, type: 3}
       propertyPath: m_Text
-      value: '5 INT
+      value: '5 ATK
 
-        3 BASE
+        2 BASE
 
-        + 2 SWORD'
+        + 3 SWORD'
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 01ae5a924b66d47e8aad0441a5548c16, type: 3}
@@ -1037,10 +1045,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e20b62b7640c943abab45765950176a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  strength:
+  attack:
     _initial:
-      _value: 5
-  intelligence:
+      _value: 2
+  defense:
     _initial:
       _value: 3
   agility:
@@ -1089,6 +1097,10 @@ PrefabInstance:
       propertyPath: tooltip
       value: 
       objectReference: {fileID: 378632354}
+    - target: {fileID: 944960092386531705, guid: ec4b42957c2dc4eed8710ff818648b61, type: 3}
+      propertyPath: m_Text
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 3029147479999661379, guid: ec4b42957c2dc4eed8710ff818648b61, type: 3}
       propertyPath: m_Name
       value: Row (2)
@@ -1274,7 +1286,7 @@ PrefabInstance:
       objectReference: {fileID: 1540381066}
     - target: {fileID: 1143597413610753388, guid: 5964eab00336046c2a937e83300d8214, type: 3}
       propertyPath: _message
-      value: 'Potion: +3 STR'
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1618515806130580305, guid: 5964eab00336046c2a937e83300d8214, type: 3}
       propertyPath: m_Pivot.x
@@ -1412,7 +1424,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1426769789142377454, guid: b5aa5ea383f644500a074214ecf3d45a, type: 3}
       propertyPath: additiveBonuses.Array.data[0].attribute
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2330201578494869923, guid: b5aa5ea383f644500a074214ecf3d45a, type: 3}
       propertyPath: message
@@ -1424,7 +1436,7 @@ PrefabInstance:
       objectReference: {fileID: 1540381066}
     - target: {fileID: 2330201578494869923, guid: b5aa5ea383f644500a074214ecf3d45a, type: 3}
       propertyPath: _message
-      value: 'Shield: +2 DEF'
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 8696759078733460100, guid: b5aa5ea383f644500a074214ecf3d45a, type: 3}
       propertyPath: m_Pivot.x
@@ -2394,7 +2406,7 @@ PrefabInstance:
       objectReference: {fileID: 1540381066}
     - target: {fileID: 1143597413610753388, guid: 5964eab00336046c2a937e83300d8214, type: 3}
       propertyPath: _message
-      value: 'Potion: +4 INT'
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 1618515806130580305, guid: 5964eab00336046c2a937e83300d8214, type: 3}
       propertyPath: m_Pivot.x
@@ -2506,7 +2518,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4026321969584635261, guid: 5964eab00336046c2a937e83300d8214, type: 3}
       propertyPath: additiveBonuses.Array.data[0].attribute
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5964eab00336046c2a937e83300d8214, type: 3}
@@ -2632,6 +2644,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Item Tooltip
       objectReference: {fileID: 0}
+    - target: {fileID: 2906432352792447494, guid: 01ae5a924b66d47e8aad0441a5548c16, type: 3}
+      propertyPath: m_Text
+      value: 'Sword: +3 ATK'
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 01ae5a924b66d47e8aad0441a5548c16, type: 3}
 --- !u!1001 &8233433302689044293
@@ -2649,9 +2665,17 @@ PrefabInstance:
       propertyPath: _message
       value: int
       objectReference: {fileID: 0}
+    - target: {fileID: 944960092386531705, guid: ec4b42957c2dc4eed8710ff818648b61, type: 3}
+      propertyPath: m_Text
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 3029147479999661379, guid: ec4b42957c2dc4eed8710ff818648b61, type: 3}
       propertyPath: m_Name
       value: Row
+      objectReference: {fileID: 0}
+    - target: {fileID: 5835192852541091358, guid: ec4b42957c2dc4eed8710ff818648b61, type: 3}
+      propertyPath: m_Text
+      value: ATK
       objectReference: {fileID: 0}
     - target: {fileID: 5927163718779116959, guid: ec4b42957c2dc4eed8710ff818648b61, type: 3}
       propertyPath: m_AnchorMax.y
