@@ -6,6 +6,8 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.Serialization;
 
+namespace SeawispHunter.RolePlay.Attributes.Samples {
+
 public class TooltipOnHover : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler {
 
   [SerializeField] Tooltip tooltip;
@@ -35,4 +37,6 @@ public class TooltipOnHover : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     if (entered)
       tooltip.Hide();
   }
+}
+
 }

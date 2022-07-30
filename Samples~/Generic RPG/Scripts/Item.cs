@@ -6,6 +6,8 @@ using UnityEngine;
 using SeawispHunter.RolePlay.Attributes;
 using System.Text;
 
+namespace SeawispHunter.RolePlay.Attributes.Samples {
+
 public class Item : MonoBehaviour {
   public string _name;
   [System.Serializable]
@@ -95,4 +97,6 @@ public class Item : MonoBehaviour {
     }
     return sb.ToString();
   }
+}
+
 }

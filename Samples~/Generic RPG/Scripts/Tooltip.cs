@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+namespace SeawispHunter.RolePlay.Attributes.Samples {
 
 public class Tooltip : MonoBehaviour {
   [SerializeField] Text textField;
@@ -17,4 +18,6 @@ public class Tooltip : MonoBehaviour {
   public void Hide() {
     gameObject.SetActive(false);
   }
+}
+
 }

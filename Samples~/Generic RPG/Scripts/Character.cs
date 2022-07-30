@@ -7,6 +7,7 @@ using UnityEngine;
 using SeawispHunter.RolePlay.Attributes;
 using UnityEngine.UI;
 
+namespace SeawispHunter.RolePlay.Attributes.Samples {
 public enum AttributeKind {
   Attack,
   Defense,
@@ -117,4 +118,5 @@ public class Character : MonoBehaviour {
     return sb.ToString();
   }
 
+}
 }
