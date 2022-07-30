@@ -1,4 +1,4 @@
-# SeawispHunter.RolePlay.Attributes
+# SeawispHunter.RolePlay.Attributes README
 
 There comes a time when many a gamedev sets out for adventure but first must
 create their own stat class. That is to say a class which captures a game
