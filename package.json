@@ -18,7 +18,7 @@
   "samples": [
     {
       "displayName": "Generic RPG",
-      "description": "In this mockup of an RPG, inventory can be equipped or consumed to affect the attributes of the character.",
+      "description": "In this mockup of an role playing game, inventory can be equipped or consumed to affect the attributes of the character.",
       "path": "Samples~/Generic RPG"
     }
   ]
