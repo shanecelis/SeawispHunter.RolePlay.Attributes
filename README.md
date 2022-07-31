@@ -1,4 +1,4 @@
-# SeawispHunter.RolePlay.Attributes README
+# Role Play Attributes README
 
 There comes a time when many a gamedev sets out for adventure but first must
 create their own stat class. That is to say a class which captures a game
@@ -57,6 +57,8 @@ easily.
 ## Barebones Example
 
 ``` c#
+using SeawispHunter.RolePlay.Attributes;
+
 var health = new ModifiableValue<float>(100f);
 Console.WriteLine($"Health is {health.value}."); // Prints: Health is 100.
 health.modifiers.Add(Modifier.Times(1.10f, "+10% health")); 
