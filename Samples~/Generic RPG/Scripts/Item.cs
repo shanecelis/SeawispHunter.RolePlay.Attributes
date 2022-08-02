@@ -45,7 +45,7 @@ public class Item : MonoBehaviour {
       if (symbol == '+')
         return $"+{Math.Round(context.value,4)}";
       else
-        return $"+%{Math.Round((context.value - 1f)*100, 4)}";
+        return $"+{Math.Round((context.value - 1f)*100, 4)}%";
     }
   }
 
