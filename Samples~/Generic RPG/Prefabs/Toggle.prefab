@@ -178,6 +178,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tooltip: {fileID: 0}
   _message: 
+  mustKeys: 
+  mustNotKeys: 
 --- !u!114 &1426769789142377454
 MonoBehaviour:
   m_ObjectHideFlags: 0
