@@ -16,8 +16,16 @@ namespace SeawispHunter.RolePlay.Attributes.Samples {
 
 public class Tooltip : MonoBehaviour {
   [SerializeField] Text textField;
+  [SerializeField] bool autoHide = true;
   void Awake() {
-    gameObject.SetActive(false);
+    if (autoHide)
+      gameObject.SetActive(false);
+  }
+
+  public bool isVisible => gameObject.activeSelf;
+
+  public void Show() {
+    gameObject.SetActive(true);
   }
 
   public void Show(string message) {
