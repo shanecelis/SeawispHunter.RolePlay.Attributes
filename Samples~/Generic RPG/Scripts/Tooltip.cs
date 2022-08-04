@@ -29,7 +29,11 @@ public class Tooltip : MonoBehaviour {
   }
 
   public void Show(string message) {
-    textField.text = message;
+    if (textField != null)
+      textField.text = message;
+    else
+      Debug.LogWarning("Trying to set message on tooltip without textField.", this.gameObject);
+
     gameObject.SetActive(true);
   }
 
