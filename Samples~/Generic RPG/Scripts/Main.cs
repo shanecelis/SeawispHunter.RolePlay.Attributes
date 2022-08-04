@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using SeawispHunter.RolePlay.Attributes;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace SeawispHunter.RolePlay.Attributes.Samples {
 
@@ -40,6 +43,15 @@ public class Main : MonoBehaviour {
   }
   [SerializeField] Highlights codeHighlights;
   [SerializeField] Highlights inspectorHighlights;
+
+  void Start() {
+#if UNITY_EDITOR
+    // This allows us to capture the cursor with Unity's recorder.
+    Cursor.SetCursor(PlayerSettings.defaultCursor,
+                     Vector2.zero, // hot spot of cursor
+                     CursorMode.ForceSoftware);
+#endif
+  }
 
   void Update() {
     if (Input.GetKeyDown(KeyCode.H)) {
