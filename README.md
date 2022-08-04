@@ -421,7 +421,10 @@ Find the `manifest.json` file in the `Packages` directory in your project and ed
 
 ## License
 
-This project is released under the MIT license.
+This library is released under the MIT license.
+
+The samples are released under the Unity Asset Store End User License. See
+sample README for details.
 
 ## Acknowledgments
 
