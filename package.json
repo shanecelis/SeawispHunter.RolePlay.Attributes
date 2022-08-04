@@ -1,6 +1,6 @@
 {
   "name": "com.seawisphunter.roleplay.attributes",
-  "version": "0.1.0-preview",
+  "version": "0.1.1",
   "displayName": "Role Play Attributes",
   "description": "Defines role playing attributes like \"health\" using generics that are modified non-destructively and notify on changes",
   "unity": "2021.3",
@@ -11,9 +11,12 @@
     "url": "https://seawisphunter.com"
   },
   "dependencies": { },
+  "documentationUrl": "https://github.com/shanecelis/SeawispHunter.RolePlay.Attributes/tree/unity3d",
+  "changelogUrl": "",
   "license": "MIT",
+  "licensesUrl": "https://github.com/shanecelis/SeawispHunter.RolePlay.Attributes/blob/unity3d/LICENSE.md",
   "keywords": [
-    "unity"
+    "attributes", "role playing", "RPG", "stats", "Math", "experience"
   ],
   "samples": [
     {
