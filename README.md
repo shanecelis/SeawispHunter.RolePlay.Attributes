@@ -22,11 +22,10 @@ attributes ought to respect the following requirements.
 
 ## Features
 
-* Interface Based
+* C# Interface Based
 
-The heart of this library is defined by a few interfaces. So one can substitute
-their own implementations. Especially helpful if one wants to define modifiers
-in Unity for instance.
+The heart of this library is defined by a few C# interfaces, making it easier to
+understand. Also one can substitute their own implementations easily if need be.
 
 * Supports Generics 
 
@@ -40,8 +39,8 @@ Many a library probably shied away from generics because .NET has not had
 generic math support, i.e., it was not possible to write `T Plus<T>(T a, T b) =>
 a + b`. The release of .NET 7 will have that support, which this library makes
 use of. In addition [a workaround](#dealing-with-math-in-generics) makes it
-possible to present the same API with netstandard2.0, which is important if one
-wants to use this library with Unity3D.
+possible to present the same API with netstandard2.0, which is important Unity3D
+compatibility.
 
 * Flexible Modifiers
 
@@ -49,6 +48,15 @@ Sure, one can add, minus, multiply, and divide their stats, but what about
 clamping the value? Is it easy to add that feature? With this library one can
 implement their own modifier or create [ad hoc](#ordering-modifiers) ones
 easily.
+
+* Generic RPG Sample Scene
+
+[This sample](http://seawisphunter.com/role-play-attributes-v0.1.1/) shows how
+one might structure their attributes and modifiers in a generic RPG mock up. The
+user interface is responsive. Tooltips show what effects items have, i.e., show
+their modifiers. Tooltips also show how each attribute is affected by any
+modifiers. The sword and shield can be equipped and unequipped. The other items
+can be consumed. Hit 'R' to reset and 'H' to show help.
 
 ## Supports
 
