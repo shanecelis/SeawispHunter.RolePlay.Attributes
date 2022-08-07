@@ -61,30 +61,54 @@ public static class Modifier {
     void Disable(object modifier) => ((IModifier<T>) modifier).enabled = false;
   }
 
-  public static ITargetedModifier<IList<IModifiableValue<T>>,T> TargetList<T>(this IModifier<T> modifier, int index)
-    => modifier.Target((IList<IModifiableValue<T>> list) => list[index]);
 #if UNITY_5_3_OR_NEWER
   public static IEnumerator EnableAfterCoroutine<T>(this IModifier<T> modifier, float seconds) {
     yield return new WaitForSeconds(seconds);
     modifier.enable = true;
   }
 
-  public static ITargetedModifier<IDictionary<K,IModifiableValue<T>>,T> TargetDictionary<K,T>(this IModifier<T> modifier, K key)
-    => modifier.Target((IDictionary<K, IModifiableValue<T>> dict) => dict[key]);
   public static IEnumerator DisableAfterCoroutine<T>(this IModifier<T> modifier, float seconds) {
     yield return new WaitForSeconds(seconds);
     modifier.enable = false;
   }
 #endif
 
-  public static ITargetedModifier<S,T> Target<S,T>(this IModifier<T> modifier, Func<S,IModifiableValue<T>> target)
-    => new TargetedModifier<S,T> { modifier = modifier, target = target };
+  public static ITargetedModifier<IList<IModifiableValue<T>>,T> TargetList<T>(this IModifier<T> modifier,
+                                                                              int index,
+                                                                              string name = null)
+    => new TargetedModifierList<T> { modifier = modifier, context = index, name = name };
+
+  public static ITargetedModifier<IDictionary<K,IModifiableValue<T>>,T> TargetDictionary<K,T>(this IModifier<T> modifier,
+                                                                                              K key,
+                                                                                              string name = null)
+    => new TargetedModifierDictionary<K,T> { modifier = modifier, context = key, name = name };
+
+  public static ITargetedModifier<S,T> Target<S,T>(this IModifier<T> modifier,
+                                                    Func<S,IModifiableValue<T>> target,
+                                                   string name = null)
+    => new TargetedModifierFunc<S,T> { modifier = modifier, context = target, name = name };
+
+  internal abstract class TargetedModifier<R,S,T> : ITargetedModifier<S, T> {
+    public string name { get; init; }
+    public R context { get; init; }
+    // internal Func<S,IModifiableValue<T>> target { get; init; }
+    public IModifier<T> modifier { get; init; }
+    public abstract IModifiableValue<T> AppliesTo(S bag);
+    public virtual string defaultName => context.ToString();
+    public override string ToString() => name ?? defaultName;
+  }
 
   /* The problem here is we don't know what this applies too. It's an opaque type. */
-  internal class TargetedModifier<S,T> : ITargetedModifier<S, T> {
-    public Func<S,IModifiableValue<T>> target { get; init; }
-    public IModifier<T> modifier { get; init; }
-    public IModifiableValue<T> AppliesTo(S bag) => target(bag);
+  internal class TargetedModifierFunc<S,T> : TargetedModifier<Func<S,IModifiableValue<T>>,S, T> {
+    public override IModifiableValue<T> AppliesTo(S bag) => context(bag);
+  }
+
+  internal class TargetedModifierList<T> : TargetedModifier<int, IList<IModifiableValue<T>>, T> {
+    public override IModifiableValue<T> AppliesTo(IList<IModifiableValue<T>> bag) => bag[context];
+  }
+
+  internal class TargetedModifierDictionary<K,T> : TargetedModifier<K, IDictionary<K,IModifiableValue<T>>, T> {
+    public override IModifiableValue<T> AppliesTo(IDictionary<K,IModifiableValue<T>> bag) => bag[context];
   }
 
 #if NET6_0_OR_GREATER
