@@ -84,11 +84,13 @@ public class TooltipOnHover : MonoBehaviour, IPointerEnterHandler, IPointerExitH
   }
 
   public void OnPointerExit(PointerEventData eventData) {
+#if UNITY_2021_OR_NEWER
     // If we have a child object drawn on top of us, this method will be called
     // when the child is entered. But we only want to deal with someone exiting
     // us, so we use `eventData.fullyExited` to discriminate.
     if (! eventData.fullyExited)
       return;
+#endif
 
     tooltip.Hide();
     entered = false;
