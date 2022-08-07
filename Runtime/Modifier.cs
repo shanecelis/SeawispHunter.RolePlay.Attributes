@@ -10,6 +10,7 @@
 */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.ComponentModel;
@@ -28,7 +29,8 @@ namespace SeawispHunter.RolePlay.Attributes {
 public static class Modifier {
   public static IModifier<T> FromFunc<T>(Func<T,T> func,
                                          out Action callOnChange,
-                                         [CallerArgumentExpression("func")] string funcExpression = null)
+                                         [CallerArgumentExpression("func")]
+                                         string funcExpression = null)
     => new FuncModifier<T>(func, out callOnChange) { name = funcExpression };
 
   /** Create a modifier from the given function.
@@ -64,22 +66,25 @@ public static class Modifier {
 #if UNITY_5_3_OR_NEWER
   public static IEnumerator EnableAfterCoroutine<T>(this IModifier<T> modifier, float seconds) {
     yield return new WaitForSeconds(seconds);
-    modifier.enable = true;
+    modifier.enabled = true;
   }
 
   public static IEnumerator DisableAfterCoroutine<T>(this IModifier<T> modifier, float seconds) {
     yield return new WaitForSeconds(seconds);
-    modifier.enable = false;
+    modifier.enabled = false;
   }
 #endif
 
   public static ITargetedModifier<IList<IModifiableValue<T>>,T> TargetList<T>(this IModifier<T> modifier,
                                                                               int index,
-                                                                              string name = null)
-    => new TargetedModifierList<T> { modifier = modifier, context = index, name = name };
+                                                                              [CallerArgumentExpression("index")]
+                                                                              string name = null) {
+    return new TargetedModifierList<T> { modifier = modifier, context = index, name = name };
+  }
 
   public static ITargetedModifier<IDictionary<K,IModifiableValue<T>>,T> TargetDictionary<K,T>(this IModifier<T> modifier,
                                                                                               K key,
+                                                                                              [CallerArgumentExpression("key")]
                                                                                               string name = null)
     => new TargetedModifierDictionary<K,T> { modifier = modifier, context = key, name = name };
 
