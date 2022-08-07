@@ -22,7 +22,12 @@ namespace SeawispHunter.RolePlay.Attributes.Samples {
 
     - We don't know how many attributes there are, so no exhaustive operations
       like Clear() are possible.
-    -
+
+    - Conceivably, we could implement ICollection<ITargetedModifier>; however,
+      then we'd be constraining all the modifiers to be of one type only.
+
+    XXX ModifierValueDict
+    XXX ModifierValuesBag
   */
 public class TargetedModifiersCollection<S> {
   private readonly S bag;
@@ -37,6 +42,7 @@ public class TargetedModifiersCollection<S> {
 
   public bool Remove<T>(ITargetedModifier<S,T> targeted)
     => targeted.AppliesTo(bag).modifiers.Remove(targeted.modifier);
+
 }
 
 // public static class TargetedModifier {
@@ -117,7 +123,7 @@ public class Item : MonoBehaviour {
   public IEnumerable<ITargetedModifier<Character, float>> targetedModifiers {
     get {
       foreach (var modifier in modifiers)
-        yield return modifier.Targets((Character c) => c.attributes[(int) modifier.kind]);
+        yield return modifier.Target((Character c) => c.attributes[(int) modifier.kind]);
     }
   }
 

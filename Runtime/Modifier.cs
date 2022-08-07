@@ -10,6 +10,7 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.ComponentModel;
 using System.Threading;
@@ -60,7 +61,13 @@ public static class Modifier {
     void Disable(object modifier) => ((IModifier<T>) modifier).enabled = false;
   }
 
-  public static ITargetedModifier<S,T> Targets<S,T>(this IModifier<T> modifier, Func<S,IModifiableValue<T>> target)
+  public static ITargetedModifier<IList<IModifiableValue<T>>,T> TargetList<T>(this IModifier<T> modifier, int index)
+    => modifier.Target((IList<IModifiableValue<T>> list) => list[index]);
+
+  public static ITargetedModifier<IDictionary<K,IModifiableValue<T>>,T> TargetDictionary<K,T>(this IModifier<T> modifier, K key)
+    => modifier.Target((IDictionary<K, IModifiableValue<T>> dict) => dict[key]);
+
+  public static ITargetedModifier<S,T> Target<S,T>(this IModifier<T> modifier, Func<S,IModifiableValue<T>> target)
     => new TargetedModifier<S,T> { modifier = modifier, target = target };
 
   /* The problem here is we don't know what this applies too. It's an opaque type. */
