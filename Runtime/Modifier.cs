@@ -63,9 +63,19 @@ public static class Modifier {
 
   public static ITargetedModifier<IList<IModifiableValue<T>>,T> TargetList<T>(this IModifier<T> modifier, int index)
     => modifier.Target((IList<IModifiableValue<T>> list) => list[index]);
+#if UNITY_5_3_OR_NEWER
+  public static IEnumerator EnableAfterCoroutine<T>(this IModifier<T> modifier, float seconds) {
+    yield return new WaitForSeconds(seconds);
+    modifier.enable = true;
+  }
 
   public static ITargetedModifier<IDictionary<K,IModifiableValue<T>>,T> TargetDictionary<K,T>(this IModifier<T> modifier, K key)
     => modifier.Target((IDictionary<K, IModifiableValue<T>> dict) => dict[key]);
+  public static IEnumerator DisableAfterCoroutine<T>(this IModifier<T> modifier, float seconds) {
+    yield return new WaitForSeconds(seconds);
+    modifier.enable = false;
+  }
+#endif
 
   public static ITargetedModifier<S,T> Target<S,T>(this IModifier<T> modifier, Func<S,IModifiableValue<T>> target)
     => new TargetedModifier<S,T> { modifier = modifier, target = target };
