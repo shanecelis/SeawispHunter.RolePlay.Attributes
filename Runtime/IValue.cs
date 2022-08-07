@@ -67,4 +67,9 @@ public interface IModifier<out S,T> : IModifier<T> {
   S context { get; }
 }
 
+public interface ITargetedModifier<S, T> {
+  IModifier<T> modifier { get; }
+  IModifiableValue<T> AppliesTo(S thing);
+}
+
 }

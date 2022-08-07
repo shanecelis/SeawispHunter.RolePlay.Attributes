@@ -61,13 +61,13 @@ public static class Modifier {
   }
 
   public static ITargetedModifier<S,T> Targets<S,T>(this IModifier<T> modifier, Func<S,IModifiableValue<T>> target)
-    => new TargetedModifier<S,T> { modifier = modifier, func = target };
+    => new TargetedModifier<S,T> { modifier = modifier, target = target };
 
+  /* The problem here is we don't know what this applies too. It's an opaque type. */
   internal class TargetedModifier<S,T> : ITargetedModifier<S, T> {
-
-    public Func<S,IModifiableValue<T>> func { get; init; }
+    public Func<S,IModifiableValue<T>> target { get; init; }
     public IModifier<T> modifier { get; init; }
-    public IModifiableValue<T> AppliesTo(S bag) => func(bag);
+    public IModifiableValue<T> AppliesTo(S bag) => target(bag);
   }
 
 #if NET6_0_OR_GREATER

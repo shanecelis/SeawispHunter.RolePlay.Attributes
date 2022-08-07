@@ -51,6 +51,9 @@ public class Character : MonoBehaviour {
 
   [NonSerialized]
   public ModifiableValue<float>[] attributes;
+
+  [NonSerialized]
+  public TargetedModifiersCollection<Character> modifiers;
   [Space]
   public Text[] attributeValues;
   public Toggle[] toggles;
@@ -61,7 +64,7 @@ public class Character : MonoBehaviour {
   void Awake() {
     // Cursor.visible = true;
     attributes = new [] { attack, defense, agility, magic };
-
+    modifiers = new TargetedModifiersCollection<Character>(this);
     for (int i = 0; i < attributes.Length; i++) {
       int j = i; // We need this for the closure.
       attributeValues[j].text = attributes[j].value.ToString();
