@@ -17,6 +17,10 @@ using System.Runtime.CompilerServices;
 #if NET6_0_OR_GREATER
 using System.Numerics;
 #endif
+#if UNITY_5_3_OR_NEWER
+using UnityEngine;
+#endif
+
 
 namespace SeawispHunter.RolePlay.Attributes {
 
@@ -54,6 +58,16 @@ public static class Modifier {
   public static void DisableAfter<T>(this IModifier<T> modifier, TimeSpan timeSpan) {
     var timer = new Timer(Disable, modifier, timeSpan, Timeout.InfiniteTimeSpan);
     void Disable(object modifier) => ((IModifier<T>) modifier).enabled = false;
+  }
+
+  public static ITargetedModifier<S,T> Targets<S,T>(this IModifier<T> modifier, Func<S,IModifiableValue<T>> target)
+    => new TargetedModifier<S,T> { modifier = modifier, func = target };
+
+  internal class TargetedModifier<S,T> : ITargetedModifier<S, T> {
+
+    public Func<S,IModifiableValue<T>> func { get; init; }
+    public IModifier<T> modifier { get; init; }
+    public IModifiableValue<T> AppliesTo(S bag) => func(bag);
   }
 
 #if NET6_0_OR_GREATER
@@ -158,6 +172,25 @@ public static class Modifier {
     public int one => 1;
   }
 
+#if UNITY_5_3_OR_NEWER
+  internal struct OpVector3 : IOperator<Vector3> {
+    public Vector3 Create<T>(T other) {
+      var op = GetOp<float>();
+      var o = op.Create(other);
+      return new Vector3(o, o, o);
+    }
+    public Vector3 Sum(Vector3 a, Vector3 b) => a + b;
+    public Vector3 Times(Vector3 a, Vector3 b) => Vector3.Scale(a, b);
+    public Vector3 Divide(Vector3 a, Vector3 b)
+      => Vector3.Scale(a, new Vector3(1f / b.x, 1f / b.y, 1f / b.z));
+    public Vector3 Negate(Vector3 a) => -a;
+    public Vector3 Max(Vector3 a, Vector3 b) => Vector3.Max(a, b);
+    public Vector3 Min(Vector3 a, Vector3 b) => Vector3.Min(a, b);
+    public Vector3 zero => Vector3.zero;
+    public Vector3 one => Vector3.one;
+  }
+#endif
+
   /* Not quite zero cost since this boxes the struct. */
   public static IOperator<S> GetOp<S>() {
     switch (Type.GetTypeCode(typeof(S))) {
@@ -167,8 +200,15 @@ public static class Modifier {
         return (IOperator<S>) (object) default(OpFloat);
       case TypeCode.Int32:
         return (IOperator<S>) (object) default(OpInt);
+      case TypeCode.Object:
+#if UNITY_5_3_OR_NEWER
+        if (typeof(S) == typeof(Vector3))
+          return (IOperator<S>) (object) default(OpVector3);
+        else
+            goto default;
+#endif
       default:
-            throw new NotImplementedException($"No IOperator<T> implementation for type {typeof(S)}.");
+        throw new NotImplementedException($"No IOperator<T> implementation for type {typeof(S)}.");
     }
   }
 
