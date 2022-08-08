@@ -67,12 +67,12 @@ public interface IModifier<out S,T> : IModifier<T> {
   S context { get; }
 }
 
-public interface ITargetedModifier<in S, T> {
+public interface ITarget<in S, T> {
   IModifier<T> modifier { get; }
   IModifiableValue<T> AppliesTo(S thing);
 }
 
-// public interface ITargetedModifier<out R,in S, T> : ITargetedModifier<S, T> {
+// public interface ITarget<out R,in S, T> : ITarget<S, T> {
 //   R context { get; }
 // }
 

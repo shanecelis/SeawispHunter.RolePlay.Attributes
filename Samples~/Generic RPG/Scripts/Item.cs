@@ -68,7 +68,7 @@ public class Item : MonoBehaviour {
     }
   }
 
-  public IEnumerable<ITargetedModifier<Character, float>> targetedModifiers {
+  public IEnumerable<ITarget<Character, float>> targetedModifiers {
     get {
       foreach (var modifier in modifiers)
         yield return modifier.Target((Character c) => c.attributes[(int) modifier.kind]);

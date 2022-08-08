@@ -75,25 +75,25 @@ public static class Modifier {
   }
 #endif
 
-  public static ITargetedModifier<IList<IModifiableValue<T>>,T> TargetList<T>(this IModifier<T> modifier,
+  public static ITarget<IList<IModifiableValue<T>>,T> TargetList<T>(this IModifier<T> modifier,
                                                                               int index,
                                                                               [CallerArgumentExpression("index")]
                                                                               string name = null) {
-    return new TargetedModifierList<T> { modifier = modifier, context = index, name = name };
+    return new ListTarget<T> { modifier = modifier, context = index, name = name };
   }
 
-  public static ITargetedModifier<IDictionary<K,IModifiableValue<T>>,T> TargetDictionary<K,T>(this IModifier<T> modifier,
+  public static ITarget<IDictionary<K,IModifiableValue<T>>,T> TargetDictionary<K,T>(this IModifier<T> modifier,
                                                                                               K key,
                                                                                               [CallerArgumentExpression("key")]
                                                                                               string name = null)
-    => new TargetedModifierDictionary<K,T> { modifier = modifier, context = key, name = name };
+    => new DictionaryTarget<K,T> { modifier = modifier, context = key, name = name };
 
-  public static ITargetedModifier<S,T> Target<S,T>(this IModifier<T> modifier,
+  public static ITarget<S,T> Target<S,T>(this IModifier<T> modifier,
                                                     Func<S,IModifiableValue<T>> target,
                                                    string name = null)
-    => new TargetedModifierFunc<S,T> { modifier = modifier, context = target, name = name };
+    => new FuncTarget<S,T> { modifier = modifier, context = target, name = name };
 
-  internal abstract class TargetedModifier<R,S,T> : ITargetedModifier<S, T> {
+  internal abstract class BaseTarget<R,S,T> : ITarget<S, T> {
     public string name { get; init; }
     public R context { get; init; }
     // internal Func<S,IModifiableValue<T>> target { get; init; }
@@ -104,15 +104,15 @@ public static class Modifier {
   }
 
   /* The problem here is we don't know what this applies too. It's an opaque type. */
-  internal class TargetedModifierFunc<S,T> : TargetedModifier<Func<S,IModifiableValue<T>>,S, T> {
+  internal class FuncTarget<S,T> : BaseTarget<Func<S,IModifiableValue<T>>,S, T> {
     public override IModifiableValue<T> AppliesTo(S bag) => context(bag);
   }
 
-  internal class TargetedModifierList<T> : TargetedModifier<int, IList<IModifiableValue<T>>, T> {
+  internal class ListTarget<T> : BaseTarget<int, IList<IModifiableValue<T>>, T> {
     public override IModifiableValue<T> AppliesTo(IList<IModifiableValue<T>> bag) => bag[context];
   }
 
-  internal class TargetedModifierDictionary<K,T> : TargetedModifier<K, IDictionary<K,IModifiableValue<T>>, T> {
+  internal class DictionaryTarget<K,T> : BaseTarget<K, IDictionary<K,IModifiableValue<T>>, T> {
     public override IModifiableValue<T> AppliesTo(IDictionary<K,IModifiableValue<T>> bag) => bag[context];
   }
 
@@ -454,11 +454,11 @@ public abstract class ContextModifier<S,T> : IModifier<S,T>, IDisposable {
   }
 
   public static class TargetedModifierExtensions {
-    public static void AddTo<S,T>(this ITargetedModifier<S,T> applicator, S bag)
+    public static void AddTo<S,T>(this ITarget<S,T> applicator, S bag)
       => applicator.AppliesTo(bag).modifiers.Add(applicator.modifier);
-    public static bool RemoveFrom<S,T>(this ITargetedModifier<S,T> applicator, S bag)
+    public static bool RemoveFrom<S,T>(this ITarget<S,T> applicator, S bag)
       => applicator.AppliesTo(bag).modifiers.Remove(applicator.modifier);
-    public static bool ContainedIn<S,T>(this ITargetedModifier<S,T> applicator, S bag)
+    public static bool ContainedIn<S,T>(this ITarget<S,T> applicator, S bag)
       => applicator.AppliesTo(bag).modifiers.Contains(applicator.modifier);
   }
 }
