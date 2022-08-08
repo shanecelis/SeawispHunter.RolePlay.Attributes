@@ -315,22 +315,33 @@ public class Character : MonoBehaviour {
 }
 ```
 
-A `IModifier<float>` may apply to any or all of the above attributes. How can
+An `IModifier<float>` may apply to any or all of the above attributes. How can
 you write a modifier meant to target one of those? There are many ways.
 
 #### Direct Targeting
 
-The simplest way is directly `character.attack.modifiers.Add(modifier)`.
+The simplest way is directly. 
+
+``` c#
+character.attack.modifiers.Add(modifier);
+```
 
 However, if the game is data driven, one might want to specify the what the
-modifier targets without actually adding it.
+modifier targets with data not code.
 
-#### An Index or Enum for Attributes
+#### An Index or Enum
 
 One might create an array of the `IModifiableValue<float>`s and note an `int` or
 perhaps an `enum` like the sample does:
 
 ``` c#
+
+public class Character : MonoBehaviour {
+  // ...
+  public ModifiableValue<float>[] attributes = new [] { attack, defense, agility, magic };
+  // ...
+}
+
 public enum AttributeKind {
   Attack,
   Defense,
@@ -339,19 +350,45 @@ public enum AttributeKind {
 };
 ```
 
-Then one can say `character.attributes[(int)
-attributeKind].modifiers.Add(modifier)`. But there are some convenience methods.
+Then one can write add a defense modifier like so.
+
+``` c#
+character.attributes[1].modifiers.Add(modifier);
+// Or equivalently but more literately.
+character.attributes[(int) AttributeKind.Defense].modifiers.Add(modifier);
+```
+
+But there are other ways.
 
 #### ITargetedModifiers
 
-One could write `var targeted = modifier.Target((Character c) => c.strength);`
-for instance. This returns a `ITargetedModifier<Character, float>` object. Then
-add or remove that modifier like so:
+A targeted modifier has a modifier and can target part of an object, list, or
+dictionary. 
+
+For instance, to make a `modifier` target the `attack` field in the `Character`
+class, one could do this:
 
 ``` c#
-// Add the strength modifier to character.
+ITargetedModifier<Character, float> targeted = modifier.Target((Character c) => c.attack, "attack");
+```
+
+The interface is simple. It has a modifier and a way of selecting a
+`IModifiableValue` from some "thing."
+
+``` c#
+public interface ITargetedModifier<S, T> {
+  IModifier<T> modifier { get; }
+  IModifiableValue<T> AppliesTo(S thing);
+}
+```
+
+But there are also some extension methods `AddTo`, `RemoveFrom`, and
+`ContainedIn` that work like so:
+
+``` c#
+// Add the attack modifier to character.
 targeted.AddTo(character);
-// Remove the strength modifier to character.
+// Remove the attack modifier to character.
 targeted.RemoveFrom(character);
 ```
 
@@ -359,7 +396,7 @@ One can also target lists and dictionaries:
 
 ``` c#
 // Target the first element in an list of IModifiableValue<float>.
-var targetList = modifier.TargetList(0)
+var targetList = modifier.TargetList(0); // Targets ILists so arrays and lists.
 
 // Target a value a dictionary with IModifiableValue<float> values.
 var targetDictionary = modifier.TargetDictionary(AttributeKind.Attack);
