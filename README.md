@@ -256,6 +256,22 @@ powerUp.DisableAfter(TimeSpan.FromSeconds(20f));
 // Prints: Armor is 10.
 ```
 
+### Time Out a Modifier with a Coroutine
+
+There are `EnableAfterCoroutine()` and `DisableAfterCoroutine()` extension methods for `IModifier<T>`.
+
+``` c#
+var armor = new ModifiableValue<int>(10);
+var powerUp = Modifier.Plus(5);
+armor.modifiers.Add(powerUp);
+health.PropertyChanged += (_, _) => Console.WriteLine($"Armor is {armor.value}.");
+// Prints: Armor is 15.
+StartCoroutine(powerUp.DisableAfterCoroutine(TimeSpan.FromSeconds(20f)));
+// ...
+// [Wait 20 seconds.]
+// Prints: Armor is 10.
+```
+
 ## Advanced Examples
 
 ### Synthesizing Multiple Values
@@ -282,6 +298,71 @@ constitution.initial.value = 15;
 // Prints: Max health is 120.
 level.value = 15;
 // Prints: Max health is 130.
+```
+
+### Targeting Modifiers
+
+Often times one will have a class that contains numerous attributes like the
+sample class `Character` does.
+
+``` c#
+public class Character : MonoBehaviour {
+  public ModifiableValue<float> attack;
+  public ModifiableValue<float> defense;
+  public ModifiableValue<float> agility;
+  public ModifiableValue<float> magic;
+  // ...
+}
+```
+
+A `IModifier<float>` may apply to any or all of the above attributes. How can
+you write a modifier meant to target one of those? There are many ways.
+
+#### Direct Targeting
+
+The simplest way is directly `character.attack.modifiers.Add(modifier)`.
+
+However, if the game is data driven, one might want to specify the what the
+modifier targets without actually adding it.
+
+#### An Index or Enum for Attributes
+
+One might create an array of the `IModifiableValue<float>`s and note an `int` or
+perhaps an `enum` like the sample does:
+
+``` c#
+public enum AttributeKind {
+  Attack,
+  Defense,
+  Agility,
+  Magic
+};
+```
+
+Then one can say `character.attributes[(int)
+attributeKind].modifiers.Add(modifier)`. But there are some convenience methods.
+
+#### ITargetedModifiers
+
+One could write `var targeted = modifier.Target((Character c) => c.strength);`
+for instance. This returns a `ITargetedModifier<Character, float>` object. Then
+add or remove that modifier like so:
+
+``` c#
+// Add the strength modifier to character.
+targeted.AddTo(character);
+// Remove the strength modifier to character.
+targeted.RemoveFrom(character);
+```
+
+One can also target lists and dictionaries:
+
+``` c#
+// Target the first element in an list of IModifiableValue<float>.
+var targetList = modifier.TargetList(0)
+
+// Target a value a dictionary with IModifiableValue<float> values.
+var targetDictionary = modifier.TargetDictionary(AttributeKind.Attack);
 ```
 
 ## Writing Your Own Attribute Class
