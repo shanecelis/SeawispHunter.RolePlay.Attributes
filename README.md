@@ -306,7 +306,7 @@ Often times one will have a class that contains numerous attributes like the
 sample class `Character` does.
 
 ``` c#
-public class Character : MonoBehaviour {
+public class Character {
   public ModifiableValue<float> attack;
   public ModifiableValue<float> defense;
   public ModifiableValue<float> agility;
@@ -323,6 +323,7 @@ you write a modifier meant to target one of those? There are many ways.
 The simplest way is directly. 
 
 ``` c#
+Character character = ...;
 character.attack.modifiers.Add(modifier);
 ```
 
@@ -336,10 +337,9 @@ or perhaps use an `enum` like the sample does:
 
 ``` c#
 
-public class Character : MonoBehaviour {
+public class Character {
   // ...
   public ModifiableValue<float>[] attributes = new [] { attack, defense, agility, magic };
-  // ...
 }
 
 public enum AttributeKind {
@@ -370,7 +370,7 @@ field in the `Character` class, one could do this:
 ITarget<Character, float> target = modifier.Target((Character c) => c.attack, "attack");
 ```
 
-The interface is simple. It has a modifier and a way of selecting a
+The `ITarget` interface is simple. It has a modifier and a way of selecting a
 `IModifiableValue` from some "thing."
 
 ``` c#
@@ -380,19 +380,21 @@ public interface ITarget<S, T> {
 }
 ```
 
-But there are also some extension methods `AddTo`, `RemoveFrom`, and
-`ContainedIn` for convenience that work like so:
+Some extension methods `AddTo`, `RemoveFrom`, and `ContainedIn` are for
+convenience and work like so:
 
 ``` c#
 // Add the attack modifier to character.
 target.AddTo(character);
-// Remove the attack modifier to character.
+// Remove the attack modifier from character.
 target.RemoveFrom(character);
 // Does the attack modifier exist in character?
 bool contained = target.ContainedIn(character);
 ```
 
-One can also target lists and dictionaries:
+The example `target` uses a `Func<Character, IModifiableValue>` which is not
+data driven but it is compile-time checked. For data driven architectures, one
+can also target lists or dictionaries:
 
 ``` c#
 // Target the second element in an list of IModifiableValue<float>.
