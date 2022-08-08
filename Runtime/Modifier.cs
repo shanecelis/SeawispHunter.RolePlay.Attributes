@@ -452,4 +452,15 @@ public abstract class ContextModifier<S,T> : IModifier<S,T>, IDisposable {
       return builder.ToString();
     }
   }
+
+  public static class TargetedModifierExtensions {
+    public static void AddTo<S,T>(this ITargetedModifier<S,T> applicator, S bag)
+      => applicator.AppliesTo(bag).modifiers.Add(applicator.modifier);
+    public static bool RemoveFrom<S,T>(this ITargetedModifier<S,T> applicator, S bag)
+      => applicator.AppliesTo(bag).modifiers.Remove(applicator.modifier);
+    public static bool ContainedIn<S,T>(this ITargetedModifier<S,T> applicator, S bag)
+      => applicator.AppliesTo(bag).modifiers.Contains(applicator.modifier);
+  }
 }
+
+

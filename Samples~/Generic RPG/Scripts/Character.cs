@@ -52,8 +52,6 @@ public class Character : MonoBehaviour {
   [NonSerialized]
   public ModifiableValue<float>[] attributes;
 
-  [NonSerialized]
-  public TargetedModifiersCollection<Character> modifiers;
   [Space]
   public Text[] attributeValues;
   public Toggle[] toggles;
@@ -64,7 +62,6 @@ public class Character : MonoBehaviour {
   void Awake() {
     // Cursor.visible = true;
     attributes = new [] { attack, defense, agility, magic };
-    modifiers = new TargetedModifiersCollection<Character>(this);
     for (int i = 0; i < attributes.Length; i++) {
       int j = i; // We need this for the closure.
       attributeValues[j].text = attributes[j].value.ToString();
@@ -95,10 +92,17 @@ public class Character : MonoBehaviour {
     var item = toggle.GetComponent<Item>();
     if (item == null)
       return;
-    if (toggle.isOn)
+    if (toggle.isOn) {
+      // Can use the attributes array.
       item.AddModifiers(attributes);
-    else
+      // Or you can use this class directly.
+      // item.AddModifiers(this);
+    } else {
+      // Can use the attributes array.
       item.RemoveModifiers(attributes);
+      // Or you can use this class directly.
+      // item.RemoveModifiers(this);
+    }
   }
 
   void HandleButton(Button button) {
@@ -106,7 +110,7 @@ public class Character : MonoBehaviour {
     if (item == null)
       return;
     // Button hit.
-    item.AddModifiers(attributes);
+    item.AddModifiers(this);
   }
 
   string AttributeTooltip(ModifiableValue<float> attr) {
