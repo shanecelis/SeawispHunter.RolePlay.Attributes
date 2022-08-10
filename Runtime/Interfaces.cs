@@ -84,7 +84,6 @@ public interface IModifier<out S,T> : IModifier<T> {
 public interface ITarget<in S, T> {
   IModifier<T> modifier { get; }
   IModifiable<IReadOnlyValue<T>,T> AppliesTo(S thing);
-
 }
 
 /** If a class is a decorator, give us a means of peeking inside if we need to. */

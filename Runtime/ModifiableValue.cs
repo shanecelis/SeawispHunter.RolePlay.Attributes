@@ -109,6 +109,7 @@ public class Modifiable<S,T> : IModifiable<S,T> where S : IReadOnlyValue<T> {
     PropertyChanged?.Invoke(this, modifiersEventArgs);
   }
 
+  /** Collect how a particular modifier changes the value. */
   public IEnumerable<(T before, T after)> ModifierAffects(IModifier<T> modifier) {
     T before = initial.value;
     foreach (var _modifier in modifiers) {
