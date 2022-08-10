@@ -109,6 +109,18 @@ public class Modifiable<S,T> : IModifiable<S,T> where S : IReadOnlyValue<T> {
     PropertyChanged?.Invoke(this, modifiersEventArgs);
   }
 
+  public IEnumerable<(T before, T after)> ModifierAffects(IModifier<T> modifier) {
+    T before = initial.value;
+    foreach (var _modifier in modifiers) {
+      T after = before;
+      if (_modifier.enabled)
+        after = _modifier.Modify(before);
+      if (modifier == _modifier)
+        yield return (before, after);
+      before = after;
+    }
+  }
+
   public override string ToString() => value.ToString();
   public string ToString(bool showModifiers) {
     if (! showModifiers)
