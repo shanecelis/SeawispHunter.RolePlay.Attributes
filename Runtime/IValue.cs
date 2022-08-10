@@ -50,9 +50,17 @@ public interface IModifiableValue<out S,T> : IReadOnlyValue<T>, INotifyPropertyC
   // event PropertyChangedEventHandler PropertyChanged;
 }
 
+// XXX: Is it really worth having these interfaces? What if instead of these interfaces
+// I just had two classes ModifiableValue<T> and ModifiableReadOnlyValue<T>?
+ 
 /** This IModifiableValue<T> interface is meant to capture values in games like health,
     strength, etc. that can be modified by various, sometimes distal, effects. */
 public interface IModifiableValue<T> : IModifiableValue<IValue<T>,T> { }
+
+/** The IModifiableReadOnlyValue<T>'s initial value is a read only value. It
+    best represents the requirements of an attribute only being altered
+    non-destructively. */
+public interface IModifiableReadOnlyValue<T> : IModifiableValue<IReadOnlyValue<T>,T> { }
 
 /** We want to be able to specify a priority. */
 public interface IPriorityCollection<T> : ICollection<T> {

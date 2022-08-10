@@ -404,6 +404,7 @@ public abstract class ContextModifier<S,T> : IModifier<S,T>, IDisposable {
   }
 }
 
+
   public class NumericalModifier<S,T> : ContextModifier<S,T>
     where S : IReadOnlyValue<T>
 #if NET6_0_OR_GREATER
