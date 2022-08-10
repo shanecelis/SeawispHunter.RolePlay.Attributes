@@ -63,6 +63,24 @@ public static class Modifier {
     void Disable(object modifier) => ((IModifier<T>) modifier).enabled = false;
   }
 
+  public static IModifier<S,T> WithContext<S,T>(this IModifier<T> modifier, S context)
+    => new WrappedModifier<S,T>(context, modifier);
+
+  internal class WrappedModifier<S,T> : ContextModifier<S,T>, IDecorator<IModifier<T>> {
+    protected IModifier<T> inner;
+    public IModifier<T> decorated => inner;
+    public override bool enabled {
+      get => inner.enabled;
+      set => inner.enabled = value;
+    }
+    public WrappedModifier(S context, IModifier<T> inner) : base(context) {
+      this.inner = inner;
+      this.inner.PropertyChanged += Chain;
+    }
+    public override T Modify(T given) => inner.Modify(given);
+    public override string ToString() => inner.ToString();
+  }
+
 #if UNITY_5_3_OR_NEWER
   public static IEnumerator EnableAfterCoroutine<T>(this IModifier<T> modifier, float seconds) {
     yield return new WaitForSeconds(seconds);
