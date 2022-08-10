@@ -93,45 +93,45 @@ public static class Modifier {
   }
 #endif
 
-  public static ITarget<IList<IModifiable<T>>,T> TargetList<T>(this IModifier<T> modifier,
+  public static ITarget<IList<IModifiableValue<T>>,T> TargetList<T>(this IModifier<T> modifier,
                                                                               int index,
                                                                               [CallerArgumentExpression("index")]
                                                                               string name = null) {
     return new ListTarget<T> { modifier = modifier, context = index, name = name };
   }
 
-  public static ITarget<IDictionary<K,IModifiable<T>>,T> TargetDictionary<K,T>(this IModifier<T> modifier,
+  public static ITarget<IDictionary<K,IModifiableValue<T>>,T> TargetDictionary<K,T>(this IModifier<T> modifier,
                                                                                               K key,
                                                                                               [CallerArgumentExpression("key")]
                                                                                               string name = null)
     => new DictionaryTarget<K,T> { modifier = modifier, context = key, name = name };
 
   public static ITarget<S,T> Target<S,T>(this IModifier<T> modifier,
-                                                    Func<S,IModifiable<T>> target,
+                                                    Func<S,IModifiableValue<T>> target,
                                                    string name = null)
     => new FuncTarget<S,T> { modifier = modifier, context = target, name = name };
 
   internal abstract class BaseTarget<R,S,T> : ITarget<S, T> {
     public string name { get; init; }
     public R context { get; init; }
-    // internal Func<S,IModifiable<T>> target { get; init; }
+    // internal Func<S,IModifiableValue<T>> target { get; init; }
     public IModifier<T> modifier { get; init; }
-    public abstract IModifiable<T> AppliesTo(S bag);
+    public abstract IModifiable<IReadOnlyValue<T>, T> AppliesTo(S bag);
     public virtual string defaultName => context.ToString();
     public override string ToString() => name ?? defaultName;
   }
 
   /* The problem here is we don't know what this applies too. It's an opaque type. */
-  internal class FuncTarget<S,T> : BaseTarget<Func<S,IModifiable<T>>,S, T> {
-    public override IModifiable<T> AppliesTo(S bag) => context(bag);
+  internal class FuncTarget<S,T> : BaseTarget<Func<S,IModifiableValue<T>>,S, T> {
+    public override IModifiable<IReadOnlyValue<T>, T> AppliesTo(S bag) => context(bag);
   }
 
-  internal class ListTarget<T> : BaseTarget<int, IList<IModifiable<T>>, T> {
-    public override IModifiable<T> AppliesTo(IList<IModifiable<T>> bag) => bag[context];
+  internal class ListTarget<T> : BaseTarget<int, IList<IModifiableValue<T>>, T> {
+    public override IModifiable<IReadOnlyValue<T>, T> AppliesTo(IList<IModifiableValue<T>> bag) => bag[context];
   }
 
-  internal class DictionaryTarget<K,T> : BaseTarget<K, IDictionary<K,IModifiable<T>>, T> {
-    public override IModifiable<T> AppliesTo(IDictionary<K,IModifiable<T>> bag) => bag[context];
+  internal class DictionaryTarget<K,T> : BaseTarget<K, IDictionary<K,IModifiableValue<T>>, T> {
+    public override IModifiable<IReadOnlyValue<T>, T> AppliesTo(IDictionary<K,IModifiableValue<T>> bag) => bag[context];
   }
 
 #if NET6_0_OR_GREATER

@@ -42,6 +42,7 @@ public interface IBoundedValue<T> : IValue<T> {
     Generally, it's an IValue<T> but if it was derived from some other
     attribute, the initial value may be read only. */
 public interface IModifiable<out S,T> : IReadOnlyValue<T>, INotifyPropertyChanged
+  // XXX: Must this interface pin down the S type so dramatically?
   where S : IReadOnlyValue<T> {
   S initial { get; }
   // T value { get; }
@@ -53,21 +54,21 @@ public interface IModifiable<out S,T> : IReadOnlyValue<T>, INotifyPropertyChange
 // XXX: Is it really worth having these interfaces? What if instead of these interfaces
 // I just had two classes ModifiableValue<T> and ModifiableReadOnlyValue<T>?
  
-/** This IModifiable<T> interface is meant to capture values in games like health,
+/** This IModifiableValue<T> interface is meant to capture values in games like health,
     strength, etc. that can be modified by various, sometimes distal, effects. */
-public interface IModifiable<T> : IModifiable<IValue<T>,T> { }
+public interface IModifiableValue<T> : IModifiable<IValue<T>,T> { }
 
 /** The IModifiableReadOnly<T>'s initial value is a read only value. It
     best represents the requirements of an attribute only being altered
     non-destructively. */
-public interface IModifiableReadOnly<T> : IModifiable<IReadOnlyValue<T>,T> { }
+public interface IModifiableReadOnlyValue<T> : IModifiable<IReadOnlyValue<T>,T> { }
 
 /** We want to be able to specify a priority. */
 public interface IPriorityCollection<T> : ICollection<T> {
   void Add(int priority, T modifier);
 }
 
-/** A IModifier<T> modifies an IModifiable<T>'s value. */
+/** A IModifier<T> modifies an IModifiableValue<T>'s value. */
 public interface IModifier<T> : INotifyPropertyChanged {
   bool enabled { get; set; }
   T Modify(T given);
@@ -83,7 +84,7 @@ public interface IModifier<out S,T> : IModifier<T> {
 /** A target has a modifier and a selector so we know what to apply it to. */
 public interface ITarget<in S, T> {
   IModifier<T> modifier { get; }
-  IModifiable<T> AppliesTo(S thing);
+  IModifiable<IReadOnlyValue<T>,T> AppliesTo(S thing);
 
 }
 

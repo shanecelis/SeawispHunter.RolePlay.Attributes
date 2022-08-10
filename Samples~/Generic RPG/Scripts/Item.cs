@@ -81,12 +81,12 @@ public class Item : MonoBehaviour {
       tooltip.messageDelegate = ToString;
   }
 
-  public void AddModifiers(IModifiable<float>[] attributes) {
+  public void AddModifiers(IModifiableValue<float>[] attributes) {
     foreach (var modifier in this.modifiers)
       attributes[(int) modifier.kind].modifiers.Add(modifier.priority, modifier);
   }
 
-  public void RemoveModifiers(IModifiable<float>[] attributes) {
+  public void RemoveModifiers(IModifiableValue<float>[] attributes) {
     foreach (var attribute in attributes)
       RemoveAllModifiers(attribute);
   }
@@ -101,7 +101,7 @@ public class Item : MonoBehaviour {
       RemoveAllModifiers(targeted.AppliesTo(c));
   }
 
-  private void RemoveAllModifiers(IModifiable<float> attr) {
+  private void RemoveAllModifiers(IModifiable<IReadOnlyValue<float>,float> attr) {
     foreach (var modifier in attr.modifiers
              .OfType<ItemModifier>()
              .Where(mod => mod.source == this)

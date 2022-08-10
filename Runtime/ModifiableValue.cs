@@ -18,11 +18,11 @@ namespace SeawispHunter.RolePlay.Attributes {
 
 public static class ModifiableValue {
 
-  public static IModifiable<T> FromValue<T>(T v) where T : struct => new ModifiableValue<T>(new Value<T>(v));
+  public static IModifiableValue<T> FromValue<T>(T v) where T : struct => new ModifiableValue<T>(new Value<T>(v));
 #if UNITY_5_3_OR_NEWER
-  public static IModifiable<T> FromValue<T>(Value<T> v) => new ModifiableValue<T>(v);
+  public static IModifiableValue<T> FromValue<T>(Value<T> v) => new ModifiableValue<T>(v);
 #else
-  public static IModifiable<T> FromValue<T>(IValue<T> v) => new ModifiableValue<T>(v);
+  public static IModifiableValue<T> FromValue<T>(IValue<T> v) => new ModifiableValue<T>(v);
 #endif
   public static IModifiable<IReadOnlyValue<T>,T> FromValue<T>(IReadOnlyValue<T> v) => new Modifiable<IReadOnlyValue<T>, T>(v);
 }
@@ -30,7 +30,7 @@ public static class ModifiableValue {
 /* In order to make Unity's serialization work properly we need to have a
    concrete rather than interface as its initial value. */
 [Serializable]
-public class ModifiableValue<T> : Modifiable<Value<T>, T>, IModifiable<T> {
+public class ModifiableValue<T> : Modifiable<Value<T>, T>, IModifiableValue<T> {
 
   public ModifiableValue(Value<T> initial) : base(initial) { }
   public ModifiableValue(T initialValue) : base(new Value<T>(initialValue)) { }
@@ -40,7 +40,7 @@ public class ModifiableValue<T> : Modifiable<Value<T>, T>, IModifiable<T> {
 }
 
 [Serializable]
-public class ModifiableReadOnlyValue<T> : Modifiable<ReadOnlyValue<T>, T>, IModifiableReadOnly<T> {
+public class ModifiableReadOnlyValue<T> : Modifiable<ReadOnlyValue<T>, T>, IModifiableReadOnlyValue<T> {
 
   public ModifiableReadOnlyValue(ReadOnlyValue<T> initial) : base(initial) { }
   public ModifiableReadOnlyValue(T initialValue) : base(new ReadOnlyValue<T>(initialValue)) { }
@@ -51,7 +51,7 @@ public class ModifiableReadOnlyValue<T> : Modifiable<ReadOnlyValue<T>, T>, IModi
 }
 #else
 [Serializable]
-public class ModifiableValue<T> : ModifiableValue<IValue<T>, T>, IModifiable<T> {
+public class ModifiableValue<T> : ModifiableValue<IValue<T>, T>, IModifiableValue<T> {
 
   public ModifiableValue(IValue<T> initial) : base(initial) { }
   public ModifiableValue(T initialValue) : base(new Value<T>(initialValue)) { }
@@ -59,7 +59,7 @@ public class ModifiableValue<T> : ModifiableValue<IValue<T>, T>, IModifiable<T> 
 }
 
 [Serializable]
-public class ModifiableReadOnlyValue<T> : ModifiableValue<IReadOnlyValue<T>, T>, IModifiableReadOnly<T> {
+public class ModifiableReadOnlyValue<T> : ModifiableValue<IReadOnlyValue<T>, T>, IModifiableReadOnlyValue<T> {
 
   public ModifiableValue(IValue<T> initial) : base(initial) { }
   public ModifiableValue(T initialValue) : base(new Value<T>(initialValue)) { }
