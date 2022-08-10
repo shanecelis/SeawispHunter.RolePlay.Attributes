@@ -33,7 +33,7 @@ public interface IValue<T> : IReadOnlyValue<T> {
   new T value { get; set; }
 }
 
-/** An IValue<T> that is bounded by a minValue and maxValue. */
+/** An IValue<T> that is bounded by a min and and a max value. */
 public interface IBoundedValue<T> : IValue<T> {
   T minValue { get; }
   T maxValue { get; }
@@ -45,10 +45,7 @@ public interface IBoundedValue<T> : IValue<T> {
     modifier in the collection.
 
     Generally, the `initial` property is some kind of IReadOnlyValue<T>. */
-public interface IModifiable<out S,T> : IReadOnlyValue<T>, INotifyPropertyChanged
-  // XXX: Must this interface pin down the S type so dramatically?
-  // where S : IReadOnlyValue<T>
-{
+public interface IModifiable<out S,T> : IReadOnlyValue<T>, INotifyPropertyChanged {
   S initial { get; }
   // T value { get; }
   /** The list implementation handles property change events properly. */
