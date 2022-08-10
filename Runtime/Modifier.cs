@@ -348,20 +348,17 @@ public static class Modifier {
     }
 #endif
   }
-
-
-
 }
 
 /** An abstract modifier that keeps a particular context about it.
 
-    If that context implements a `INotifyPropertyChanged`, its events will
-    provoke this modifier's events.
+    If that context implements `INotifyPropertyChanged`, its events will provoke
+    this modifier's PropertyChanged events.
   */
 public abstract class ContextModifier<S,T> : IModifier<S,T>, IDisposable {
   public string name { get; init; }
   private bool _enabled = true;
-  public bool enabled {
+  public virtual bool enabled {
     get => _enabled;
     set {
       if (_enabled == value)

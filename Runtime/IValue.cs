@@ -72,9 +72,15 @@ public interface IModifier<out S,T> : IModifier<T> {
   S context { get; }
 }
 
+/** A target has a modifier and a selector so we know what to apply it to. */
 public interface ITarget<in S, T> {
   IModifier<T> modifier { get; }
   IModifiableValue<T> AppliesTo(S thing);
+}
+
+/** If a class is a decorator, give us a means of peeking inside if we need to. */
+public interface IDecorator<out T> {
+  T decorated { get; }
 }
 
 // public interface ITarget<out R,in S, T> : ITarget<S, T> {

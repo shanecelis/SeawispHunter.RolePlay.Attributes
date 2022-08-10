@@ -18,7 +18,6 @@ namespace SeawispHunter.RolePlay.Attributes.Tests {
     [Test] public void TestModifierToString1() {
       var modifier = Modifier.FromFunc((float x) => x + 1, "x + 1");
       Assert.AreEqual("x + 1", modifier.ToString());
-
     }
   }
 }
