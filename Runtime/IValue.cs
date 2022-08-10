@@ -33,26 +33,28 @@ public interface IValue<T> : IReadOnlyValue<T> {
   new T value { get; set; }
 }
 
+/** An IValue<T> that is bounded by a minValue and maxValue. */
 public interface IBoundedValue<T> : IValue<T> {
   T minValue { get; }
   T maxValue { get; }
 }
 
-/** The initial value type S can be an IReadOnlyValue<T> or IValue<T>.
-    Generally, it's an IValue<T> but if it was derived from some other
-    attribute, the initial value may be read only. */
+/** The initial value type S is altered by a collection of modifiers. How it's
+    modified is implementation dependent, but in general, one could expect the
+    initial value to be converted to a T then serially modified by each enabled
+    modifier in the collection.
+
+    Generally, the `initial` property is some kind of IReadOnlyValue<T>. */
 public interface IModifiable<out S,T> : IReadOnlyValue<T>, INotifyPropertyChanged
   // XXX: Must this interface pin down the S type so dramatically?
-  where S : IReadOnlyValue<T> {
+  // where S : IReadOnlyValue<T>
+{
   S initial { get; }
   // T value { get; }
   /** The list implementation handles property change events properly. */
   IPriorityCollection<IModifier<T>> modifiers { get; }
   // event PropertyChangedEventHandler PropertyChanged;
 }
-
-// XXX: Is it really worth having these interfaces? What if instead of these interfaces
-// I just had two classes ModifiableValue<T> and ModifiableReadOnlyValue<T>?
  
 /** This IModifiableValue<T> interface is meant to capture values in games like health,
     strength, etc. that can be modified by various, sometimes distal, effects. */
