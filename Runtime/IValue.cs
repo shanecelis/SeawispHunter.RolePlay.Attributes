@@ -33,6 +33,11 @@ public interface IValue<T> : IReadOnlyValue<T> {
   new T value { get; set; }
 }
 
+public interface IBoundedValue<T> : IValue<T> {
+  T minValue { get; }
+  T maxValue { get; }
+}
+
 /** The initial value type S can be an IReadOnlyValue<T> or IValue<T>.
     Generally, it's an IValue<T> but if it was derived from some other
     attribute, the initial value may be read only. */
