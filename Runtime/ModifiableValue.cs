@@ -18,40 +18,40 @@ namespace SeawispHunter.RolePlay.Attributes {
 
 public static class ModifiableValue {
 
-  public static IModifiableValue<T> FromValue<T>(T v) where T : struct => new ModifiableValue<T>(new Value<T>(v));
+  public static IModifiable<T> FromValue<T>(T v) where T : struct => new ModifiableValue<T>(new Value<T>(v));
 #if UNITY_5_3_OR_NEWER
-  public static IModifiableValue<T> FromValue<T>(Value<T> v) => new ModifiableValue<T>(v);
+  public static IModifiable<T> FromValue<T>(Value<T> v) => new ModifiableValue<T>(v);
 #else
-  public static IModifiableValue<T> FromValue<T>(IValue<T> v) => new ModifiableValue<T>(v);
+  public static IModifiable<T> FromValue<T>(IValue<T> v) => new ModifiableValue<T>(v);
 #endif
-  public static IModifiableValue<IReadOnlyValue<T>,T> FromValue<T>(IReadOnlyValue<T> v) => new ModifiableValue<IReadOnlyValue<T>, T>(v);
+  public static IModifiable<IReadOnlyValue<T>,T> FromValue<T>(IReadOnlyValue<T> v) => new Modifiable<IReadOnlyValue<T>, T>(v);
 }
 #if UNITY_5_3_OR_NEWER
 /* In order to make Unity's serialization work properly we need to have a
    concrete rather than interface as its initial value. */
 [Serializable]
-public class ModifiableValue<T> : ModifiableValue<Value<T>, T>, IModifiableValue<T> {
+public class ModifiableValue<T> : Modifiable<Value<T>, T>, IModifiable<T> {
 
   public ModifiableValue(Value<T> initial) : base(initial) { }
   public ModifiableValue(T initialValue) : base(new Value<T>(initialValue)) { }
   public ModifiableValue() : this(default(T)) { }
 
-  IValue<T> IModifiableValue<IValue<T>,T>.initial => _initial;
+  IValue<T> IModifiable<IValue<T>,T>.initial => _initial;
 }
 
 [Serializable]
-public class ModifiableReadOnlyValue<T> : ModifiableValue<ReadOnlyValue<T>, T>, IModifiableReadOnlyValue<T> {
+public class ModifiableReadOnlyValue<T> : Modifiable<ReadOnlyValue<T>, T>, IModifiableReadOnly<T> {
 
   public ModifiableReadOnlyValue(ReadOnlyValue<T> initial) : base(initial) { }
   public ModifiableReadOnlyValue(T initialValue) : base(new ReadOnlyValue<T>(initialValue)) { }
   public ModifiableReadOnlyValue() : this(default(T)) { }
 
-  IReadOnlyValue<T> IModifiableValue<IReadOnlyValue<T>,T>.initial => _initial;
+  IReadOnlyValue<T> IModifiable<IReadOnlyValue<T>,T>.initial => _initial;
 
 }
 #else
 [Serializable]
-public class ModifiableValue<T> : ModifiableValue<IValue<T>, T>, IModifiableValue<T> {
+public class ModifiableValue<T> : ModifiableValue<IValue<T>, T>, IModifiable<T> {
 
   public ModifiableValue(IValue<T> initial) : base(initial) { }
   public ModifiableValue(T initialValue) : base(new Value<T>(initialValue)) { }
@@ -59,7 +59,7 @@ public class ModifiableValue<T> : ModifiableValue<IValue<T>, T>, IModifiableValu
 }
 
 [Serializable]
-public class ModifiableReadOnlyValue<T> : ModifiableValue<IReadOnlyValue<T>, T>, IModifiableReadOnlyValue<T> {
+public class ModifiableReadOnlyValue<T> : ModifiableValue<IReadOnlyValue<T>, T>, IModifiableReadOnly<T> {
 
   public ModifiableValue(IValue<T> initial) : base(initial) { }
   public ModifiableValue(T initialValue) : base(new Value<T>(initialValue)) { }
@@ -68,7 +68,7 @@ public class ModifiableReadOnlyValue<T> : ModifiableValue<IReadOnlyValue<T>, T>,
 #endif
 
 [Serializable]
-public class ModifiableValue<S,T> : IModifiableValue<S,T> where S : IReadOnlyValue<T> {
+public class Modifiable<S,T> : IModifiable<S,T> where S : IReadOnlyValue<T> {
 
   protected ModifiersSortedList _modifiers;
   public IPriorityCollection<IModifier<T>> modifiers => _modifiers;
@@ -91,7 +91,7 @@ public class ModifiableValue<S,T> : IModifiableValue<S,T> where S : IReadOnlyVal
   public event PropertyChangedEventHandler PropertyChanged;
   private static PropertyChangedEventArgs modifiersEventArgs
     = new PropertyChangedEventArgs(nameof(modifiers));
-  public ModifiableValue(S initial) {
+  public Modifiable(S initial) {
     _initial = initial;
     _initial.PropertyChanged += Chain;
     _modifiers = new ModifiersSortedList(this);
@@ -133,10 +133,10 @@ public class ModifiableValue<S,T> : IModifiableValue<S,T> where S : IReadOnlyVal
       age ensuring that the keys will be unique.
    */
   protected class ModifiersSortedList : IPriorityCollection<IModifier<T>>, IComparer<(int priority, int age)> {
-    private readonly ModifiableValue<S,T> parent;
+    private readonly Modifiable<S,T> parent;
     private readonly SortedList<(int, int), IModifier<T>> modifiers = new SortedList<(int, int), IModifier<T>>();
     private int addCount = 0;
-    public ModifiersSortedList(ModifiableValue<S,T> parent) => this.parent = parent;
+    public ModifiersSortedList(Modifiable<S,T> parent) => this.parent = parent;
 
     public IEnumerator<IModifier<T>> GetEnumerator() => modifiers.Values.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
