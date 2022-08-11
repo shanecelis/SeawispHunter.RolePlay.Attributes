@@ -10,6 +10,8 @@
 */
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Text;
 using System.ComponentModel;
 using System.Threading;
@@ -17,6 +19,10 @@ using System.Runtime.CompilerServices;
 #if NET6_0_OR_GREATER
 using System.Numerics;
 #endif
+#if UNITY_5_3_OR_NEWER
+using UnityEngine;
+#endif
+
 
 namespace SeawispHunter.RolePlay.Attributes {
 
@@ -24,8 +30,8 @@ public static class Modifier {
   public static IModifier<T> FromFunc<T>(Func<T,T> func,
                                          out Action callOnChange,
                                          [CallerArgumentExpression("func")]
-                                         string nameOrFuncExpression = null)
-    => new FuncModifier<T>(func, out callOnChange) { name = nameOrFuncExpression };
+                                         string funcExpression = null)
+    => new FuncModifier<T>(func, out callOnChange) { name = funcExpression };
 
   /** Create a modifier from the given function.
 
@@ -34,8 +40,8 @@ public static class Modifier {
     */
   public static IModifier<T> FromFunc<T>(Func<T,T> func,
                                          [CallerArgumentExpression("func")]
-                                         string nameOrFuncExpression = null)
-    => new FuncModifier<T>(func) { name = nameOrFuncExpression };
+                                         string funcExpression = null)
+    => new FuncModifier<T>(func) { name = funcExpression };
 
   internal class FuncModifier<T> : ContextModifier<Func<T,T>, T> {
     public FuncModifier(Func<T,T> func, out Action callOnChange) : this(func) {
@@ -55,6 +61,77 @@ public static class Modifier {
   public static void DisableAfter<T>(this IModifier<T> modifier, TimeSpan timeSpan) {
     var timer = new Timer(Disable, modifier, timeSpan, Timeout.InfiniteTimeSpan);
     void Disable(object modifier) => ((IModifier<T>) modifier).enabled = false;
+  }
+
+  public static IModifier<S,T> WithContext<S,T>(this IModifier<T> modifier, S context)
+    => new WrappedModifier<S,T>(context, modifier);
+
+  internal class WrappedModifier<S,T> : ContextModifier<S,T>, IDecorator<IModifier<T>> {
+    protected IModifier<T> inner;
+    public IModifier<T> decorated => inner;
+    public override bool enabled {
+      get => inner.enabled;
+      set => inner.enabled = value;
+    }
+    public WrappedModifier(S context, IModifier<T> inner) : base(context) {
+      this.inner = inner;
+      this.inner.PropertyChanged += Chain;
+    }
+    public override T Modify(T given) => inner.Modify(given);
+    public override string ToString() => inner.ToString();
+  }
+
+#if UNITY_5_3_OR_NEWER
+  public static IEnumerator EnableAfterCoroutine<T>(this IModifier<T> modifier, float seconds) {
+    yield return new WaitForSeconds(seconds);
+    modifier.enabled = true;
+  }
+
+  public static IEnumerator DisableAfterCoroutine<T>(this IModifier<T> modifier, float seconds) {
+    yield return new WaitForSeconds(seconds);
+    modifier.enabled = false;
+  }
+#endif
+
+  public static ITarget<IList<IModifiableValue<T>>,T> TargetList<T>(this IModifier<T> modifier,
+                                                                              int index,
+                                                                              [CallerArgumentExpression("index")]
+                                                                              string name = null) {
+    return new ListTarget<T> { modifier = modifier, context = index, name = name };
+  }
+
+  public static ITarget<IDictionary<K,IModifiableValue<T>>,T> TargetDictionary<K,T>(this IModifier<T> modifier,
+                                                                                              K key,
+                                                                                              [CallerArgumentExpression("key")]
+                                                                                              string name = null)
+    => new DictionaryTarget<K,T> { modifier = modifier, context = key, name = name };
+
+  public static ITarget<S,T> Target<S,T>(this IModifier<T> modifier,
+                                                    Func<S,IModifiableValue<T>> target,
+                                                   string name = null)
+    => new FuncTarget<S,T> { modifier = modifier, context = target, name = name };
+
+  internal abstract class BaseTarget<R,S,T> : ITarget<S, T> {
+    public string name { get; init; }
+    public R context { get; init; }
+    // internal Func<S,IModifiableValue<T>> target { get; init; }
+    public IModifier<T> modifier { get; init; }
+    public abstract IModifiable<IReadOnlyValue<T>, T> AppliesTo(S bag);
+    public virtual string defaultName => context.ToString();
+    public override string ToString() => name ?? defaultName;
+  }
+
+  /* The problem here is we don't know what this applies too. It's an opaque type. */
+  internal class FuncTarget<S,T> : BaseTarget<Func<S,IModifiableValue<T>>,S, T> {
+    public override IModifiable<IReadOnlyValue<T>, T> AppliesTo(S bag) => context(bag);
+  }
+
+  internal class ListTarget<T> : BaseTarget<int, IList<IModifiableValue<T>>, T> {
+    public override IModifiable<IReadOnlyValue<T>, T> AppliesTo(IList<IModifiableValue<T>> bag) => bag[context];
+  }
+
+  internal class DictionaryTarget<K,T> : BaseTarget<K, IDictionary<K,IModifiableValue<T>>, T> {
+    public override IModifiable<IReadOnlyValue<T>, T> AppliesTo(IDictionary<K,IModifiableValue<T>> bag) => bag[context];
   }
 
 #if NET6_0_OR_GREATER
@@ -159,6 +236,25 @@ public static class Modifier {
     public int one => 1;
   }
 
+#if UNITY_5_3_OR_NEWER
+  internal struct OpVector3 : IOperator<Vector3> {
+    public Vector3 Create<T>(T other) {
+      var op = GetOp<float>();
+      var o = op.Create(other);
+      return new Vector3(o, o, o);
+    }
+    public Vector3 Sum(Vector3 a, Vector3 b) => a + b;
+    public Vector3 Times(Vector3 a, Vector3 b) => Vector3.Scale(a, b);
+    public Vector3 Divide(Vector3 a, Vector3 b)
+      => Vector3.Scale(a, new Vector3(1f / b.x, 1f / b.y, 1f / b.z));
+    public Vector3 Negate(Vector3 a) => -a;
+    public Vector3 Max(Vector3 a, Vector3 b) => Vector3.Max(a, b);
+    public Vector3 Min(Vector3 a, Vector3 b) => Vector3.Min(a, b);
+    public Vector3 zero => Vector3.zero;
+    public Vector3 one => Vector3.one;
+  }
+#endif
+
   /* Not quite zero cost since this boxes the struct. */
   public static IOperator<S> GetOp<S>() {
     switch (Type.GetTypeCode(typeof(S))) {
@@ -168,8 +264,15 @@ public static class Modifier {
         return (IOperator<S>) (object) default(OpFloat);
       case TypeCode.Int32:
         return (IOperator<S>) (object) default(OpInt);
+      case TypeCode.Object:
+#if UNITY_5_3_OR_NEWER
+        if (typeof(S) == typeof(Vector3))
+          return (IOperator<S>) (object) default(OpVector3);
+        else
+            goto default;
+#endif
       default:
-            throw new NotImplementedException($"No IOperator<T> implementation for type {typeof(S)}.");
+        throw new NotImplementedException($"No IOperator<T> implementation for type {typeof(S)}.");
     }
   }
 
@@ -245,20 +348,17 @@ public static class Modifier {
     }
 #endif
   }
-
-
-
 }
 
 /** An abstract modifier that keeps a particular context about it.
 
-    If that context implements a `INotifyPropertyChanged`, its events will
-    provoke this modifier's events.
+    If that context implements `INotifyPropertyChanged`, its events will provoke
+    this modifier's PropertyChanged events.
   */
 public abstract class ContextModifier<S,T> : IModifier<S,T>, IDisposable {
   public string name { get; init; }
   private bool _enabled = true;
-  public bool enabled {
+  public virtual bool enabled {
     get => _enabled;
     set {
       if (_enabled == value)
@@ -303,6 +403,7 @@ public abstract class ContextModifier<S,T> : IModifier<S,T>, IDisposable {
     return builder.ToString();
   }
 }
+
 
   public class NumericalModifier<S,T> : ContextModifier<S,T>
     where S : IReadOnlyValue<T>
@@ -367,4 +468,15 @@ public abstract class ContextModifier<S,T> : IModifier<S,T>, IDisposable {
       return builder.ToString();
     }
   }
+
+  public static class TargetedModifierExtensions {
+    public static void AddTo<S,T>(this ITarget<S,T> applicator, S bag)
+      => applicator.AppliesTo(bag).modifiers.Add(applicator.modifier);
+    public static bool RemoveFrom<S,T>(this ITarget<S,T> applicator, S bag)
+      => applicator.AppliesTo(bag).modifiers.Remove(applicator.modifier);
+    public static bool ContainedIn<S,T>(this ITarget<S,T> applicator, S bag)
+      => applicator.AppliesTo(bag).modifiers.Contains(applicator.modifier);
+  }
 }
+
+

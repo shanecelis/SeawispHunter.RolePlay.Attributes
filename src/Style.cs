@@ -80,18 +80,18 @@ public class PennerStat<T> : ModifiableValue<T>
   where T : INumber<T>
 #endif
 {
-  public readonly IModifiableValue<T> baseValuePlus = new ModifiableValue<T>();
-  public readonly IModifiableValue<T> baseValueTimes = new ModifiableValue<T>(one);
-  public readonly IModifiableValue<T> totalValuePlus = new ModifiableValue<T>();
-  public readonly IModifiableValue<T> totalValueTimes = new ModifiableValue<T>(one);
+  public readonly IModifiableValue<T> BasePlus = new ModifiableValue<T>();
+  public readonly IModifiableValue<T> BaseTimes = new ModifiableValue<T>(one);
+  public readonly IModifiableValue<T> TotalPlus = new ModifiableValue<T>();
+  public readonly IModifiableValue<T> TotalTimes = new ModifiableValue<T>(one);
 
   public PennerStat(T initialValue) : base(initialValue) {
     // This class looks similar to Sidhion, but it is different.
-    // value = (baseValue * baseValueTimes + baseValuePlus) * totalValueTimes + totalValuePlus
-    modifiers.Add(100, Modifier.Times(baseValueTimes));
-    modifiers.Add(200, Modifier.Plus(baseValuePlus));
-    modifiers.Add(300, Modifier.Times(totalValueTimes));
-    modifiers.Add(400, Modifier.Plus(totalValuePlus));
+    // value = (baseValue * BaseTimes + BasePlus) * TotalTimes + TotalPlus
+    modifiers.Add(100, Modifier.Times(BaseTimes));
+    modifiers.Add(200, Modifier.Plus(BasePlus));
+    modifiers.Add(300, Modifier.Times(TotalTimes));
+    modifiers.Add(400, Modifier.Plus(TotalPlus));
   }
 
 #if NET6_0_OR_GREATER

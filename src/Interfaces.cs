@@ -33,21 +33,34 @@ public interface IValue<T> : IReadOnlyValue<T> {
   new T value { get; set; }
 }
 
-/** The initial value type S can be an IReadOnlyValue<T> or IValue<T>.
-    Generally, it's an IValue<T> but if it was derived from some other
-    attribute, the initial value may be read only. */
-public interface IModifiableValue<out S,T> : IReadOnlyValue<T>, INotifyPropertyChanged
-  where S : IReadOnlyValue<T> {
+/** An IValue<T> that is bounded by a min and and a max value. */
+public interface IBoundedValue<T> : IValue<T> {
+  T minValue { get; }
+  T maxValue { get; }
+}
+
+/** The initial value type S is altered by a collection of modifiers. How it's
+    modified is implementation dependent, but in general, one could expect the
+    initial value to be converted to a T then serially modified by each enabled
+    modifier in the collection.
+
+    Generally, the `initial` property is some kind of IReadOnlyValue<T>. */
+public interface IModifiable<out S,T> : IReadOnlyValue<T>, INotifyPropertyChanged {
   S initial { get; }
   // T value { get; }
   /** The list implementation handles property change events properly. */
   IPriorityCollection<IModifier<T>> modifiers { get; }
   // event PropertyChangedEventHandler PropertyChanged;
 }
-
+ 
 /** This IModifiableValue<T> interface is meant to capture values in games like health,
     strength, etc. that can be modified by various, sometimes distal, effects. */
-public interface IModifiableValue<T> : IModifiableValue<IValue<T>,T> { }
+public interface IModifiableValue<T> : IModifiable<IValue<T>,T> { }
+
+/** The IModifiableReadOnly<T>'s initial value is a read only value. It
+    best represents the requirements of an attribute only being altered
+    non-destructively. */
+public interface IModifiableReadOnlyValue<T> : IModifiable<IReadOnlyValue<T>,T> { }
 
 /** We want to be able to specify a priority. */
 public interface IPriorityCollection<T> : ICollection<T> {
@@ -66,5 +79,20 @@ public interface IModifier<T> : INotifyPropertyChanged {
 public interface IModifier<out S,T> : IModifier<T> {
   S context { get; }
 }
+
+/** A target has a modifier and a selector so we know what to apply it to. */
+public interface ITarget<in S, T> {
+  IModifier<T> modifier { get; }
+  IModifiable<IReadOnlyValue<T>,T> AppliesTo(S thing);
+}
+
+/** If a class is a decorator, give us a means of peeking inside if we need to. */
+public interface IDecorator<out T> {
+  T decorated { get; }
+}
+
+// public interface ITarget<out R,in S, T> : ITarget<S, T> {
+//   R context { get; }
+// }
 
 }

@@ -19,7 +19,7 @@ namespace SeawispHunter.RolePlay.Attributes.Test {
 
 public class ModifiableValueTest {
   ModifiableValue<float> health = new ModifiableValue<float>(100f);
-  IModifiableValue<IReadOnlyValue<float>,float> currentHealth;
+  IModifiableReadOnlyValue<float> currentHealth;
   IModifier<float> boost = Modifier.Times(1.10f, "10% boost");// { name = "10% boost", multiply = 1.10f };
   // IModifier<float> boost20 = new ModifierFloat { name = "20% boost", multiply = 1.20f };
   IModifier<float> boost20 = Modifier.Times(1.2f, "20% boost");
@@ -32,7 +32,7 @@ public class ModifiableValueTest {
 
   public ModifiableValueTest() {
 
-    currentHealth = ModifiableValue.FromValue(health);
+    currentHealth = new ModifiableReadOnlyValue<float>(health);
     // currentHealth.name = "current health";
     health.modifiers.Add(boost);
     // currentHealth.Add(damage.Select(d => -d));

@@ -50,7 +50,7 @@ public static class Value {
   public static IValue<T> FromFunc<T>(Func<T> f, Action<T> @set, out Action callOnChange)
     => new DerivedValue<T>(f, @set, out callOnChange);
 
-  public static IValue<T> WithBounds<T>(T value, T lowerBound, T upperBound)
+  public static IBoundedValue<T> WithBounds<T>(T value, T lowerBound, T upperBound)
 #if NET6_0_OR_GREATER
     where T : INumber<T>
 #else
@@ -60,7 +60,7 @@ public static class Value {
                            new ReadOnlyValue<T>(lowerBound),
                            new ReadOnlyValue<T>(upperBound));
 
-  public static IValue<T> WithBounds<T>(T value, T lowerBound, IReadOnlyValue<T> upperBound)
+  public static IBoundedValue<T> WithBounds<T>(T value, T lowerBound, IReadOnlyValue<T> upperBound)
 #if NET6_0_OR_GREATER
     where T : INumber<T>
 #else
@@ -70,7 +70,7 @@ public static class Value {
                            new ReadOnlyValue<T>(lowerBound),
                            upperBound);
 
-  public static IValue<T> WithBounds<T>(T value, IReadOnlyValue<T> lowerBound, T upperBound)
+  public static IBoundedValue<T> WithBounds<T>(T value, IReadOnlyValue<T> lowerBound, T upperBound)
 #if NET6_0_OR_GREATER
     where T : INumber<T>
 #else
@@ -80,7 +80,7 @@ public static class Value {
                            lowerBound,
                            new ReadOnlyValue<T>(upperBound));
 
-  public static IValue<T> WithBounds<T>(T value, IReadOnlyValue<T> lowerBound, IReadOnlyValue<T> upperBound)
+  public static IBoundedValue<T> WithBounds<T>(T value, IReadOnlyValue<T> lowerBound, IReadOnlyValue<T> upperBound)
 #if NET6_0_OR_GREATER
     where T : INumber<T>
 #else
@@ -127,7 +127,7 @@ public static class Value {
     protected void OnChange() => PropertyChanged?.Invoke(this, eventArgs);
   }
 
-  internal class BoundedValue<T> : IValue<T>
+  internal class BoundedValue<T> : IBoundedValue<T>
 #if NET6_0_OR_GREATER
     where T : INumber<T>
 #else
@@ -137,6 +137,9 @@ public static class Value {
     public readonly IReadOnlyValue<T> lowerBound;
     public readonly IReadOnlyValue<T> upperBound;
     private T _value;
+
+    public T minValue => lowerBound.value;
+    public T maxValue => upperBound.value;
 
     public T value {
       get => _value;
