@@ -22,11 +22,43 @@ namespace SeawispHunter.RolePlay.Attributes.Test {
     // public static int M<T>(T item) where T : class => 1;
   }
 
-public class GenericWhereTests {
-  [Fact] public void TestWhereExclusions() {
+  public class GenericWhereTests {
+    [Fact] public void TestWhereExclusions() {
     Assert.Equal(0, A.M<float>(1f));
+
+    }
+
+    [Fact] public void TestDescription() {
+    var b = new B { description = "b" };
+    var c = new C();
+    var i = (IHasDescription) b;
+
+    Assert.Equal("b", i.Description());
+    Assert.Equal("b", b.Description());
+    // Assert.Equal("SeawispHunter.RolePlay.Attributes.Test.B", ((object) b).Description());
+    Assert.Equal("b", ((object) b).Description());
+    Assert.Equal("C", c.Description());
+
+    }
 
   }
 
-}
+  public interface IHasDescription {
+    string description { get; }
+  }
+  public class B : IHasDescription {
+    public string description { get; set; }
+  }
+  public class C {
+    public override string ToString() => "C";
+  }
+
+  public static class DescriptionExtensions {
+    public static string Description(this object o)
+      => (o is IHasDescription d)
+        ? d.description
+        : o.ToString();
+  }
+
+
 }
