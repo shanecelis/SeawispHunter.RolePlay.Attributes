@@ -30,24 +30,44 @@ namespace SeawispHunter.RolePlay.Attributes.Tests {
     */
   public class Jessee03EditorTest {// A Test behaves as an ordinary method
     IModifiableValue<float>[] resistances = new IModifiableValue<float>[4];
-    IModifiableValue<float> maxHealth = ModifiableValue.FromValue(100f);
-    IModifiable<IReadOnlyValue<float>,float> health;
+    IModifiableValue<float> maxHealth = new ModifiableValue<float>(100f);
+    IModifiableValue<float> health;
     IModifier<float> poison;
     IEnumerator coroutine;
     CancellationTokenSource tokenSource;
 
     [Flags]
     internal enum DamageType {
-      None = 0,
+      None   = 0,
       Fire   = 1,
       Cold   = 2,
       Poison = 4,
-      All = 7,
+      All    = 7,
     }
+
     internal class FightContext {
       public DamageType vulnerable;
       public DamageType incoming;
       public bool targetIsUndead;
+    }
+
+    [SetUp] public void SetUp() {
+      for (int i = 0; i <resistances.Length; i++)
+        resistances[i] = ModifiableValue.FromValue(1f);
+      tokenSource = new CancellationTokenSource();
+      poison = Poison(1f, 1f, 10, out coroutine, tokenSource.Token);
+      health.initial.value = maxHealth.value;
+    }
+
+    [TearDown] public void TearDown() {
+      health.modifiers.Clear();
+      maxHealth.modifiers.Clear();
+    }
+
+    public Jessee03EditorTest() {
+      // health = ModifiableValue.FromValue(maxHealth);
+      var healthValue = Value.WithBounds(maxHealth.value, 0f, maxHealth);
+      health = new ModifiableIValue<float>(healthValue);
     }
 
     IModifier<DamageType,float> Poison(float damagePerPeriod,
@@ -68,21 +88,6 @@ namespace SeawispHunter.RolePlay.Attributes.Tests {
           yield return wait;
         }
       }
-    }
-    [SetUp] public void SetUp() {
-      for (int i = 0; i <resistances.Length; i++)
-        resistances[i] = ModifiableValue.FromValue(1f);
-      tokenSource = new CancellationTokenSource();
-      poison = Poison(1f, 1f, 10, out coroutine, tokenSource.Token);
-    }
-
-    [TearDown] public void TearDown() {
-      health.modifiers.Clear();
-      maxHealth.modifiers.Clear();
-    }
-
-    public Jessee03EditorTest() {
-      health = ModifiableValue.FromValue(maxHealth);
     }
 
     // [UnityTest]
@@ -175,12 +180,21 @@ namespace SeawispHunter.RolePlay.Attributes.Tests {
         attribute.modifiers.Remove(modifier);
     }
 
-    public void Cure(IModifiable<IValue<float>,float> attribute) {
-      foreach (var modifier in attribute.modifiers
-               .OfType<IModifier<DamageType, float>>()
-               .Where(mod => mod.context == DamageType.Poison)
-               .ToList())
-        attribute.modifiers.Remove(modifier);
+    public float CureApplyDamage(IModifiable<IValue<float>,float> attribute) {
+      var poisons = new HashSet<IModifier<float>>(attribute.modifiers
+                                                  .OfType<IModifier<DamageType, float>>()
+                                                  .Where(mod => mod.context == DamageType.Poison));
+        // .ToHashSet();
+      var totalDamage = poisons
+        .SelectMany(poison => attribute.ProbeAffects(poison))
+        .Select(x => x.after - x.before)
+        .Sum();
+        
+      // Remove the modifiers but apply the damage.
+      foreach(var modifier in poisons)
+        attribute.modifiers.RemoveAll(modifier);
+      attribute.initial.value += totalDamage;
+      return totalDamage;
     }
 
     [Test]
@@ -195,7 +209,40 @@ namespace SeawispHunter.RolePlay.Attributes.Tests {
       Assert.AreEqual(80f, health.value);
       Cure(health);
       // Curing shouldn't actually change the health.
-      // Assert.AreEqual(100f, health.value);
+      Assert.AreEqual(100f, health.value);
+      // Assert.AreEqual(80f, health.value);
+    }
+
+    [Test]
+    public void TestCurePoisons2() {
+      var poison2 = Poison(1f, 1f, 10, out var coroutine2, tokenSource.Token);
+      health.modifiers.Add(poison);
+      health.modifiers.Add(poison2);
+      Assert.AreEqual(100f, health.value);
+      Evaluate(coroutine);
+      Assert.AreEqual(90f, health.value);
+      Evaluate(coroutine2);
+      Assert.AreEqual(80f, health.value);
+      Assert.AreEqual(-10f, health.ProbeDelta(poison));
+      float damage = CureApplyDamage(health);
+      Assert.AreEqual(-20f, damage);
+      Assert.AreEqual(80f, health.value);
+    }
+
+    /** We can use the same poison multiple times. */
+    [Test]
+    public void TestCureSameTwoPoisons() {
+      var poison2 = poison;
+      health.modifiers.Add(poison);
+      health.modifiers.Add(poison2);
+      Assert.AreEqual(100f, health.value);
+      Evaluate(coroutine);
+      // Assert.AreEqual(90f, health.value);
+      // Evaluate(coroutine2);
+      Assert.AreEqual(80f, health.value);
+      Assert.AreEqual(-20f, health.ProbeDelta(poison));
+      float damage = CureApplyDamage(health);
+      Assert.AreEqual(-20f, damage);
       Assert.AreEqual(80f, health.value);
     }
 
