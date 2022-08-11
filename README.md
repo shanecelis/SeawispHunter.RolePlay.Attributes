@@ -100,11 +100,11 @@ multiple a value, or substitute a value so these are made convenient for `int`,
 
 ``` c#
 public static class Modifier {
-  public static IModifier<T> Plus(T value);
-  public static IModifier<T> Minus(T value);
-  public static IModifier<T> Times(T value);
-  public static IModifier<T> Divide(T value);
-  public static IModifier<T> Substitute(T value);
+  public static IModifier<T> Plus(T value, string name = null);
+  public static IModifier<T> Minus(T value, string name = null);
+  public static IModifier<T> Times(T value, string name = null);
+  public static IModifier<T> Divide(T value, string name = null);
+  public static IModifier<T> Substitute(T value, string name = null);
 }
 ```
 
