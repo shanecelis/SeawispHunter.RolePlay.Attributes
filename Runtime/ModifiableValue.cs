@@ -9,6 +9,7 @@
    [4]: https://github.com/shanecelis/code-cite
 */
 using System;
+using System.Linq;
 using System.Text;
 using System.ComponentModel;
 using System.Collections;
@@ -19,12 +20,56 @@ namespace SeawispHunter.RolePlay.Attributes {
 public static class ModifiableValue {
 
   public static IModifiableValue<T> FromValue<T>(T v) where T : struct => new ModifiableValue<T>(new Value<T>(v));
+  // XXX: What are these doing? They're just confusing.
 #if UNITY_5_3_OR_NEWER
   public static IModifiableValue<T> FromValue<T>(Value<T> v) => new ModifiableValue<T>(v);
 #else
   public static IModifiableValue<T> FromValue<T>(IValue<T> v) => new ModifiableValue<T>(v);
 #endif
   public static IModifiable<IReadOnlyValue<T>,T> FromValue<T>(IReadOnlyValue<T> v) => new Modifiable<IReadOnlyValue<T>, T>(v);
+
+  /** Collect how a particular modifier changes the value.
+
+      Returns an IEnumerable because one modifier may be added multiple times or
+      no times, which the enumerable captures. */
+  public static IEnumerable<(T before, T after)> ProbeAffects<T>(this IModifiable<IReadOnlyValue<T>, T> modifiable,
+                                                                    IModifier<T> modifier) {
+    T before = modifiable.initial.value;
+    foreach (var _modifier in modifiable.modifiers) {
+      T after = before;
+      if (_modifier.enabled)
+        after = _modifier.Modify(before);
+      if (modifier == _modifier)
+        yield return (before, after);
+      before = after;
+    }
+  }
+
+  /** Return the delta a modifier (may be multiple) does. */
+#if NET6_0_OR_GREATER
+  public static T ProbeDelta<T>(this IModifiable<IReadOnlyValue<T>, T> modifiable,
+                                   IModifier<T> modifier) where T : INumber<T>
+    => modifiable.ProbeAffects(modifier).Select(x => x.after - x.before).Sum();
+#else
+  public static T ProbeDelta<T>(this IModifiable<IReadOnlyValue<T>, T> modifiable,
+                                   IModifier<T> modifier) {
+    var op = Modifier.GetOp<T>();
+    T accum = op.zero;
+    foreach (var delta in modifiable.ProbeAffects(modifier)
+             .Select(x => op.Sum(x.after, op.Negate(x.before))))
+      accum = op.Sum(accum, delta);
+    return accum;
+  }
+#endif
+
+  /** Remove all of an item from a collection. Returns the number of items removed. */
+  public static int RemoveAll<T>(this ICollection<T> collection, T item) {
+    int count = 0;
+    while (collection.Remove(item))
+      count++;
+    return count;
+  }
+
 }
 #if UNITY_5_3_OR_NEWER
 /* In order to make Unity's serialization work properly we need to have a
@@ -49,23 +94,22 @@ public class ModifiableReadOnlyValue<T> : Modifiable<ReadOnlyValue<T>, T>, IModi
   IReadOnlyValue<T> IModifiable<IReadOnlyValue<T>,T>.initial => _initial;
 
 }
-#else
-[Serializable]
-public class ModifiableValue<T> : ModifiableValue<IValue<T>, T>, IModifiableValue<T> {
-
-  public ModifiableValue(IValue<T> initial) : base(initial) { }
-  public ModifiableValue(T initialValue) : base(new Value<T>(initialValue)) { }
-  public ModifiableValue() : this(default(T)) { }
-}
-
-[Serializable]
-public class ModifiableReadOnlyValue<T> : ModifiableValue<IReadOnlyValue<T>, T>, IModifiableReadOnlyValue<T> {
-
-  public ModifiableValue(IValue<T> initial) : base(initial) { }
-  public ModifiableValue(T initialValue) : base(new Value<T>(initialValue)) { }
-  public ModifiableValue() : this(default(T)) { }
-}
 #endif
+[Serializable]
+public class ModifiableIValue<T> : Modifiable<IValue<T>, T>, IModifiableValue<T> {
+
+  public ModifiableIValue(IValue<T> initial) : base(initial) { }
+  public ModifiableIValue(T initialValue) : base(new Value<T>(initialValue)) { }
+  public ModifiableIValue() : this(default(T)) { }
+}
+
+[Serializable]
+public class ModifiableIReadOnlyValue<T> : Modifiable<IReadOnlyValue<T>, T>, IModifiableReadOnlyValue<T> {
+
+  public ModifiableIReadOnlyValue(IReadOnlyValue<T> initial) : base(initial) { }
+  public ModifiableIReadOnlyValue(T initialValue) : base(new ReadOnlyValue<T>(initialValue)) { }
+  public ModifiableIReadOnlyValue() : this(default(T)) { }
+}
 
 [Serializable]
 public class Modifiable<S,T> : IModifiable<S,T> where S : IReadOnlyValue<T> {
@@ -107,19 +151,6 @@ public class Modifiable<S,T> : IModifiable<S,T> where S : IReadOnlyValue<T> {
 
   internal void ModifiersChanged(object sender, PropertyChangedEventArgs e) {
     PropertyChanged?.Invoke(this, modifiersEventArgs);
-  }
-
-  /** Collect how a particular modifier changes the value. */
-  public IEnumerable<(T before, T after)> ModifierAffects(IModifier<T> modifier) {
-    T before = initial.value;
-    foreach (var _modifier in modifiers) {
-      T after = before;
-      if (_modifier.enabled)
-        after = _modifier.Modify(before);
-      if (modifier == _modifier)
-        yield return (before, after);
-      before = after;
-    }
   }
 
   public override string ToString() => value.ToString();
