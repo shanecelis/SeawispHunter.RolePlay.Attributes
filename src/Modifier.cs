@@ -23,8 +23,9 @@ namespace SeawispHunter.RolePlay.Attributes {
 public static class Modifier {
   public static IModifier<T> FromFunc<T>(Func<T,T> func,
                                          out Action callOnChange,
-                                         [CallerArgumentExpression("func")] string funcExpression = null)
-    => new FuncModifier<T>(func, out callOnChange) { name = funcExpression };
+                                         [CallerArgumentExpression("func")]
+                                         string nameOrFuncExpression = null)
+    => new FuncModifier<T>(func, out callOnChange) { name = nameOrFuncExpression };
 
   /** Create a modifier from the given function.
 
@@ -33,8 +34,8 @@ public static class Modifier {
     */
   public static IModifier<T> FromFunc<T>(Func<T,T> func,
                                          [CallerArgumentExpression("func")]
-                                         string funcExpression = null)
-    => new FuncModifier<T>(func) { name = funcExpression };
+                                         string nameOrFuncExpression = null)
+    => new FuncModifier<T>(func) { name = nameOrFuncExpression };
 
   internal class FuncModifier<T> : ContextModifier<Func<T,T>, T> {
     public FuncModifier(Func<T,T> func, out Action callOnChange) : this(func) {
