@@ -50,7 +50,7 @@ public class ReadmeTest {
   public void TestBounds() {
     int notificationCount = 0;
     var maxHealth = new ModifiableValue<float>(100f);
-    var health = Value.WithBounds(maxHealth.value, 0f, maxHealth);
+    var health = new BoundedValue<float>(maxHealth.value, 0f, maxHealth);
 
     // health.PropertyChanged += (_, _) => Console.WriteLine($"Health is {health.value}/{maxHealth.value}.");
     health.PropertyChanged += (_, _) => notificationCount++;
@@ -67,7 +67,7 @@ public class ReadmeTest {
 
     int notificationCount = 0;
     var maxHealth = new ModifiableValue<float>(100f);
-    var health = Value.WithBounds(maxHealth.value, 0f, maxHealth);
+    var health = new BoundedValue<float>(maxHealth.value, 0f, maxHealth);
 
     // health.PropertyChanged += (_, _) => Console.WriteLine($"Health is {health.value}/{maxHealth.value}.");
     health.PropertyChanged += (_, _) => notificationCount++;

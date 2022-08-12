@@ -124,7 +124,7 @@ public class ImperialCoderTest {
   }
 
   public ImperialCoderTest() {
-    health = Value.WithBounds(maxHealth.value, 0, maxHealth);
+    health = new BoundedValue<float>(maxHealth.value, 0, maxHealth);
   }
 
   [Fact] public void TestMinusHP() {

@@ -148,7 +148,7 @@ public class BoundedModifiable<S,T> : Modifiable<S,T>, IBounded<T> where S : IRe
     _maxValue = maxValue;
   }
 
-  public override T value => Value.BoundedValue<T>.Clamp(base.value, minValue, maxValue);
+  public override T value => BoundedValue<T>.Clamp(base.value, minValue, maxValue);
 }
 
 [Serializable]

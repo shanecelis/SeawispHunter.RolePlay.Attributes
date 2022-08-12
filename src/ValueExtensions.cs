@@ -17,13 +17,13 @@ namespace SeawispHunter.RolePlay.Attributes {
 public static class ValueExtensions {
   /** Give ourselves a little projection, as a treat. */
   public static IReadOnlyValue<T> Select<S,T>(this IReadOnlyValue<S> v, Func<S,T> func) {
-    var w = Value.FromFunc(() => func(v.value), out var callOnChange);
+    var w = ReadOnlyValue.Create(() => func(v.value), out var callOnChange);
     v.PropertyChanged += (_, _) => callOnChange();
     return w;
   }
 
   public static IReadOnlyValue<U> Zip<S,T,U>(this IReadOnlyValue<S> v, IReadOnlyValue<T> w, Func<S,T,U> func) {
-    var u = Value.FromFunc(() => func(v.value, w.value), out var callOnChange);
+    var u = ReadOnlyValue.Create(() => func(v.value, w.value), out var callOnChange);
     v.PropertyChanged += (_, _) => callOnChange();
     w.PropertyChanged += (_, _) => callOnChange();
     return u;
@@ -31,7 +31,7 @@ public static class ValueExtensions {
 
   /* I don't know. This seems overly complicated. It's no longer projection, it's projection and an inverse/coalesce action. */
   public static IValue<T> Select<S,T>(this IValue<S> v, Func<S,T> @get, Action<IValue<S>,T> @set) {
-    var w = Value.FromFunc(() => @get(v.value), x => @set(v, x), out var callOnChange);
+    var w = Value.Create(() => @get(v.value), x => @set(v, x), out var callOnChange);
     v.PropertyChanged += (_, _) => callOnChange();
     return w;
   }

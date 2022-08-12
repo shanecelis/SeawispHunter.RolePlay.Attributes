@@ -42,45 +42,12 @@ public class Value<T> : IValue<T> {
   }
 }
 
-public static class Value {
-  public static IReadOnlyValue<T> FromFunc<T>(Func<T> f, out Action callOnChange) => new DerivedReadOnlyValue<T>(f, out callOnChange);
+public static class ReadOnlyValue {
+  public static IReadOnlyValue<T> Create<T>(Func<T> f, out Action callOnChange)
+    => new DerivedReadOnlyValue<T>(f, out callOnChange);
 
-  public static IReadOnlyValue<T> FromFunc<T>(Func<T> f) => new DerivedReadOnlyValue<T>(f, out var callOnChange);
-
-  public static IValue<T> FromFunc<T>(Func<T> f, Action<T> @set, out Action callOnChange)
-    => new DerivedValue<T>(f, @set, out callOnChange);
-
-  public static IValue<T> WithBounds<T>(T value, T lowerBound, T upperBound)
-#if NET6_0_OR_GREATER
-    where T : INumber<T>
-#endif
-    => new BoundedValue<T>(value,
-                           new ReadOnlyValue<T>(lowerBound),
-                           new ReadOnlyValue<T>(upperBound));
-
-  public static IValue<T> WithBounds<T>(T value, T lowerBound, IReadOnlyValue<T> upperBound)
-#if NET6_0_OR_GREATER
-    where T : INumber<T>
-#endif
-    => new BoundedValue<T>(value,
-                           new ReadOnlyValue<T>(lowerBound),
-                           upperBound);
-
-  public static IValue<T> WithBounds<T>(T value, IReadOnlyValue<T> lowerBound, T upperBound)
-#if NET6_0_OR_GREATER
-    where T : INumber<T>
-#endif
-    => new BoundedValue<T>(value,
-                           lowerBound,
-                           new ReadOnlyValue<T>(upperBound));
-
-  public static IValue<T> WithBounds<T>(T value, IReadOnlyValue<T> lowerBound, IReadOnlyValue<T> upperBound)
-#if NET6_0_OR_GREATER
-    where T : INumber<T>
-#endif
-    => new BoundedValue<T>(value,
-                           lowerBound,
-                           upperBound);
+  public static IReadOnlyValue<T> Create<T>(Func<T> f)
+    => new DerivedReadOnlyValue<T>(f, out var callOnChange);
 
   internal class DerivedReadOnlyValue<T> : IReadOnlyValue<T> {
     private Func<T> func;
@@ -97,6 +64,13 @@ public static class Value {
 
     protected void OnChange() => PropertyChanged?.Invoke(this, eventArgs);
   }
+
+}
+
+public static class Value {
+
+  public static IValue<T> Create<T>(Func<T> @get, Action<T> @set, out Action callOnChange)
+    => new DerivedValue<T>(@get, @set, out callOnChange);
 
   internal class DerivedValue<T> : IValue<T> {
     private readonly Func<T> @get;
@@ -118,61 +92,89 @@ public static class Value {
 
     protected void OnChange() => PropertyChanged?.Invoke(this, eventArgs);
   }
+}
 
-  internal class BoundedValue<T> : IValue<T>, IBounded<T>
+/** Represents an IValue<T> that respects some bounds. Bounds may be dynamic.
+
+    If bounds change impinge on this object's current value, that value will
+    change.
+
+    Why no BoundedReadOnlyValue<T>? It's not truly needed. With a read only
+    value, one only needs to clamp it for instance, a simple projection will do:
+
+    ```
+    var boundedValue = readOnlyValue.Select(x => Math.Clamp(x, 0f, myMax.value));
+    ```
+
+    A special implementation is required for IValue<T> because it can be set,
+    and although one can always clamp it's output as above, it won't function
+    correctly. For instance, if you have `health` that is 100, you subtract 120.
+    It will report 0. But when you add 10, it'll still report 0 because the
+    underlying value would actually be at -10.
+    */
+[Serializable]
+public class BoundedValue<T> : IValue<T>, IBounded<T>
 #if NET6_0_OR_GREATER
-    where T : INumber<T>
+  where T : INumber<T>
 #endif
-  {
-    public readonly IReadOnlyValue<T> lowerBound;
-    public readonly IReadOnlyValue<T> upperBound;
-    private T _value;
+{
+  public readonly IReadOnlyValue<T> lowerBound;
+  public readonly IReadOnlyValue<T> upperBound;
+  private T _value;
 
-    public T minValue => lowerBound.value;
-    public T maxValue => upperBound.value;
+  public T minValue => lowerBound.value;
+  public T maxValue => upperBound.value;
 
-    public T value {
-      get => _value;
-      set {
-        _value = Clamp(value, minValue, maxValue);
-        OnChange();
-      }
+  public T value {
+    get => _value;
+    set {
+      _value = Clamp(value, minValue, maxValue);
+      OnChange();
     }
-
-    public static T Clamp(T value, T minValue, T maxValue) {
-#if NET6_0_OR_GREATER
-      if (value < minValue)
-        value = minValue;
-      if (value > maxValue)
-        value = maxValue;
-      return value;
-#else
-      var op = Modifier.GetOp<T>();
-      return op.Max(minValue, op.Min(maxValue, value));
-#endif
-    }
-
-    public BoundedValue(T value, IReadOnlyValue<T> lowerBound, IReadOnlyValue<T> upperBound) {
-      _value = value;
-      this.lowerBound = lowerBound;
-      // this.lowerBound.PropertyChanged -= BoundChanged;
-      this.lowerBound.PropertyChanged += BoundChanged;
-      this.upperBound = upperBound;
-      // this.upperBound.PropertyChanged -= BoundChanged;
-      this.upperBound.PropertyChanged += BoundChanged;
-    }
-
-    protected void BoundChanged(object sender, PropertyChangedEventArgs e) {
-      this.value = _value;
-    }
-
-    public event PropertyChangedEventHandler PropertyChanged;
-    private static PropertyChangedEventArgs eventArgs = new PropertyChangedEventArgs(nameof(value));
-
-    protected void OnChange() => PropertyChanged?.Invoke(this, eventArgs);
   }
 
+  public static T Clamp(T value, T minValue, T maxValue) {
+#if NET6_0_OR_GREATER
+    if (value < minValue)
+      value = minValue;
+    if (value > maxValue)
+      value = maxValue;
+    return value;
+#else
+    var op = Modifier.GetOp<T>();
+    return op.Max(minValue, op.Min(maxValue, value));
+#endif
+  }
+
+  public BoundedValue(T value, IReadOnlyValue<T> lowerBound, IReadOnlyValue<T> upperBound) {
+    _value = value;
+    this.lowerBound = lowerBound;
+    // this.lowerBound.PropertyChanged -= BoundChanged;
+    this.lowerBound.PropertyChanged += BoundChanged;
+    this.upperBound = upperBound;
+    // this.upperBound.PropertyChanged -= BoundChanged;
+    this.upperBound.PropertyChanged += BoundChanged;
+  }
+  public BoundedValue(T value, T lowerBound, IReadOnlyValue<T> upperBound)
+    : this(value, new ReadOnlyValue<T>(lowerBound), upperBound) { }
+
+  public BoundedValue(T value, IReadOnlyValue<T> lowerBound, T upperBound)
+    : this(value, lowerBound, new ReadOnlyValue<T>(upperBound)) { }
+
+  public BoundedValue(T value, T lowerBound, T upperBound)
+    : this(value, new ReadOnlyValue<T>(lowerBound), new ReadOnlyValue<T>(upperBound)) { }
+
+  protected void BoundChanged(object sender, PropertyChangedEventArgs e) {
+    this.value = _value;
+  }
+
+  public event PropertyChangedEventHandler PropertyChanged;
+  private static PropertyChangedEventArgs eventArgs = new PropertyChangedEventArgs(nameof(value));
+
+  protected void OnChange() => PropertyChanged?.Invoke(this, eventArgs);
 }
+
+/** A simple read only value. */
 [Serializable]
 public class ReadOnlyValue<T> : IReadOnlyValue<T> {
 #if UNITY_5_3_OR_NEWER
