@@ -77,8 +77,8 @@ public static class ModifiableValue {
 
 }
 #if UNITY_5_3_OR_NEWER
-/* In order to make Unity's serialization work properly we need to have a
-   concrete rather than interface as its initial value. */
+/** In order to make Unity's serialization work properly we need to have a
+    concrete rather than interface as its initial value. */
 [Serializable]
 public class ModifiableValue<T> : Modifiable<Value<T>, T>, IModifiableValue<T> {
 
@@ -115,7 +115,7 @@ public class ModifiableIReadOnlyValue<T> : Modifiable<IReadOnlyValue<T>, T>, IMo
   public ModifiableIReadOnlyValue(T initialValue) : base(new ReadOnlyValue<T>(initialValue)) { }
   public ModifiableIReadOnlyValue() : this(default(T)) { }
 }
-#endif
+#else
 [Serializable]
 public class ModifiableValue<T> : Modifiable<IValue<T>, T>, IModifiableValue<T> {
 
@@ -131,6 +131,25 @@ public class ModifiableReadOnlyValue<T> : Modifiable<IReadOnlyValue<T>, T>, IMod
   public ModifiableReadOnlyValue(T initialValue) : base(new ReadOnlyValue<T>(initialValue)) { }
   public ModifiableReadOnlyValue() : this(default(T)) { }
 }
+#endif
+
+public class BoundedModifiable<S,T> : Modifiable<S,T>, IBounded<T> where S : IReadOnlyValue<T>
+#if NET6_0_OR_GREATER
+  where T : INumber<T>
+#endif
+{
+  private IReadOnlyValue<T> _minValue;
+  private IReadOnlyValue<T> _maxValue;
+  public T minValue => _minValue.value;
+  public T maxValue => _maxValue.value;
+  public BoundedModifiable(S initial, IReadOnlyValue<T> minValue, IReadOnlyValue<T> maxValue)
+    : base(initial) {
+    _minValue = minValue;
+    _maxValue = maxValue;
+  }
+
+  public override T value => Value.BoundedValue<T>.Clamp(base.value, minValue, maxValue);
+}
 
 [Serializable]
 public class Modifiable<S,T> : IModifiable<S,T> where S : IReadOnlyValue<T> {
@@ -143,7 +162,7 @@ public class Modifiable<S,T> : IModifiable<S,T> where S : IReadOnlyValue<T> {
   protected S _initial;
   public virtual S initial => _initial;
   // XXX: Consider caching?
-  public T value {
+  public virtual T value {
     get {
       T v = initial.value;
       foreach (var modifier in modifiers)

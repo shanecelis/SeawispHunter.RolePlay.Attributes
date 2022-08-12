@@ -116,22 +116,22 @@ public static class Modifier {
     public R context { get; init; }
     // internal Func<S,IModifiableValue<T>> target { get; init; }
     public IModifier<T> modifier { get; init; }
-    public abstract IModifiable<IReadOnlyValue<T>, T> AppliesTo(S bag);
+    public abstract IModifiable<T> AppliesTo(S bag);
     public virtual string defaultName => context.ToString();
     public override string ToString() => name ?? defaultName;
   }
 
   /* The problem here is we don't know what this applies too. It's an opaque type. */
   internal class FuncTarget<S,T> : BaseTarget<Func<S,IModifiableValue<T>>,S, T> {
-    public override IModifiable<IReadOnlyValue<T>, T> AppliesTo(S bag) => context(bag);
+    public override IModifiable<T> AppliesTo(S bag) => context(bag);
   }
 
   internal class ListTarget<T> : BaseTarget<int, IList<IModifiableValue<T>>, T> {
-    public override IModifiable<IReadOnlyValue<T>, T> AppliesTo(IList<IModifiableValue<T>> bag) => bag[context];
+    public override IModifiable<T> AppliesTo(IList<IModifiableValue<T>> bag) => bag[context];
   }
 
   internal class DictionaryTarget<K,T> : BaseTarget<K, IDictionary<K,IModifiableValue<T>>, T> {
-    public override IModifiable<IReadOnlyValue<T>, T> AppliesTo(IDictionary<K,IModifiableValue<T>> bag) => bag[context];
+    public override IModifiable<T> AppliesTo(IDictionary<K,IModifiableValue<T>> bag) => bag[context];
   }
 
 #if NET6_0_OR_GREATER
