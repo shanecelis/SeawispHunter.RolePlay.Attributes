@@ -27,20 +27,20 @@ using UnityEngine;
 namespace SeawispHunter.RolePlay.Attributes {
 
 public static class Modifier {
-  public static IModifier<T> FromFunc<T>(Func<T,T> func,
-                                         out Action callOnChange,
-                                         [CallerArgumentExpression("func")]
-                                         string funcExpression = null)
+  public static IModifier<T> Create<T>(Func<T,T> func,
+                                       out Action callOnChange,
+                                       [CallerArgumentExpression("func")]
+                                       string funcExpression = null)
     => new FuncModifier<T>(func, out callOnChange) { name = funcExpression };
 
   /** Create a modifier from the given function.
 
-      var m = Modifier.FromFunc((int x) => x + 1);
+      var m = Modifier.Create((int x) => x + 1);
       Console.WriteLine($"m = {m}"); // Prints: m = (int x) => x + 1
     */
-  public static IModifier<T> FromFunc<T>(Func<T,T> func,
-                                         [CallerArgumentExpression("func")]
-                                         string funcExpression = null)
+  public static IModifier<T> Create<T>(Func<T,T> func,
+                                       [CallerArgumentExpression("func")]
+                                       string funcExpression = null)
     => new FuncModifier<T>(func) { name = funcExpression };
 
   internal class FuncModifier<T> : ContextModifier<Func<T,T>, T> {

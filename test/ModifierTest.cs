@@ -22,10 +22,10 @@ public class ModifierTest {
 
   [Fact] public void TestModifierFuncName() {
     // This trick works in dotnet core, not in Unity 2021.3 though.
-    var m = Modifier.FromFunc((int x) => x + 1);
+    var m = Modifier.Create((int x) => x + 1);
     Assert.Equal("(int x) => x + 1", m.ToString());
 
-    var n = Modifier.FromFunc((int x) => x + 1, "+1 strength");
+    var n = Modifier.Create((int x) => x + 1, "+1 strength");
     Assert.Equal("+1 strength", n.ToString());
   }
 

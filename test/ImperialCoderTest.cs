@@ -151,7 +151,7 @@ public class ImperialCoderTest {
   [Fact] public void TypedDamage() {
     var typedDamage = new ModifiableValue<float>();
     var fightContext = new FightContext();
-    typedDamage.modifiers.Add(Modifier.FromFunc((float x) => (fightContext.vulnerable & fightContext.incoming) == 0 ? x : 2f * x));
+    typedDamage.modifiers.Add(Modifier.Create((float x) => (fightContext.vulnerable & fightContext.incoming) == 0 ? x : 2f * x));
     typedDamage.initial.value = 10f;
     Assert.Equal(10f, typedDamage.value);
     fightContext.incoming = DamageType.Fire;
@@ -165,7 +165,7 @@ public class ImperialCoderTest {
   [Fact] public void UndeadDamage() {
     var typedDamage = new ModifiableValue<float>();
     var fightContext = new FightContext();
-    typedDamage.modifiers.Add(Modifier.FromFunc((float x) => fightContext.targetIsUndead ? 1.1f * x : x));
+    typedDamage.modifiers.Add(Modifier.Create((float x) => fightContext.targetIsUndead ? 1.1f * x : x));
     typedDamage.initial.value = 10f;
     Assert.Equal(10f, typedDamage.value);
     fightContext.targetIsUndead = true;
@@ -179,7 +179,7 @@ public class ImperialCoderTest {
     CancellationToken token = default;
     fightContext.incoming = DamageType.Fire;
     fightContext.vulnerable = DamageType.None;
-    typedDamage.modifiers.Add(Modifier.FromFunc((float x) => (fightContext.vulnerable & fightContext.incoming) == 0 ? x : 2f * x));
+    typedDamage.modifiers.Add(Modifier.Create((float x) => (fightContext.vulnerable & fightContext.incoming) == 0 ? x : 2f * x));
     typedDamage.initial.value = 2f;
 
     Assert.Equal(100f, health.value);
@@ -200,7 +200,7 @@ public class ImperialCoderTest {
     CancellationToken token = default;
     fightContext.incoming = DamageType.Fire;
     fightContext.vulnerable = DamageType.All;
-    typedDamage.modifiers.Add(Modifier.FromFunc((float x) => (fightContext.vulnerable & fightContext.incoming) == 0 ? x : 2f * x));
+    typedDamage.modifiers.Add(Modifier.Create((float x) => (fightContext.vulnerable & fightContext.incoming) == 0 ? x : 2f * x));
     typedDamage.initial.value = 2f;
 
     Assert.Equal(100f, health.value);

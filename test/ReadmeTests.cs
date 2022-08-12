@@ -148,7 +148,7 @@ public class ReadmeTest {
     Assert.Equal(1, notificationCount);
     Assert.Equal(100f, health.value);
     Assert.Equal(100f, maxHealth.value);
-    health.modifiers.Add(priority: 100, Modifier.FromFunc((float x) => Math.Clamp(x, 0, maxHealth.value)));
+    health.modifiers.Add(priority: 100, Modifier.Create((float x) => Math.Clamp(x, 0, maxHealth.value)));
     Assert.Equal(2, notificationCount);
     // Prints: Health is 100.
     damage.value = 10f;
@@ -172,7 +172,7 @@ public class ReadmeTest {
   [Fact]
   public void TestExampleMoon() {
     var moonArmor = new ModifiableValue<float>(20f);
-    moonArmor.modifiers.Add(Modifier.FromFunc((float x) => DateTime.Now.IsFullMoon() ? 2 * x : x));
+    moonArmor.modifiers.Add(Modifier.Create((float x) => DateTime.Now.IsFullMoon() ? 2 * x : x));
     Assert.Equal(20f, moonArmor.value);
     try {
       Extensions.isFullMoon = true;
