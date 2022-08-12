@@ -50,41 +50,33 @@ public static class Value {
   public static IValue<T> FromFunc<T>(Func<T> f, Action<T> @set, out Action callOnChange)
     => new DerivedValue<T>(f, @set, out callOnChange);
 
-  public static IBoundedValue<T> WithBounds<T>(T value, T lowerBound, T upperBound)
+  public static IValue<T> WithBounds<T>(T value, T lowerBound, T upperBound)
 #if NET6_0_OR_GREATER
     where T : INumber<T>
-#else
-    where T : IEquatable<T>
 #endif
     => new BoundedValue<T>(value,
                            new ReadOnlyValue<T>(lowerBound),
                            new ReadOnlyValue<T>(upperBound));
 
-  public static IBoundedValue<T> WithBounds<T>(T value, T lowerBound, IReadOnlyValue<T> upperBound)
+  public static IValue<T> WithBounds<T>(T value, T lowerBound, IReadOnlyValue<T> upperBound)
 #if NET6_0_OR_GREATER
     where T : INumber<T>
-#else
-    where T : IEquatable<T>
 #endif
     => new BoundedValue<T>(value,
                            new ReadOnlyValue<T>(lowerBound),
                            upperBound);
 
-  public static IBoundedValue<T> WithBounds<T>(T value, IReadOnlyValue<T> lowerBound, T upperBound)
+  public static IValue<T> WithBounds<T>(T value, IReadOnlyValue<T> lowerBound, T upperBound)
 #if NET6_0_OR_GREATER
     where T : INumber<T>
-#else
-    where T : IEquatable<T>
 #endif
     => new BoundedValue<T>(value,
                            lowerBound,
                            new ReadOnlyValue<T>(upperBound));
 
-  public static IBoundedValue<T> WithBounds<T>(T value, IReadOnlyValue<T> lowerBound, IReadOnlyValue<T> upperBound)
+  public static IValue<T> WithBounds<T>(T value, IReadOnlyValue<T> lowerBound, IReadOnlyValue<T> upperBound)
 #if NET6_0_OR_GREATER
     where T : INumber<T>
-#else
-    where T : IEquatable<T>
 #endif
     => new BoundedValue<T>(value,
                            lowerBound,
@@ -127,11 +119,9 @@ public static class Value {
     protected void OnChange() => PropertyChanged?.Invoke(this, eventArgs);
   }
 
-  internal class BoundedValue<T> : IBoundedValue<T>
+  internal class BoundedValue<T> : IValue<T>, IBounded<T>
 #if NET6_0_OR_GREATER
     where T : INumber<T>
-#else
-    where T : IEquatable<T>
 #endif
   {
     public readonly IReadOnlyValue<T> lowerBound;
@@ -144,18 +134,22 @@ public static class Value {
     public T value {
       get => _value;
       set {
-#if NET6_0_OR_GREATER
-        _value = value;
-        if (_value < lowerBound.value)
-          _value = lowerBound.value;
-        if (_value > upperBound.value)
-          _value = upperBound.value;
-#else
-        var op = Modifier.GetOp<T>();
-        _value = op.Max(lowerBound.value, op.Min(upperBound.value, value));
-#endif
+        _value = Clamp(value, minValue, maxValue);
         OnChange();
       }
+    }
+
+    public static T Clamp(T value, T minValue, T maxValue) {
+#if NET6_0_OR_GREATER
+      if (value < minValue)
+        value = minValue;
+      if (value > maxValue)
+        value = maxValue;
+      return value;
+#else
+      var op = Modifier.GetOp<T>();
+      return op.Max(minValue, op.Min(maxValue, value));
+#endif
     }
 
     public BoundedValue(T value, IReadOnlyValue<T> lowerBound, IReadOnlyValue<T> upperBound) {
