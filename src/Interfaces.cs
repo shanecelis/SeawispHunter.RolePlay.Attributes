@@ -63,10 +63,15 @@ public interface IModifiable<out S,T> : IModifiable<T> {
     strength, etc. that can be modified by various, sometimes distal, effects. */
 public interface IModifiableValue<T> : IModifiable<IValue<T>,T> { }
 
+// XXX: Let's not proliferate all the particular conglomerations that might be
+// convenient. It introduces potential brittleness where something might in fact
+// be an IModifiable<IReadOnlyValue<T>,T> through composition but it isn't an
+// IModifiableReadOnlyValue<T> even though they're functionally identical.
+
 /** The IModifiableReadOnly<T>'s initial value is a read only value. It
     best represents the requirements of an attribute only being altered
     non-destructively. */
-public interface IModifiableReadOnlyValue<T> : IModifiable<IReadOnlyValue<T>,T> { }
+// public interface IModifiableReadOnlyValue<T> : IModifiable<IReadOnlyValue<T>,T> { }
 
 /** We want to be able to specify a priority. */
 public interface IPriorityCollection<T> : ICollection<T> {

@@ -81,7 +81,7 @@ public class ModifiableValue<T> : Modifiable<Value<T>, T>, IModifiableValue<T> {
 }
 
 [Serializable]
-public class ModifiableReadOnlyValue<T> : Modifiable<ReadOnlyValue<T>, T>, IModifiableReadOnlyValue<T> {
+public class ModifiableReadOnlyValue<T> : Modifiable<ReadOnlyValue<T>, T> {
 
   public ModifiableReadOnlyValue(ReadOnlyValue<T> initial) : base(initial) { }
   public ModifiableReadOnlyValue(T initialValue) : base(new ReadOnlyValue<T>(initialValue)) { }
@@ -100,7 +100,7 @@ public class ModifiableIValue<T> : Modifiable<IValue<T>, T>, IModifiableValue<T>
 }
 
 [Serializable]
-public class ModifiableIReadOnlyValue<T> : Modifiable<IReadOnlyValue<T>, T>, IModifiableReadOnlyValue<T> {
+public class ModifiableIReadOnlyValue<T> : Modifiable<IReadOnlyValue<T>, T> {
 
   public ModifiableIReadOnlyValue(IReadOnlyValue<T> initial) : base(initial) { }
   public ModifiableIReadOnlyValue(T initialValue) : base(new ReadOnlyValue<T>(initialValue)) { }
@@ -116,7 +116,7 @@ public class ModifiableValue<T> : Modifiable<IValue<T>, T>, IModifiableValue<T> 
 }
 
 [Serializable]
-public class ModifiableReadOnlyValue<T> : Modifiable<IReadOnlyValue<T>, T>, IModifiableReadOnlyValue<T> {
+public class ModifiableReadOnlyValue<T> : Modifiable<IReadOnlyValue<T>, T> {
 
   public ModifiableReadOnlyValue(IReadOnlyValue<T> initial) : base(initial) { }
   public ModifiableReadOnlyValue(T initialValue) : base(new ReadOnlyValue<T>(initialValue)) { }
@@ -124,6 +124,7 @@ public class ModifiableReadOnlyValue<T> : Modifiable<IReadOnlyValue<T>, T>, IMod
 }
 #endif
 
+[Serializable]
 public class BoundedModifiable<S,T> : Modifiable<S,T>, IBounded<T> where S : IReadOnlyValue<T>
 #if NET6_0_OR_GREATER
   where T : INumber<T>
