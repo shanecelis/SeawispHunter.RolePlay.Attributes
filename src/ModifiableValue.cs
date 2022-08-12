@@ -19,15 +19,6 @@ namespace SeawispHunter.RolePlay.Attributes {
 
 public static class ModifiableValue {
 
-  public static IModifiableValue<T> FromValue<T>(T v) where T : struct => new ModifiableValue<T>(new Value<T>(v));
-  // XXX: What are these doing? They're just confusing.
-#if UNITY_5_3_OR_NEWER
-  public static IModifiableValue<T> FromValue<T>(Value<T> v) => new ModifiableValue<T>(v);
-#else
-  public static IModifiableValue<T> FromValue<T>(IValue<T> v) => new ModifiableValue<T>(v);
-#endif
-  public static IModifiable<IReadOnlyValue<T>,T> FromValue<T>(IReadOnlyValue<T> v) => new Modifiable<IReadOnlyValue<T>, T>(v);
-
   /** Collect how a particular modifier changes the value.
 
       Returns an IEnumerable because one modifier may be added multiple times or
@@ -147,6 +138,15 @@ public class BoundedModifiable<S,T> : Modifiable<S,T>, IBounded<T> where S : IRe
     _minValue = minValue;
     _maxValue = maxValue;
   }
+
+  public BoundedModifiable(S value, T lowerBound, IReadOnlyValue<T> upperBound)
+    : this(value, new ReadOnlyValue<T>(lowerBound), upperBound) { }
+
+  public BoundedModifiable(S value, IReadOnlyValue<T> lowerBound, T upperBound)
+    : this(value, lowerBound, new ReadOnlyValue<T>(upperBound)) { }
+
+  public BoundedModifiable(S value, T lowerBound, T upperBound)
+    : this(value, new ReadOnlyValue<T>(lowerBound), new ReadOnlyValue<T>(upperBound)) { }
 
   public override T value => BoundedValue<T>.Clamp(base.value, minValue, maxValue);
 }
