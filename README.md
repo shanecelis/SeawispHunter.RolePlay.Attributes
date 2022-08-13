@@ -144,7 +144,7 @@ Let's create a current health value to pair with a max health attribute.
 
 ``` c#
 var maxHealth = new ModifiableValue<float>(100f);
-var health = Value.WithBounds(maxHealth.value, 0f, maxHealth);
+var health = new BoundedValue<float>(maxHealth.value, 0f, maxHealth);
 
 health.PropertyChanged += (_, _) => Console.WriteLine($"Health is {health.value}/{maxHealth.value}.");
 // Prints: Health is 100/100.
@@ -195,7 +195,7 @@ the moon[^2].
 
 ``` c#
 var moonArmor = new ModifiableValue<float>(20f);
-moonArmor.modifiers.Add(Modifier.FromFunc((float x) => DateTime.Now.IsFullMoon() ? 2 * x : x));
+moonArmor.modifiers.Add(Modifier.Create((float x) => DateTime.Now.IsFullMoon() ? 2 * x : x));
 ```
 
 [^2]: Unfortunately there is no such extension method `IsFullMoon()` for DateTime by
@@ -210,11 +210,11 @@ can clamp a value by creating an ad hoc modifier with a `Func<float,float>`.
 
 ``` c#
 var maxMana = new ModifiableValue<float>(50f);
-var mana = ModifiableValue.FromValue(maxMana);
+var mana = new Modifiable<IReadOnlyValue<float>,float>(maxMana); // maxMana is an IReadOnlyValue.
 var manaCost = Modifier.Minus(0f);
 mana.modifiers.Add(manaCost);
 mana.PropertyChanged += (_, _) => Console.WriteLine($"Mana is {mana.value}/{maxMana.value}.");
-mana.modifiers.Add(priority: 100, Modifier.FromFunc((float x) => Math.Clamp(x, 0, maxMana.value));
+mana.modifiers.Add(priority: 100, Modifier.Create((float x) => Math.Clamp(x, 0, maxMana.value));
 // Prints: Mana is 50/50.
 manaCost.value = 1000f;
 // Prints: Mana is 0/50.
