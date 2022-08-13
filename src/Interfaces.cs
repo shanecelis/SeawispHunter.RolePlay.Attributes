@@ -29,7 +29,7 @@ public interface IReadOnlyValue<out T> : INotifyPropertyChanged {
 
 /** IValue<T> is an IReadOnlyValue<T> that can be directly changed. */
 public interface IValue<T> : IReadOnlyValue<T> {
-  /* We want this to be settable. */
+  /* We want this value to be settable. */
   new T value { get; set; }
 }
 

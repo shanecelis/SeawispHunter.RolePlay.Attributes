@@ -22,9 +22,9 @@ public static class ModifiableValue {
   /** Collect how a particular modifier changes the value.
 
       Returns an IEnumerable because one modifier may be added multiple times or
-      no times, which the enumerable captures. */
+      no times, which an enumerable captures. */
   public static IEnumerable<(T before, T after)> ProbeAffects<T>(this IModifiable<IReadOnlyValue<T>, T> modifiable,
-                                                                    IModifier<T> modifier) {
+                                                                 IModifier<T> modifier) {
     T before = modifiable.initial.value;
     foreach (var _modifier in modifiable.modifiers) {
       T after = before;
@@ -48,7 +48,7 @@ public static class ModifiableValue {
   }
 #else
   public static T ProbeDelta<T>(this IModifiable<IReadOnlyValue<T>, T> modifiable,
-                                   IModifier<T> modifier) {
+                                IModifier<T> modifier) {
     var op = Modifier.GetOp<T>();
     T accum = op.zero;
     foreach (var delta in modifiable.ProbeAffects(modifier)
@@ -65,11 +65,11 @@ public static class ModifiableValue {
       count++;
     return count;
   }
-
 }
+
 #if UNITY_5_3_OR_NEWER
 /** In order to make Unity's serialization work properly we need to have a
-    concrete rather than interface as its initial value. */
+    concrete type rather than interface as its initial value. */
 [Serializable]
 public class ModifiableValue<T> : Modifiable<Value<T>, T>, IModifiableValue<T> {
 
@@ -88,10 +88,9 @@ public class ModifiableReadOnlyValue<T> : Modifiable<ReadOnlyValue<T>, T> {
   public ModifiableReadOnlyValue() : this(default(T)) { }
 
   IReadOnlyValue<T> IModifiable<IReadOnlyValue<T>,T>.initial => _initial;
-
 }
 
-[Serializable]
+// Sometimes we still need an IValue though!
 public class ModifiableIValue<T> : Modifiable<IValue<T>, T>, IModifiableValue<T> {
 
   public ModifiableIValue(IValue<T> initial) : base(initial) { }
@@ -99,14 +98,15 @@ public class ModifiableIValue<T> : Modifiable<IValue<T>, T>, IModifiableValue<T>
   public ModifiableIValue() : this(default(T)) { }
 }
 
-[Serializable]
 public class ModifiableIReadOnlyValue<T> : Modifiable<IReadOnlyValue<T>, T> {
 
   public ModifiableIReadOnlyValue(IReadOnlyValue<T> initial) : base(initial) { }
   public ModifiableIReadOnlyValue(T initialValue) : base(new ReadOnlyValue<T>(initialValue)) { }
   public ModifiableIReadOnlyValue() : this(default(T)) { }
 }
+
 #else
+
 [Serializable]
 public class ModifiableValue<T> : Modifiable<IValue<T>, T>, IModifiableValue<T> {
 
@@ -124,8 +124,23 @@ public class ModifiableReadOnlyValue<T> : Modifiable<IReadOnlyValue<T>, T> {
 }
 #endif
 
+/** This Modifiable's `value` is bounded.
+
+    The same result could be achieved with a modifier that comes last by doing
+    something like this:
+
+    ```
+    ModifiableValue modifiableValue = ...
+    modifiableValue.modifiers.Add(1000, Modifier.Create(x => Math.Clamp(x, 0, 1000)));
+    ```
+
+    That's a valid way of achieving this effect. However, it seemed like bounds
+    were constraints that shouldn't be cast aside if some one called
+    `modifiableValue.modifiers.Clear()`.
+ */
 [Serializable]
-public class BoundedModifiable<S,T> : Modifiable<S,T>, IBounded<T> where S : IReadOnlyValue<T>
+public class BoundedModifiable<S,T> : Modifiable<S,T>, IBounded<T>
+  where S : IReadOnlyValue<T>
 #if NET6_0_OR_GREATER
   where T : INumber<T>
 #endif
@@ -154,7 +169,6 @@ public class BoundedModifiable<S,T> : Modifiable<S,T>, IBounded<T> where S : IRe
 
 [Serializable]
 public class Modifiable<S,T> : IModifiable<S,T> where S : IReadOnlyValue<T> {
-
   protected ModifiersSortedList _modifiers;
   public IPriorityCollection<IModifier<T>> modifiers => _modifiers;
 #if UNITY_5_3_OR_NEWER
@@ -178,6 +192,8 @@ public class Modifiable<S,T> : IModifiable<S,T> where S : IReadOnlyValue<T> {
     = new PropertyChangedEventArgs(nameof(modifiers));
   public Modifiable(S initial) {
     _initial = initial;
+    // if (_initial is INotifyPropertyChanged notify)
+    //   notify.PropertyChanged += Chain;
     _initial.PropertyChanged += Chain;
     _modifiers = new ModifiersSortedList(this);
   }
