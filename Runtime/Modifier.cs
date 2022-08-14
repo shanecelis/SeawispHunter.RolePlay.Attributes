@@ -27,20 +27,20 @@ using UnityEngine;
 namespace SeawispHunter.RolePlay.Attributes {
 
 public static class Modifier {
-  public static IModifier<T> FromFunc<T>(Func<T,T> func,
-                                         out Action callOnChange,
-                                         [CallerArgumentExpression("func")]
-                                         string funcExpression = null)
+  public static IModifier<T> Create<T>(Func<T,T> func,
+                                       out Action callOnChange,
+                                       [CallerArgumentExpression("func")]
+                                       string funcExpression = null)
     => new FuncModifier<T>(func, out callOnChange) { name = funcExpression };
 
   /** Create a modifier from the given function.
 
-      var m = Modifier.FromFunc((int x) => x + 1);
+      var m = Modifier.Create((int x) => x + 1);
       Console.WriteLine($"m = {m}"); // Prints: m = (int x) => x + 1
     */
-  public static IModifier<T> FromFunc<T>(Func<T,T> func,
-                                         [CallerArgumentExpression("func")]
-                                         string funcExpression = null)
+  public static IModifier<T> Create<T>(Func<T,T> func,
+                                       [CallerArgumentExpression("func")]
+                                       string funcExpression = null)
     => new FuncModifier<T>(func) { name = funcExpression };
 
   internal class FuncModifier<T> : ContextModifier<Func<T,T>, T> {
@@ -116,22 +116,22 @@ public static class Modifier {
     public R context { get; init; }
     // internal Func<S,IModifiableValue<T>> target { get; init; }
     public IModifier<T> modifier { get; init; }
-    public abstract IModifiable<IReadOnlyValue<T>, T> AppliesTo(S bag);
+    public abstract IModifiable<T> AppliesTo(S bag);
     public virtual string defaultName => context.ToString();
     public override string ToString() => name ?? defaultName;
   }
 
   /* The problem here is we don't know what this applies too. It's an opaque type. */
   internal class FuncTarget<S,T> : BaseTarget<Func<S,IModifiableValue<T>>,S, T> {
-    public override IModifiable<IReadOnlyValue<T>, T> AppliesTo(S bag) => context(bag);
+    public override IModifiable<T> AppliesTo(S bag) => context(bag);
   }
 
   internal class ListTarget<T> : BaseTarget<int, IList<IModifiableValue<T>>, T> {
-    public override IModifiable<IReadOnlyValue<T>, T> AppliesTo(IList<IModifiableValue<T>> bag) => bag[context];
+    public override IModifiable<T> AppliesTo(IList<IModifiableValue<T>> bag) => bag[context];
   }
 
   internal class DictionaryTarget<K,T> : BaseTarget<K, IDictionary<K,IModifiableValue<T>>, T> {
-    public override IModifiable<IReadOnlyValue<T>, T> AppliesTo(IDictionary<K,IModifiableValue<T>> bag) => bag[context];
+    public override IModifiable<T> AppliesTo(IDictionary<K,IModifiableValue<T>> bag) => bag[context];
   }
 
 #if NET6_0_OR_GREATER

@@ -11,19 +11,20 @@
 using System;
 using System.ComponentModel;
 using System.Collections;
+using System.Threading;
 
 namespace SeawispHunter.RolePlay.Attributes {
 
 public static class ValueExtensions {
   /** Give ourselves a little projection, as a treat. */
   public static IReadOnlyValue<T> Select<S,T>(this IReadOnlyValue<S> v, Func<S,T> func) {
-    var w = Value.FromFunc(() => func(v.value), out var callOnChange);
+    var w = ReadOnlyValue.Create(() => func(v.value), out var callOnChange);
     v.PropertyChanged += (_, _) => callOnChange();
     return w;
   }
 
   public static IReadOnlyValue<U> Zip<S,T,U>(this IReadOnlyValue<S> v, IReadOnlyValue<T> w, Func<S,T,U> func) {
-    var u = Value.FromFunc(() => func(v.value, w.value), out var callOnChange);
+    var u = ReadOnlyValue.Create(() => func(v.value, w.value), out var callOnChange);
     v.PropertyChanged += (_, _) => callOnChange();
     w.PropertyChanged += (_, _) => callOnChange();
     return u;
@@ -31,7 +32,7 @@ public static class ValueExtensions {
 
   /* I don't know. This seems overly complicated. It's no longer projection, it's projection and an inverse/coalesce action. */
   public static IValue<T> Select<S,T>(this IValue<S> v, Func<S,T> @get, Action<IValue<S>,T> @set) {
-    var w = Value.FromFunc(() => @get(v.value), x => @set(v, x), out var callOnChange);
+    var w = Value.Create(() => @get(v.value), x => @set(v, x), out var callOnChange);
     v.PropertyChanged += (_, _) => callOnChange();
     return w;
   }
@@ -61,31 +62,59 @@ public static class ValueExtensions {
   }
 
 #if UNITY_5_3_OR_NEWER
-  public static IEnumerator LerpTo(this IValue<float> v, float targetValue, float duration, float? period = null) {
+  public static IEnumerator LerpTo(this IValue<float> v,
+                                   float targetValue,
+                                   float duration,
+                                   float? period = null,
+                                   CancellationToken token = default) {
     float startValue = v.value;
     float start = UnityEngine.Time.time;
     float t = 0f;
-    var wait = period.HasValue ? new UnityEngine.WaitForSeconds(period.Value)
+    var wait = period.HasValue
+      ? new UnityEngine.WaitForSeconds(period.Value)
       : null;
     do {
       t = (UnityEngine.Time.time - start) / duration;
       v.value = UnityEngine.Mathf.Lerp(startValue, targetValue, t);
       yield return wait;
-    } while (t <= 1f);
-    v.value = targetValue;
+    } while (t <= 1f && ! token.IsCancellationRequested);
+    if (! token.IsCancellationRequested)
+      v.value = targetValue;
   }
 
   /** When value v changes, the returned value will update over time. Good for
       displaying changing values. */
-  public static IReadOnlyValue<float> LerpOnChange(this IReadOnlyValue<float> v, UnityEngine.MonoBehaviour component, float duration, float? period = null) {
+  public static IReadOnlyValue<float> LerpOnChange(this IReadOnlyValue<float> v,
+                                                   UnityEngine.MonoBehaviour component,
+                                                   float duration,
+                                                   float? period = null) {
     var w = new Value<float>(v.value);
     v.PropertyChanged += OnChange;
+    var source = new CancellationTokenSource();
+    var token = source.Token;
+    bool isRunning = false;
     return w;
     // var timer = new Timer(Enable, modifier, timeSpan, Timeout.InfiniteTimeSpan);
     // void OnTimer(object modifier) {
     // }
+    // XXX: Need to handle this being called multiple times.
     void OnChange(object sender, PropertyChangedEventArgs args) {
-      component.StartCoroutine(w.LerpTo(v.value, duration, period));
+      if (isRunning) {
+        source.Cancel();
+        source.Dispose();
+        source = new CancellationTokenSource();
+        token = source.Token;
+      }
+      component.StartCoroutine(LerpAround());
+    }
+
+    IEnumerator LerpAround() {
+      try {
+        isRunning = true;
+        yield return w.LerpTo(v.value, duration, period, token);
+      } finally {
+        isRunning = false;
+      }
     }
   }
 

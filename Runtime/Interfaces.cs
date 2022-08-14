@@ -29,14 +29,24 @@ public interface IReadOnlyValue<out T> : INotifyPropertyChanged {
 
 /** IValue<T> is an IReadOnlyValue<T> that can be directly changed. */
 public interface IValue<T> : IReadOnlyValue<T> {
-  /* We want this to be settable. */
+  /* We want this value to be settable. */
   new T value { get; set; }
 }
 
-/** An IValue<T> that is bounded by a min and and a max value. */
-public interface IBoundedValue<T> : IValue<T> {
+/** IBounded<T> is a marker interface, which denotes that its implementation is
+    bounded. */
+// XXX: What is the point of this interface? Who would use this interface and for what?
+public interface IBounded<T> {
   T minValue { get; }
   T maxValue { get; }
+}
+
+/** A sorted list of modifiers alter some initial value serially. */
+public interface IModifiable<T> : IReadOnlyValue<T>, INotifyPropertyChanged {
+  // T value { get; }
+  /** The list implementation handles property change events properly. */
+  IPriorityCollection<IModifier<T>> modifiers { get; }
+  // event PropertyChangedEventHandler PropertyChanged;
 }
 
 /** The initial value type S is altered by a collection of modifiers. How it's
@@ -45,22 +55,23 @@ public interface IBoundedValue<T> : IValue<T> {
     modifier in the collection.
 
     Generally, the `initial` property is some kind of IReadOnlyValue<T>. */
-public interface IModifiable<out S,T> : IReadOnlyValue<T>, INotifyPropertyChanged {
+public interface IModifiable<out S,T> : IModifiable<T> {
   S initial { get; }
-  // T value { get; }
-  /** The list implementation handles property change events properly. */
-  IPriorityCollection<IModifier<T>> modifiers { get; }
-  // event PropertyChangedEventHandler PropertyChanged;
 }
  
 /** This IModifiableValue<T> interface is meant to capture values in games like health,
     strength, etc. that can be modified by various, sometimes distal, effects. */
 public interface IModifiableValue<T> : IModifiable<IValue<T>,T> { }
 
+// XXX: Let's not proliferate all the particular conglomerations that might be
+// convenient. It introduces potential brittleness where something might in fact
+// be an IModifiable<IReadOnlyValue<T>,T> through composition but it isn't an
+// IModifiableReadOnlyValue<T> even though they're functionally identical.
+
 /** The IModifiableReadOnly<T>'s initial value is a read only value. It
     best represents the requirements of an attribute only being altered
     non-destructively. */
-public interface IModifiableReadOnlyValue<T> : IModifiable<IReadOnlyValue<T>,T> { }
+// public interface IModifiableReadOnlyValue<T> : IModifiable<IReadOnlyValue<T>,T> { }
 
 /** We want to be able to specify a priority. */
 public interface IPriorityCollection<T> : ICollection<T> {
@@ -83,7 +94,7 @@ public interface IModifier<out S,T> : IModifier<T> {
 /** A target has a modifier and a selector so we know what to apply it to. */
 public interface ITarget<in S, T> {
   IModifier<T> modifier { get; }
-  IModifiable<IReadOnlyValue<T>,T> AppliesTo(S thing);
+  IModifiable<T> AppliesTo(S thing);
 }
 
 /** If a class is a decorator, give us a means of peeking inside if we need to. */
