@@ -27,8 +27,8 @@ namespace SeawispHunter.RolePlay.Attributes.Tests {
       [1]: https://forum.unity.com/threads/rpg-buffs-and-debuffs.188882/
     */
   public class Jessee03Test {// A Test behaves as an ordinary method
-    IModifiableValue<float> poisonResistance = ModifiableValue.FromValue(1f);
-    IModifiableValue<float> maxHealth = ModifiableValue.FromValue(100f);
+    IModifiableValue<float> poisonResistance = new ModifiableValue<float>(1f);
+    IModifiableValue<float> maxHealth = new ModifiableValue<float>(100f);
     IModifiable<IReadOnlyValue<float>,float> health;
     IModifier<float> poison;
     IEnumerator coroutine;
@@ -63,7 +63,7 @@ namespace SeawispHunter.RolePlay.Attributes.Tests {
     }
     
     public Jessee03Test() {
-      health = ModifiableValue.FromValue(maxHealth);
+      health = new Modifiable<IReadOnlyValue<float>, float>(maxHealth);
       poison = Poison(1f, 1f, 10, out coroutine);
     }
 

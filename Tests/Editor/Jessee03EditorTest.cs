@@ -53,7 +53,7 @@ namespace SeawispHunter.RolePlay.Attributes.Tests {
 
     [SetUp] public void SetUp() {
       for (int i = 0; i <resistances.Length; i++)
-        resistances[i] = ModifiableValue.FromValue(1f);
+        resistances[i] = new ModifiableValue<float>(1f);
       tokenSource = new CancellationTokenSource();
       poison = Poison(1f, 1f, 10, out coroutine, tokenSource.Token);
       health.initial.value = maxHealth.value;
@@ -66,7 +66,7 @@ namespace SeawispHunter.RolePlay.Attributes.Tests {
 
     public Jessee03EditorTest() {
       // health = ModifiableValue.FromValue(maxHealth);
-      var healthValue = Value.WithBounds(maxHealth.value, 0f, maxHealth);
+      var healthValue = new BoundedValue<float>(maxHealth.value, 0f, maxHealth);
       health = new ModifiableIValue<float>(healthValue);
     }
 

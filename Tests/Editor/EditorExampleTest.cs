@@ -10,13 +10,13 @@ namespace SeawispHunter.RolePlay.Attributes.Tests {
     // A Test behaves as an ordinary method
     //
     [Test] public void TestModifierToString0() {
-      var modifier = Modifier.FromFunc((float x) => x + 1);
+      var modifier = Modifier.Create((float x) => x + 1);
       Assert.AreEqual("?f()", modifier.ToString());
 
     }
 
     [Test] public void TestModifierToString1() {
-      var modifier = Modifier.FromFunc((float x) => x + 1, "x + 1");
+      var modifier = Modifier.Create((float x) => x + 1, "x + 1");
       Assert.AreEqual("x + 1", modifier.ToString());
     }
   }
