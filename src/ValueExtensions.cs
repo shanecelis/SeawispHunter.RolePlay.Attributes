@@ -11,6 +11,7 @@
 using System;
 using System.ComponentModel;
 using System.Collections;
+using System.Threading;
 
 namespace SeawispHunter.RolePlay.Attributes {
 
@@ -61,31 +62,60 @@ public static class ValueExtensions {
   }
 
 #if UNITY_5_3_OR_NEWER
-  public static IEnumerator LerpTo(this IValue<float> v, float targetValue, float duration, float? period = null) {
+  public static IEnumerator LerpTo(this IValue<float> v,
+                                   float targetValue,
+                                   float duration,
+                                   float? period = null,
+                                   CancellationToken token = default) {
     float startValue = v.value;
     float start = UnityEngine.Time.time;
     float t = 0f;
-    var wait = period.HasValue ? new UnityEngine.WaitForSeconds(period.Value)
+    var wait = period.HasValue
+      ? new UnityEngine.WaitForSeconds(period.Value)
       : null;
     do {
       t = (UnityEngine.Time.time - start) / duration;
       v.value = UnityEngine.Mathf.Lerp(startValue, targetValue, t);
       yield return wait;
-    } while (t <= 1f);
-    v.value = targetValue;
+    } while (t <= 1f && ! token.IsCancellationRequested);
+    if (! token.IsCancellationRequested)
+      v.value = targetValue;
   }
 
   /** When value v changes, the returned value will update over time. Good for
       displaying changing values. */
-  public static IReadOnlyValue<float> LerpOnChange(this IReadOnlyValue<float> v, UnityEngine.MonoBehaviour component, float duration, float? period = null) {
+  public static IReadOnlyValue<float> LerpOnChange(this IReadOnlyValue<float> v,
+                                                   UnityEngine.MonoBehaviour component,
+                                                   float duration,
+                                                   float? period = null) {
     var w = new Value<float>(v.value);
     v.PropertyChanged += OnChange;
+    var source = new CancellationTokenSource();
+    var token = source.Token;
+    bool isRunning = false;
     return w;
     // var timer = new Timer(Enable, modifier, timeSpan, Timeout.InfiniteTimeSpan);
     // void OnTimer(object modifier) {
     // }
+    // XXX: Need to handle this being called multiple times.
     void OnChange(object sender, PropertyChangedEventArgs args) {
-      component.StartCoroutine(w.LerpTo(v.value, duration, period));
+      if (isRunning)
+        source.Cancel();
+      component.StartCoroutine(w.LerpTo(v.value, duration, period, token));
+    }
+
+    IEnumerator LerpAround() {
+      try {
+        isRunning = true;
+        yield return w.LerpTo(v.value, duration, period, token);
+        if (! source.TryReset()) {
+          source.Dispose();
+          source = new CancellationTokenSource();
+          token = source.Token;
+        }
+      } finally {
+        isRunning = false;
+      }
     }
   }
 
