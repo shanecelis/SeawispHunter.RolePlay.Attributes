@@ -37,9 +37,8 @@ public class Value<T> : IValue<T> {
 
   private static PropertyChangedEventArgs valueEventArgs = new PropertyChangedEventArgs(nameof(value));
 
-  protected void OnChange(string name) {
-    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-  }
+  protected void OnChange(string name)
+    => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }
 
 public static class Value {
