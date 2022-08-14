@@ -89,10 +89,10 @@ public static class ValueExtensions {
                                                    float duration,
                                                    float? period = null) {
     var w = new Value<float>(v.value);
-    v.PropertyChanged += OnChange;
     var source = new CancellationTokenSource();
     var token = source.Token;
     bool isRunning = false;
+    v.PropertyChanged += OnChange;
     return w;
     // var timer = new Timer(Enable, modifier, timeSpan, Timeout.InfiniteTimeSpan);
     // void OnTimer(object modifier) {
