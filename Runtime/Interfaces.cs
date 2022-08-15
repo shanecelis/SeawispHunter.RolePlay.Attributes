@@ -35,7 +35,6 @@ public interface IValue<T> : IReadOnlyValue<T> {
 
 /** IBounded<T> is a marker interface, which denotes that its implementation is
     bounded. */
-// XXX: What is the point of this interface? Who would use this interface and for what?
 public interface IBounded<T> {
   T minValue { get; }
   T maxValue { get; }
@@ -101,9 +100,5 @@ public interface ITarget<in S, T> {
 public interface IDecorator<out T> {
   T decorated { get; }
 }
-
-// public interface ITarget<out R,in S, T> : ITarget<S, T> {
-//   R context { get; }
-// }
 
 }

@@ -94,10 +94,7 @@ public static class ValueExtensions {
     bool isRunning = false;
     v.PropertyChanged += OnChange;
     return w;
-    // var timer = new Timer(Enable, modifier, timeSpan, Timeout.InfiniteTimeSpan);
-    // void OnTimer(object modifier) {
-    // }
-    // XXX: Need to handle this being called multiple times.
+
     void OnChange(object sender, PropertyChangedEventArgs args) {
       if (isRunning) {
         source.Cancel();

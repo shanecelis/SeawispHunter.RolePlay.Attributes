@@ -101,7 +101,7 @@ public class Item : MonoBehaviour {
       RemoveAllModifiers(targeted.AppliesTo(c));
   }
 
-  private void RemoveAllModifiers(IModifiable<IReadOnlyValue<float>,float> attr) {
+  private void RemoveAllModifiers(IModifiable<float> attr) {
     foreach (var modifier in attr.modifiers
              .OfType<ItemModifier>()
              .Where(mod => mod.source == this)
