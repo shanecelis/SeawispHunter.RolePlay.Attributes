@@ -253,6 +253,24 @@ public static class Modifier {
     public Vector3 zero => Vector3.zero;
     public Vector3 one => Vector3.one;
   }
+
+  internal struct OpVector4 : IOperator<Vector4> {
+    public Vector4 Create<T>(T other) {
+      var op = GetOp<float>();
+      var o = op.Create(other);
+      return new Vector4(o, o, o, o);
+    }
+    public Vector4 Sum(Vector4 a, Vector4 b) => a + b;
+    public Vector4 Times(Vector4 a, Vector4 b) => Vector4.Scale(a, b);
+    public Vector4 Divide(Vector4 a, Vector4 b)
+      => Vector4.Scale(a, new Vector4(1f / b.x, 1f / b.y, 1f / b.z, 1f / b.w));
+    public Vector4 Negate(Vector4 a) => -a;
+    public Vector4 Max(Vector4 a, Vector4 b) => Vector4.Max(a, b);
+    public Vector4 Min(Vector4 a, Vector4 b) => Vector4.Min(a, b);
+    public Vector4 zero => Vector4.zero;
+    public Vector4 one => Vector4.one;
+  }
+
 #endif
 
   /* Not quite zero cost since this boxes the struct. */
