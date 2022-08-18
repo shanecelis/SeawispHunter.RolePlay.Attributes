@@ -33,6 +33,10 @@ public interface IValue<T> : IReadOnlyValue<T> {
   new T value { get; set; }
 }
 
+public interface ICancelableValue<T> : IReadOnlyValue<T> {
+  public void Cancel();
+}
+
 /** IBounded<T> is a marker interface, which denotes that its implementation is
     bounded. */
 public interface IBounded<T> {

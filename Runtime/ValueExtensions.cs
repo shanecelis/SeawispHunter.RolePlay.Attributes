@@ -18,7 +18,8 @@ namespace SeawispHunter.RolePlay.Attributes {
 
 public enum InterruptMode {
   Cancel,
-  PlayThrough,
+  Serial,
+  Parallel,
   Ignore,
 }
 
@@ -104,20 +105,31 @@ public static class ValueExtensions {
     }
   }
 
+  public class CancelableValue<T> : Value<T>, ICancelableValue<T> {
+    Action cancel;
+    public CancelableValue(T v, Action cancel) : base(v) {
+      this.cancel = cancel;
+    }
+
+    public void Cancel() {
+      cancel();
+    }
+  }
+
 
   /** When value v changes, the returned value will update over time. Good for
       displaying changing values. */
-  public static IReadOnlyValue<T> LerpOnChange<T>(this IReadOnlyValue<T> v,
-                                                  UnityEngine.MonoBehaviour component,
-                                                  Func<T,T,float,T> lerp,
-                                                  float duration,
-                                                  float? period = null,
-                                                  InterruptMode mode = default) {
-    var w = new Value<T>(v.value);
+  public static ICancelableValue<T> LerpOnChange<T>(this IReadOnlyValue<T> v,
+                                                    UnityEngine.MonoBehaviour component,
+                                                    Func<T,T,float,T> lerp,
+                                                    float duration,
+                                                    float? period = null,
+                                                    InterruptMode mode = default) {
     var source = new CancellationTokenSource();
     var token = source.Token;
     bool isRunning = false;
     Queue<T> queue = new Queue<T>();
+    var w = new CancelableValue<T>(v.value, Cancel);
     v.PropertyChanged += OnChange;
     return w;
 
@@ -131,8 +143,11 @@ public static class ValueExtensions {
             source = new CancellationTokenSource();
             token = source.Token;
             break;
-          case InterruptMode.PlayThrough:
+          case InterruptMode.Serial:
             queue.Enqueue(v.value);
+            break;
+          case InterruptMode.Parallel:
+            component.StartCoroutine(w.LerpTo(lerp, v.value, duration, period, token));
             break;
           case InterruptMode.Ignore:
             break;
@@ -141,6 +156,14 @@ public static class ValueExtensions {
         queue.Enqueue(v.value);
         component.StartCoroutine(LerpAround());
       }
+    }
+
+    void Cancel() {
+      source.Cancel();
+      source.Dispose();
+      source = new CancellationTokenSource();
+      token = source.Token;
+      queue.Clear();
     }
 
     IEnumerator LerpAround() {
