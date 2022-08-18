@@ -67,11 +67,31 @@ public class Character : MonoBehaviour {
       attributeValues[j].text = attributes[j].value.ToString();
       if (lerpChanges) {
         IReadOnlyValue<string> lerpy = attributes[j]
-          .LerpOnChange(this, 1f, 0.1f) // Lerp for 1 second on 1/10 of second intervals.
+          .LerpOnChange(this, Mathf.Lerp, 1f, 0.1f, InterruptMode.PlayThrough) // Lerp for 1 second on 1/10 of second intervals.
           .Select(x => x.ToString("0.#"));
-        lerpy.OnChange(attr => attributeValues[j].text = attr.value.ToString());
-      } else
+
+        // Let's add some text change juice.
+        Vector4 originalColor = attributeValues[j].color;
+        IValue<Vector4> textColor = new Value<Vector4>(originalColor);
+        var lerpyTextColor = textColor.LerpOnChange(this, LerpBack<Vector4>(Vector4.Lerp), 1f, 0.01f, InterruptMode.PlayThrough);
+        // textColor.OnChange(attr => attributeValues[j].color = (Color) attr.value);
+        lerpyTextColor.OnChange(attr => attributeValues[j].color = (Color) attr.value);
+
+        lerpy.OnChange(attr => {
+          attributeValues[j].text = attr.value;
+          // textColor.value = Color.red;
+          // StartCoroutine(LerpToAndBack<Vector4>(textColor, Vector4.Lerp, Color.blue, 1f, 0.1f));
+        });
+        var lastValue = attributes[j].value;
+        attributes[j].OnChange(attr => {
+          textColor.value = attr.value > lastValue ? Color.green : Color.red;
+          textColor.value = originalColor;
+          lastValue = attr.value;
+          // StartCoroutine(LerpToAndBack<Vector4>(textColor, Vector4.Lerp, Color.red, 1f, 0.1f));
+        });
+      } else {
         attributes[j].OnChange(attr => attributeValues[j].text = attr.value.ToString());
+      }
       
       // Set up the tooltips.
       var tooltip = attributeValues[j].transform.parent.GetComponent<TooltipOnHover>();
@@ -86,6 +106,29 @@ public class Character : MonoBehaviour {
 
     foreach (var button in buttons)
       button.onClick.AddListener(() => HandleButton(button));
+  }
+
+  public static IEnumerator LerpToAndBack<T>(IValue<T> v,
+                                             Func<T,T,float,T> lerp,
+                                             T targetValue,
+                                             float duration,
+                                             float? period = null) {
+    T startValue = v.value;
+    yield return v.LerpTo(lerp, targetValue, duration / 2f, period);
+    yield return v.LerpTo(lerp, startValue, duration / 2f, period);
+
+  }
+
+  // IEnumerator LerpToAndBack<T>(IValue<T> v, T b, float duration, float? interval) {
+
+  /** Lerp from a to b and back again. */
+  Func<T,T,float,T> LerpBack<T>(Func<T,T,float,T> lerp) {
+    return (T a, T b, float t) => {
+      if (t < 0.5f)
+        return lerp(a, b, t * 2f);
+      else
+        return lerp(a, b, (1f - t) * 2f);
+    };
   }
 
   void HandleToggle(Toggle toggle) {

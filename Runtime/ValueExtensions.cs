@@ -11,9 +11,16 @@
 using System;
 using System.ComponentModel;
 using System.Collections;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace SeawispHunter.RolePlay.Attributes {
+
+public enum InterruptMode {
+  Cancel,
+  PlayThrough,
+  Ignore,
+}
 
 public static class ValueExtensions {
   /** Give ourselves a little projection, as a treat. */
@@ -62,12 +69,13 @@ public static class ValueExtensions {
   }
 
 #if UNITY_5_3_OR_NEWER
-  public static IEnumerator LerpTo(this IValue<float> v,
-                                   float targetValue,
-                                   float duration,
-                                   float? period = null,
-                                   CancellationToken token = default) {
-    float startValue = v.value;
+  public static IEnumerator LerpTo<T>(this IValue<T> v,
+                                      Func<T,T,float,T> lerp,
+                                      T targetValue,
+                                      float duration,
+                                      float? period = null,
+                                      CancellationToken token = default) {
+    T startValue = v.value;
     float start = UnityEngine.Time.time;
     float t = 0f;
     var wait = period.HasValue
@@ -75,40 +83,72 @@ public static class ValueExtensions {
       : null;
     do {
       t = (UnityEngine.Time.time - start) / duration;
-      v.value = UnityEngine.Mathf.Lerp(startValue, targetValue, t);
+      v.value = lerp(startValue, targetValue, t);
       yield return wait;
     } while (t <= 1f && ! token.IsCancellationRequested);
     if (! token.IsCancellationRequested)
-      v.value = targetValue;
+      // v.value = targetValue;
+      v.value = lerp(startValue, targetValue, 1f);
   }
+
+  /** Return the prior value and the new value whenever `v` changes. */
+  public static IReadOnlyValue<(T,T)> Delta<T>(this IReadOnlyValue<T> v) {
+    var lastValue = v.value;
+    var w = new Value<(T,T)>((default(T), lastValue));
+    v.PropertyChanged += OnChange;
+    return w;
+
+    void OnChange(object sender, PropertyChangedEventArgs args) {
+      w.value = (lastValue, v.value);
+      lastValue = v.value;
+    }
+  }
+
 
   /** When value v changes, the returned value will update over time. Good for
       displaying changing values. */
-  public static IReadOnlyValue<float> LerpOnChange(this IReadOnlyValue<float> v,
-                                                   UnityEngine.MonoBehaviour component,
-                                                   float duration,
-                                                   float? period = null) {
-    var w = new Value<float>(v.value);
+  public static IReadOnlyValue<T> LerpOnChange<T>(this IReadOnlyValue<T> v,
+                                                  UnityEngine.MonoBehaviour component,
+                                                  Func<T,T,float,T> lerp,
+                                                  float duration,
+                                                  float? period = null,
+                                                  InterruptMode mode = default) {
+    var w = new Value<T>(v.value);
     var source = new CancellationTokenSource();
     var token = source.Token;
     bool isRunning = false;
+    Queue<T> queue = new Queue<T>();
     v.PropertyChanged += OnChange;
     return w;
 
     void OnChange(object sender, PropertyChangedEventArgs args) {
       if (isRunning) {
-        source.Cancel();
-        source.Dispose();
-        source = new CancellationTokenSource();
-        token = source.Token;
+        switch (mode) {
+          case InterruptMode.Cancel:
+            queue.Enqueue(v.value);
+            source.Cancel();
+            source.Dispose();
+            source = new CancellationTokenSource();
+            token = source.Token;
+            break;
+          case InterruptMode.PlayThrough:
+            queue.Enqueue(v.value);
+            break;
+          case InterruptMode.Ignore:
+            break;
+        }
+      } else {
+        queue.Enqueue(v.value);
+        component.StartCoroutine(LerpAround());
       }
-      component.StartCoroutine(LerpAround());
     }
 
     IEnumerator LerpAround() {
       try {
         isRunning = true;
-        yield return w.LerpTo(v.value, duration, period, token);
+        while (queue.Count > 0) {
+          yield return w.LerpTo(lerp, queue.Dequeue(), duration, period, token);
+        }
       } finally {
         isRunning = false;
       }
