@@ -75,6 +75,27 @@ health.modifiers.Add(Modifier.Plus(5f, "+5 health"));
 Console.WriteLine($"Health is {health.value}."); // Prints: Health is 115.
 ```
 
+## Value
+
+Before defining an attribute, which can be non-destructively modified, let's
+define values which are simpler. There are read-only values and read-write
+values.
+
+``` c#
+public interface IReadOnlyValue<T> {
+  T value { get; }
+  event PropertyChangedEventHandler PropertyChanged;
+}
+
+public interface IValue<T> : IReadOnlyValue<T> {
+  T value { get; set; }
+}
+```
+
+When `IValue<T>` is set, its `PropertyChanged` event is fired. And though
+`IReadOnlyValue<T>` cannot be set, its value can change depending on the
+implementation causing the `PropertyChanged` event to fire.
+
 ## Attribute
 
 At its root, an attribute has an `initial.value`. With no modifiers present, its
@@ -91,8 +112,8 @@ public interface IModifiableValue<T> {
 }
 ```
 
-Just to be explicit, an attribute's value $v$ that had an initial value $i$ and three
-modifiers $m_1, m_2, m_3$ would be computed like this:
+Just to be explicit, an attribute's value $v$ that had an initial value $i$ and
+three modifiers $m_1, m_2, m_3$ would be computed like this:
 
 $$ v = m_3(m_2(m_1(i))) $$
 
@@ -110,15 +131,15 @@ public interface IModifier<T> {
 
 However, often times the changes one wants to make are simple: add a value,
 multiple a value, or substitute a value so these are made convenient for `int`,
-`float`, and `double` types.
+`float`, and `double` types. A name can be given to the modifier.
 
 ``` c#
 public static class Modifier {
-  public static IModifier<T> Plus(T value);
-  public static IModifier<T> Minus(T value);
-  public static IModifier<T> Times(T value);
-  public static IModifier<T> Divide(T value);
-  public static IModifier<T> Substitute(T value);
+  public static IModifier<T> Plus(T value, string name = null);
+  public static IModifier<T> Minus(T value, string name = null);
+  public static IModifier<T> Times(T value, string name = null);
+  public static IModifier<T> Divide(T value, string name = null);
+  public static IModifier<T> Substitute(T value, string name = null);
 }
 ```
 
@@ -158,7 +179,7 @@ Let's create a current health value to pair with a max health attribute.
 
 ``` c#
 var maxHealth = new ModifiableValue<float>(100f);
-var health = Value.WithBounds(maxHealth.value, 0f, maxHealth);
+var health = new BoundedValue<float>(maxHealth.value, 0f, maxHealth);
 
 health.PropertyChanged += (_, _) 
   => Console.WriteLine($"Health is {health.value}/{maxHealth.value}.");
@@ -228,7 +249,7 @@ can clamp a value by creating an ad hoc modifier with a `Func<float,float>`.
 
 ``` c#
 var maxMana = new ModifiableValue<float>(50f);
-var mana = ModifiableValue.FromValue(maxMana);
+var mana = new ModifiableValue<float>(maxMana);
 var manaCost = Modifier.Minus(0f);
 mana.modifiers.Add(manaCost);
 mana.PropertyChanged += (_, _) 
@@ -266,13 +287,45 @@ var powerUp = Modifier.Plus(5);
 armor.modifiers.Add(powerUp);
 health.PropertyChanged += (_, _) => Console.WriteLine($"Armor is {armor.value}.");
 // Prints: Armor is 15.
-StartCoroutine(powerUp.DisableAfterCoroutine(TimeSpan.FromSeconds(20f)));
+StartCoroutine(powerUp.DisableAfterCoroutine(20f));
 // ...
 // [Wait 20 seconds.]
 // Prints: Armor is 10.
 ```
 
 ## Advanced Examples
+
+### Lerp Values in the UI
+
+Showing game values in the UI can be easily done: Add a property change
+listener like so.
+
+``` c#
+IValue<float> gold = ...
+gold.PropertyChange += (_, _) 
+  => goldValue.text = gold.value.ToString("0.#");
+```
+
+However, many games want to
+["juice"](https://www.youtube.com/watch?v=Fy0aCDmgnxg) value changes. Instead of
+instant changes that are easy to miss, one can show a number going up for a few
+seconds to emphasize the change. The sample scene shows linear interpolation
+(LERP) on changes and its achieved by something like this:
+
+``` c#
+IReadOnlyValue<float> lerpedGold = gold
+  .LerpOnChange(this, 1f, 0.1f)) // Lerp for 1 second on 1/10 of second intervals.
+lerpedGold.PropertyChange += (_, _) 
+  => goldValue.text = lerpedGold.value.ToString("0.#");
+```
+
+Internally `LerpOnChange` listens for changes from `gold`. When `gold` changes,
+it starts a coroutine that changes `lerpedGold` over time, starting from where
+`lerpedGold` is to then match `gold`'s value. 
+
+Code that uses `PropertyChange` to show values can just as easily show lerped,
+_juiced_, or other time-dependent variations. It's easy to add _juice_
+especially when one considers how one would normally achieve this effect.
 
 ### Synthesizing Multiple Values
 
