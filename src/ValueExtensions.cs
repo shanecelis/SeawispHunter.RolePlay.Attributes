@@ -13,6 +13,10 @@ using System.ComponentModel;
 using System.Collections;
 using System.Threading;
 
+#if NET7_0_OR_GREATER
+using System.Numerics;
+#endif
+
 namespace SeawispHunter.RolePlay.Attributes {
 
 public static class ValueExtensions {
@@ -54,7 +58,7 @@ public static class ValueExtensions {
   }
 
   public static IModifier<Y> Cast<X,Y>(this IModifier<X> m)
-#if NET6_0_OR_GREATER
+#if NET7_0_OR_GREATER
     where X : INumber<X> where Y : INumber<Y>
 #endif
   {

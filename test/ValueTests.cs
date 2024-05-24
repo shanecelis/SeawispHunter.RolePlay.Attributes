@@ -52,6 +52,32 @@ public class ValueTests {
     Assert.Equal(100f, v.value);
   }
 
+  [Fact] public void TestHp() {
+    var hp = new BoundedModifiable<IValue<float>,float>(new Value<float>(50f), 0f, 100f);
+    Assert.Equal(50f, hp.value);
+    var ring = Modifier.Plus(10f);
+    hp.modifiers.Add(ring);
+    Assert.Equal(60f, hp.value);
+    hp.initial.value -= 5f;
+    Assert.Equal(55f, hp.value);
+    hp.modifiers.Remove(ring);
+    Assert.Equal(45f, hp.value);
+  }
+
+  [Fact] public void TestMaxHp() {
+    var maxHp = new ModifiableValue<float>(100f);
+    var damage = new Value<float>(50);
+    var hp = maxHp.Zip(damage, (maxHp, damage) => maxHp - damage);
+    Assert.Equal(50f, hp.value);
+    var ring = Modifier.Plus(10f);
+    maxHp.modifiers.Add(ring);
+    Assert.Equal(60f, hp.value);
+    damage.value += 5f;
+    Assert.Equal(55f, hp.value);
+    maxHp.modifiers.Remove(ring);
+    Assert.Equal(45f, hp.value);
+  }
+
   [Fact] public void TestBoundedInputOutputValue() {
   var v = new BoundedModifiable<IValue<float>,float>(new BoundedValue<float>(100f, 0f, 100f), 0f, 100f);
     v.modifiers.Add(Modifier.Plus(10f));

@@ -9,7 +9,7 @@
    [4]: https://github.com/shanecelis/code-cite
 */
 
-#if NET6_0_OR_GREATER
+#if NET7_0_OR_GREATER
 using System.Numerics;
 #endif
 using System;
@@ -25,7 +25,7 @@ namespace SeawispHunter.RolePlay.Attributes {
     [1]: https://gamedevelopment.tutsplus.com/tutorials/using-the-composite-design-pattern-for-an-rpg-attributes-system--gamedev-243
 */
 public class SidhionStat<T> : ModifiableValue<T>
-#if NET6_0_OR_GREATER
+#if NET7_0_OR_GREATER
   where T : INumber<T>
 #endif
 {
@@ -41,7 +41,7 @@ public class SidhionStat<T> : ModifiableValue<T>
     modifiers.Add(400, Modifier.Times(finalBonusesTimes));
   }
 
-#if NET6_0_OR_GREATER
+#if NET7_0_OR_GREATER
   private static T one => T.One;
 #else
   private static T one => Modifier.GetOp<T>().one;
@@ -49,7 +49,7 @@ public class SidhionStat<T> : ModifiableValue<T>
 }
 
 public class KryzarelStat<T> : ModifiableValue<T>
-#if NET6_0_OR_GREATER
+#if NET7_0_OR_GREATER
   where T : INumber<T>
 #endif
 {
@@ -68,7 +68,7 @@ public class KryzarelStat<T> : ModifiableValue<T>
     modifiers.Add((int) Priority.PercentTimes, Modifier.Times(percentTimes));
   }
 
-#if NET6_0_OR_GREATER
+#if NET7_0_OR_GREATER
   private static T one => T.One;
 #else
   private static T one => Modifier.GetOp<T>().one;
@@ -76,7 +76,7 @@ public class KryzarelStat<T> : ModifiableValue<T>
 }
 
 public class PennerStat<T> : ModifiableValue<T>
-#if NET6_0_OR_GREATER
+#if NET7_0_OR_GREATER
   where T : INumber<T>
 #endif
 {
@@ -94,7 +94,7 @@ public class PennerStat<T> : ModifiableValue<T>
     modifiers.Add(400, Modifier.Plus(TotalPlus));
   }
 
-#if NET6_0_OR_GREATER
+#if NET7_0_OR_GREATER
   private static T one => T.One;
 #else
   private static T one => Modifier.GetOp<T>().one;

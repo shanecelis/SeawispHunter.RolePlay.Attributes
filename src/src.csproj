@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net7.0;netstandard2.0</TargetFrameworks>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <!-- <LangVersion>9.0</LangVersion> -->
@@ -10,9 +10,5 @@
 
     <AssemblyName>SeawispHunter.RolePlay.Attributes</AssemblyName>
   </PropertyGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0'">
-    <PackageReference Include="System.Runtime.Experimental" Version="6.0.0-preview.7.21377.19" />
-  </ItemGroup>
 
 </Project>

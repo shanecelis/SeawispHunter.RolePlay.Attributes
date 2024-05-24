@@ -1,6 +1,6 @@
 using System.ComponentModel;
 // https://weblogs.asp.net/dixin/csharp-10-new-feature-callerargumentexpression-argument-check-and-more
-#if UNITY_5_3_OR_NEWER || (!NET5_0 && !NET6_0)
+#if UNITY_5_3_OR_NEWER || !NET5_0_OR_GREATER
 namespace System.Runtime.CompilerServices {
 
 /// <summary>

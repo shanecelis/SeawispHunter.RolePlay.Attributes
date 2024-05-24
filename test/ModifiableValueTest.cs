@@ -226,7 +226,7 @@ public class ModifiableValueTest {
   }
 
 // #if ! NETCOREAPP
-#if NET6_0_OR_GREATER
+#if NET7_0_OR_GREATER
   #warning Using a Timer.
   [Fact]
   public void TestDisableTimeout() {

@@ -16,7 +16,7 @@ using System.Text;
 using System.ComponentModel;
 using System.Threading;
 using System.Runtime.CompilerServices;
-#if NET6_0_OR_GREATER
+#if NET7_0_OR_GREATER
 using System.Numerics;
 #endif
 #if UNITY_5_3_OR_NEWER
@@ -134,7 +134,7 @@ public static class Modifier {
     public override IModifiable<T> AppliesTo(IDictionary<K,IModifiableValue<T>> bag) => bag[context];
   }
 
-#if NET6_0_OR_GREATER
+#if NET7_0_OR_GREATER
 
   // Plus
   public static IModifier<IReadOnlyValue<S>,S> Plus<S>(S v, string name = null) where S : INumber<S>
@@ -330,16 +330,16 @@ public static class Modifier {
 #endif
 /** Cast a numerical type into something else. */
   internal class CastingModifier<S,T> : ContextModifier<IModifier<S>,T>
-#if NET6_0_OR_GREATER
+#if NET7_0_OR_GREATER
     where S : INumber<S>
     where T : INumber<T>
 #endif
   {
     public CastingModifier(IModifier<S> context) : base(context) { }
 
-#if NET6_0_OR_GREATER
+#if NET7_0_OR_GREATER
     public override T Modify(T given)
-      => T.Create(context.Modify(S.Create(given)));
+      => T.CreateChecked(context.Modify(S.CreateChecked(given)));
 #else
     public override T Modify(T given) {
       var s = GetOp<S>();
@@ -407,14 +407,14 @@ public abstract class ContextModifier<S,T> : IModifier<S,T>, IDisposable {
 
   public class NumericalModifier<S,T> : ContextModifier<S,T>
     where S : IReadOnlyValue<T>
-#if NET6_0_OR_GREATER
+#if NET7_0_OR_GREATER
     where T : INumber<T>
 #endif
   {
     public char symbol { get; init; } = '?';
     public NumericalModifier(S context) : base(context) { }
 
-#if NET6_0_OR_GREATER
+#if NET7_0_OR_GREATER
     public override T Modify(T given) {
       T v = context.value;
       switch (symbol) {

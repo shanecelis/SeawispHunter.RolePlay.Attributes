@@ -11,6 +11,10 @@
 using System;
 using System.ComponentModel;
 
+#if NET7_0_OR_GREATER
+using System.Numerics;
+#endif
+
 namespace SeawispHunter.RolePlay.Attributes {
 
 [Serializable]
@@ -114,7 +118,7 @@ public static class Value {
     */
 [Serializable]
 public class BoundedValue<T> : IValue<T>, IBounded<T>
-#if NET6_0_OR_GREATER
+#if NET7_0_OR_GREATER
   where T : INumber<T>
 #endif
 {
@@ -134,7 +138,7 @@ public class BoundedValue<T> : IValue<T>, IBounded<T>
   }
 
   public static T Clamp(T value, T minValue, T maxValue) {
-#if NET6_0_OR_GREATER
+#if NET7_0_OR_GREATER
     if (value < minValue)
       value = minValue;
     if (value > maxValue)

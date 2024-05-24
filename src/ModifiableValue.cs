@@ -15,6 +15,10 @@ using System.ComponentModel;
 using System.Collections;
 using System.Collections.Generic;
 
+#if NET7_0_OR_GREATER
+using System.Numerics;
+#endif
+
 namespace SeawispHunter.RolePlay.Attributes {
 
 public static class ModifiableValue {
@@ -37,7 +41,7 @@ public static class ModifiableValue {
   }
 
   /** Return the delta a modifier (may be multiple) does. */
-#if NET6_0_OR_GREATER
+#if NET7_0_OR_GREATER
   public static T ProbeDelta<T>(this IModifiable<IReadOnlyValue<T>, T> modifiable,
                                 IModifier<T> modifier) where T : INumber<T> {
     // => modifiable.ProbeAffects(modifier).Select(x => x.after - x.before).Sum();
@@ -141,7 +145,7 @@ public class ModifiableReadOnlyValue<T> : Modifiable<IReadOnlyValue<T>, T> {
 [Serializable]
 public class BoundedModifiable<S,T> : Modifiable<S,T>, IBounded<T>
   where S : IReadOnlyValue<T>
-#if NET6_0_OR_GREATER
+#if NET7_0_OR_GREATER
   where T : INumber<T>
 #endif
 {
