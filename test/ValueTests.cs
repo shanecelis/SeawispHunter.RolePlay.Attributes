@@ -78,6 +78,25 @@ public class ValueTests {
     Assert.Equal(45f, hp.value);
   }
 
+  [Fact] public void TestMaxHpBounded()
+  {
+    var maxHp = new ModifiableValue<float>(100f);
+    var damage = new BoundedValue<float>(50, 0f, maxHp);
+    var hp = maxHp.Zip(damage, (maxHp, damage) => maxHp - damage);
+    Assert.Equal(50f, hp.value);  //  (maxHp : 100) - (damage : 50) = 50
+    var ring = Modifier.Plus(10f);
+    maxHp.modifiers.Add(ring);
+    Assert.Equal(60f, hp.value); //  (maxHp : 100) - (damage : 50) + (ring :10) = 60
+    damage.value += 5f;
+    Assert.Equal(55f, hp.value); //  (maxHp : 100) - (damage : 55) + (ring :10) = 55
+    maxHp.modifiers.Remove(ring);
+    Assert.Equal(45f, hp.value); //  (maxHp : 100) - (damage : 55) = 45
+    damage.value -= 100f; // Heal 100 / Intent to heel the opposite of damage without affecting maxHp
+    Assert.Equal(100f, hp.value); // damage bounded to 0.
+    damage.value += 5f;
+    Assert.Equal(95f, hp.value); // No weird internal state effects where damage internally is -45.
+  }
+
   [Fact] public void TestBoundedInputOutputValue() {
   var v = new BoundedModifiable<IValue<float>,float>(new BoundedValue<float>(100f, 0f, 100f), 0f, 100f);
     v.modifiers.Add(Modifier.Plus(10f));
