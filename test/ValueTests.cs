@@ -101,6 +101,7 @@ public class ValueTests {
 
   interface IModifierId {
     public int id { get; } // Use UUID, bit flags, enum, whatever you want.
+    public const int RING = 101;
   }
 
   class Ring: IModifier<float>, IModifierId {
@@ -112,7 +113,7 @@ public class ValueTests {
     };
     public Worn worn = Worn.None;
     float addHealth;
-    public int id => 101;
+    public int id => IModifierId.RING;
     public bool enabled { get; set; } = true;
 
     public Ring(float addHealth) => this.addHealth = addHealth;
@@ -137,7 +138,7 @@ public class ValueTests {
     ring = null;
     var rings = maxHp.modifiers
       .OfType<IModifierId>()
-      .Where(m => m.id == 101)
+      .Where(m => m.id == IModifierId.RING)
       .ToList();
     foreach (var r in rings) {
       maxHp.modifiers.Remove((IModifier<float>) r);
