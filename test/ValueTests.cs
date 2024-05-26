@@ -11,8 +11,10 @@
 */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.ComponentModel;
 using Xunit;
 
 using SeawispHunter.RolePlay.Attributes;
@@ -95,6 +97,72 @@ public class ValueTests {
     Assert.Equal(100f, hp.value); // damage bounded to 0.
     damage.value += 5f;
     Assert.Equal(95f, hp.value); // No weird internal state effects where damage internally is -45.
+  }
+
+  interface IModifierId {
+    public int id { get; } // Use UUID, bit flags, enum, whatever you want.
+  }
+
+  class Ring: IModifier<float>, IModifierId {
+    public enum Worn {
+      None,
+      Left,
+      Right,
+      Toe
+    };
+    public Worn worn = Worn.None;
+    float addHealth;
+    public int id => 101;
+    public bool enabled { get; set; } = true;
+
+    public Ring(float addHealth) => this.addHealth = addHealth;
+
+    public float Modify(float given) => given + addHealth;
+
+    public event PropertyChangedEventHandler PropertyChanged;
+  }
+
+  [Fact] public void TestModifierImplementer()
+  {
+    var maxHp = new ModifiableValue<float>(100f);
+    var damage = new BoundedValue<float>(50, 0f, maxHp);
+    var hp = maxHp.Zip(damage, (maxHp, damage) => maxHp - damage);
+    Assert.Equal(50f, hp.value);  //  (maxHp : 100) - (damage : 50) = 50
+    var ring = new Ring(10f);
+    maxHp.modifiers.Add(ring);
+    Assert.Equal(60f, hp.value); //  (maxHp : 100) - (damage : 50) + (ring :10) = 60
+    damage.value += 5f;
+    Assert.Equal(55f, hp.value); //  (maxHp : 100) - (damage : 55) + (ring :10) = 55
+    // How to remove without knowing what's in there?
+    ring = null;
+    var rings = maxHp.modifiers
+      .OfType<IModifierId>()
+      .Where(m => m.id == 101)
+      .ToList();
+    foreach (var r in rings) {
+      maxHp.modifiers.Remove((IModifier<float>) r);
+    }
+    Assert.Equal(45f, hp.value); //  (maxHp : 100) - (damage : 55) = 45
+  }
+
+  [Fact] public void TestLeftRingRemoval()
+  {
+    var maxHp = new ModifiableValue<float>(100f);
+    var damage = new BoundedValue<float>(50, 0f, maxHp);
+    var hp = maxHp.Zip(damage, (maxHp, damage) => maxHp - damage);
+    Assert.Equal(50f, hp.value);  //  (maxHp : 100) - (damage : 50) = 50
+    maxHp.modifiers.Add(new Ring(5f) { worn = Ring.Worn.Left });
+    maxHp.modifiers.Add(new Ring(5f) { worn = Ring.Worn.Right });
+    Assert.Equal(60f, hp.value); //  (maxHp : 100) - (damage : 50) + (ring :10) = 60
+    damage.value += 5f;
+    Assert.Equal(55f, hp.value); //  (maxHp : 100) - (damage : 55) + (ring :10) = 55
+    // How to remove without knowing what's in there?
+    var leftRing = maxHp.modifiers
+      .OfType<Ring>()
+      .Where(r => r.worn == Ring.Worn.Left)
+      .Single();
+    maxHp.modifiers.Remove((IModifier<float>) leftRing);
+    Assert.Equal(50f, hp.value); //  (maxHp : 100) - (damage : 55) = 45
   }
 
   [Fact] public void TestBoundedInputOutputValue() {
