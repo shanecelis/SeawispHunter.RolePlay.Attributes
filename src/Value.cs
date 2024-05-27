@@ -151,7 +151,7 @@ public class BoundedValue<T> : IValue<T>, IBounded<T>
   }
 
   public BoundedValue(T value, IReadOnlyValue<T> lowerBound, IReadOnlyValue<T> upperBound) {
-    _value = value;
+    _value = Clamp(value, lowerBound.value, upperBound.value);
     this.lowerBound = lowerBound;
     // this.lowerBound.PropertyChanged -= BoundChanged;
     this.lowerBound.PropertyChanged += BoundChanged;

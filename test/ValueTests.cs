@@ -46,6 +46,11 @@ public class ValueTests {
     Assert.Equal(110f, v.value);
   }
 
+  [Fact] public void TestBoundedInputValueConstructor() {
+    var v = new ModifiableValue<float>(new BoundedValue<float>(110f, 0f, 100f));
+    Assert.Equal(100f, v.value);
+  }
+
   [Fact] public void TestBoundedOutputValue() {
     var v = new BoundedModifiable<IValue<float>,float>(new Value<float>(100f), 0f, 100f);
     v.modifiers.Add(Modifier.Plus(10f));
